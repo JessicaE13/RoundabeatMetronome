@@ -101,16 +101,21 @@ struct SegmentedCircleView: View {
             
             // Draw square-like dividers between segments
             ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beatIndex in
-                let dividerAngle = angleForDivider(beatIndex)
+                // Use the angleForDivider function
+                let angle = angleForDivider(beatIndex)
+                
+                // Calculate position using trigonometry instead of offset+rotation
+                let x = diameter/2 + cos(angle * .pi / 180) * radius
+                let y = diameter/2 + sin(angle * .pi / 180) * radius
                 
                 // Create the divider "tick" at each segment boundary
                 Rectangle()
-                    .fill(Color.background) // White divider
+                    .fill(Color.red) // Red divider
                     .frame(width: gapWidthPoints, height: lineWidth+1)
-                    .offset(x: 0, y: -radius) // Position at the circle's edge
-                    .rotationEffect(Angle(degrees: dividerAngle))
-                    .position(x: diameter/2, y: diameter/2)
+                    .rotationEffect(Angle(degrees: angle + 90)) // Add 90 to align rectangle properly
+                    .position(x: x, y: y)
             }
+            
         }
         .frame(width: diameter, height: diameter)
     }
@@ -120,13 +125,14 @@ struct SegmentedCircleView: View {
         // Each beat takes up an equal portion of the full circle
         let degreesPerBeat = 360.0 / Double(metronome.beatsPerMeasure)
         
-        // Starting at top (270 degrees in SwiftUI coordinates where 0 is at 3 o'clock)
-        // and going clockwise
+        // In standard mathematical coordinates: 0 degrees is at 3 o'clock
+        // 270 degrees is at 12 o'clock
         let startAngle = 270.0
-        let dividerAngle = startAngle + (Double(index) * degreesPerBeat)
         
-        // Normalize to 0-360 range
-        return dividerAngle.truncatingRemainder(dividingBy: 360.0)
+        // Calculate angle with index 0 always at 12 o'clock
+        let angle = startAngle + (Double(index) * degreesPerBeat)
+        
+        return angle
     }
     
     // Calculate start and end angles for each beat segment, leaving space for the divider
