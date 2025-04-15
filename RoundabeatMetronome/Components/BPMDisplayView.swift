@@ -16,18 +16,24 @@ struct BPMDisplayView: View {
     
     var body: some View {
         VStack(spacing: 5) {
+            
+            Text("BPM")
+                .font(.headline)
+                .foregroundColor(.gray)
+            
             Text("\(Int(metronome.tempo))")
-                .font(.system(size: 72, weight: .bold, design: .default))
+                .font(.system(size: 50, weight: .bold, design: .default))
                 .contentTransition(.numericText())
                 .animation(.spring(response: 0.3), value: Int(metronome.tempo))
+            
                 // Make the BPM text tappable to show keypad
                 .onTapGesture {
                     // Add haptic feedback
                     let generator = UIImpactFeedbackGenerator(style: .light)
                     generator.impactOccurred()
-                    
                     isShowingKeypad = true
                 }
+            
                 // Add vertical swipe gesture
                 .gesture(
                     DragGesture()
@@ -53,10 +59,7 @@ struct BPMDisplayView: View {
                             generator.impactOccurred()
                         }
                 )
-            
-            Text("BPM")
-                .font(.headline)
-                .foregroundColor(.gray)
+
         }
     }
 }

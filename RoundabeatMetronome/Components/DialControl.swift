@@ -45,20 +45,22 @@ struct DialControl: View {
             // Segmented ring showing beats in the time signature
             SegmentedCircleView(
                 metronome: metronome,
-                diameter: dialSize - 15,
+                diameter: dialSize - 20,
                 lineWidth: ringLineWidth
             )
+            
+            CircleArcView()
             
             // Center knob with play/pause button
             ZStack {
                 Circle()
-                    .fill(metronome.isPlaying ? Color.red : Color.blue)
+                    .fill(metronome.isPlaying ? Color.background : Color.background)
                     .frame(width: knobSize, height: knobSize)
                     .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                 
                 Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 30))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color("AccentBlue"))
             }
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .medium)

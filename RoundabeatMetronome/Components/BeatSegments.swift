@@ -53,7 +53,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color.blue : Color.red,
+                    isFirstBeat ? Color.accentBlue : Color.accentBlue,
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
                 )
             }
@@ -105,7 +105,7 @@ struct SegmentedCircleView: View {
                 
                 // Create the divider "tick" at each segment boundary
                 Rectangle()
-                    .fill(Color.white) // White divider
+                    .fill(Color.background) // White divider
                     .frame(width: gapWidthPoints, height: lineWidth+1)
                     .offset(x: 0, y: -radius) // Position at the circle's edge
                     .rotationEffect(Angle(degrees: dividerAngle))
@@ -189,8 +189,6 @@ struct BeatSegments: View {
         }
     }
 }
-
-// No need to define MetronomeEngine here as it's already defined elsewhere in the project
 
 #Preview {
     BeatSegments()

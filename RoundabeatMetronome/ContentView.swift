@@ -2,11 +2,11 @@
 
 import SwiftUI
 import AVFoundation
- 
 
 
 
 // MARK: - Content View
+
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
     @State private var isEditingTempo = false
@@ -19,89 +19,111 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
+            
+            //Background color
+            Color("Background")
+                .ignoresSafeArea()
+            
             // Main metronome interface
             VStack(spacing: 25) {
-
-                
-                // BPM Display with gestures
-                BPMDisplayView(
-                    metronome: metronome,
-                    isShowingKeypad: $showBPMKeypad
-                )
                 
                 // Title
-                Text("Roundabeat Metronome")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.top, 20)
+                Text("r o u n d a b e a t")
+                    .font(.body)
+                    .fontWeight(.light)
+                    .padding(.top, 5)
                     .foregroundStyle(.gray)
                 
-                // Visual Beat Indicator with high-performance animation
-                HStack(spacing: 15) {
-                    ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beat in
-                        // Use ZStack for better animation performance
-                        ZStack {
-                            // Background circle
-                            Circle()
-                                .frame(width: 20, height: 20)
-                                .foregroundColor(beat == metronome.currentBeat && metronome.isPlaying ?
-                                               (beat == 0 ? .blue : .red) : .gray.opacity(0.5))
+                
+                
+                HStack {
+                    
+                    // BPM Display with gestures
+                    BPMDisplayView(
+                        metronome: metronome,
+                        isShowingKeypad: $showBPMKeypad
+                    )
+                    
+                    // Time Signature Button
+                    Button(action: {
+                        showTimeSignaturePicker = true
+                    }) {
+                        HStack {
+                            Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .frame(width: 80)
+                                .animation(.spring(), value: metronome.beatsPerMeasure)
+                                .animation(.spring(), value: metronome.beatUnit)
                             
-                            // Animated pulse for the active beat
-                            if beat == metronome.currentBeat && metronome.isPlaying {
-                                Circle()
-                                    .frame(width: 20, height: 20)
-                                    .foregroundColor(beat == 0 ? .blue : .red)
-                                    .scaleEffect(1.5)
-                                    .opacity(0)
-                                    .animation(.easeOut(duration: 0.2).repeatCount(1), value: metronome.currentBeat)
-                            }
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                                .foregroundColor(.gray)
                         }
-                    }
-                }
-                
-                // Tap Tempo Button
-                Button(action: {
-                    calculateTapTempo()
-                }) {
-                    Text("Tap Tempo")
-                        .font(.headline)
                         .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(Color.blue.opacity(0.1))
+                        .padding(.horizontal, 12)
                         .cornerRadius(8)
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                // Time Signature Button
-                Button(action: {
-                    showTimeSignaturePicker = true
-                }) {
-                    HStack {
-                        Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
-                            .font(.title)
-                            .fontWeight(.semibold)
-                            .frame(width: 80)
-                            .animation(.spring(), value: metronome.beatsPerMeasure)
-                            .animation(.spring(), value: metronome.beatUnit)
-                        
-                        Image(systemName: "chevron.down")
-                            .font(.caption)
-                            .foregroundColor(.gray)
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(8)
+                    .buttonStyle(PlainButtonStyle())
+                    
                 }
-                .buttonStyle(PlainButtonStyle())
+                .padding(16) // Add padding inside the rounded rectangle
+                .frame(width: 320)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color("BPM")) // Choose your desired background color
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(.black), lineWidth: 2) // Optional: adds a border
+                )
+                
+                
+                // Visual Beat Indicator with high-performance animation
+                //                HStack(spacing: 15) {
+                //                    ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beat in
+                //                        // Use ZStack for better animation performance
+                //                        ZStack {
+                //                            // Background circle
+                //                            Circle()
+                //                                .frame(width: 20, height: 20)
+                //                                .foregroundColor(beat == metronome.currentBeat && metronome.isPlaying ?
+                //                                               (beat == 0 ? .blue : .red) : .gray.opacity(0.5))
+                //
+                //                            // Animated pulse for the active beat
+                //                            if beat == metronome.currentBeat && metronome.isPlaying {
+                //                                Circle()
+                //                                    .frame(width: 20, height: 20)
+                //                                    .foregroundColor(beat == 0 ? .blue : .red)
+                //                                    .scaleEffect(1.5)
+                //                                    .opacity(0)
+                //                                    .animation(.easeOut(duration: 0.2).repeatCount(1), value: metronome.currentBeat)
+                //                            }
+                //                        }
+                //                    }
+                //                }
+                //
+                // Tap Tempo Button
+                //                Button(action: {
+                //                    calculateTapTempo()
+                //                }) {
+                //                    Text("Tap Tempo")
+                //                        .font(.headline)
+                //                        .padding(.vertical, 8)
+                //                        .padding(.horizontal, 16)
+                //                        .background(Color.blue.opacity(0.1))
+                //                        .cornerRadius(8)
+                //                }
+                //                .buttonStyle(PlainButtonStyle())
+                
+                
                 
                 // New Dial Control with Play/Pause Button
                 DialControl(metronome: metronome)
                     .padding(.top, -10)
                     .padding(.bottom, -30)
                 
-    
+                
             }
             .padding()
             .onAppear {
@@ -198,8 +220,12 @@ struct ContentView: View {
         
         // Update last tap time
         lastTapTime = now
+          
+        
     }
+    
 }
+
 
 
 
