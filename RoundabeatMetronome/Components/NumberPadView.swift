@@ -12,6 +12,7 @@ import SwiftUI
 struct NumberPadView: View {
     @Binding var isShowingKeypad: Bool
     @State private var inputValue: String = ""
+    @State private var isFirstInput: Bool = true  // Track if this is the first input
     let currentTempo: Double
     let onSubmit: (Double) -> Void
     
@@ -71,6 +72,7 @@ struct NumberPadView: View {
                     // Clear button
                     Button(action: {
                         inputValue = ""
+                        isFirstInput = true
                     }) {
                         Text("Clear")
                             .font(.system(size: 22, weight: .medium))
@@ -86,6 +88,9 @@ struct NumberPadView: View {
                     Button(action: {
                         if !inputValue.isEmpty {
                             inputValue.removeLast()
+                            if inputValue.isEmpty {
+                                isFirstInput = true
+                            }
                         }
                     }) {
                         Image(systemName: "delete.left")
@@ -120,9 +125,15 @@ struct NumberPadView: View {
     
     private func numberButton(number: String) -> some View {
         Button(action: {
-            // Don't allow input to exceed 3 digits
-            if inputValue.count < 3 {
-                inputValue += number
+            // Override existing text if this is the first input
+            if isFirstInput {
+                inputValue = number
+                isFirstInput = false
+            } else {
+                // Otherwise append, but don't allow input to exceed 3 digits
+                if inputValue.count < 3 {
+                    inputValue += number
+                }
             }
             
             // Add haptic feedback
@@ -142,6 +153,7 @@ struct NumberPadView: View {
         guard let tempo = Double(inputValue), tempo >= 40, tempo <= 240 else {
             // Invalid input, reset to current tempo
             inputValue = "\(Int(currentTempo))"
+            isFirstInput = true
             return
         }
         

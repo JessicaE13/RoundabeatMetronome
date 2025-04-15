@@ -1,13 +1,154 @@
 //
-//  DialControl.swift
+//  CombinedMetronomeView.swift
 //  RoundabeatMetronome
 //
-//  Created by Jessica Estes on 4/14/25.
+//  Created on 4/15/25.
 //
-// Make sure we have access to SegmentedCircleView
-// If BeatSegments.swift is in a different module, you may need to import it
 
 import SwiftUI
+
+// MARK: - Beat Segment Arc View
+struct ArcSegment: View {
+    let center: CGPoint
+    let radius: CGFloat
+    let startAngle: Double
+    let endAngle: Double
+    let lineWidth: CGFloat
+    let isActive: Bool
+    let isFirstBeat: Bool
+    let gapWidth: CGFloat // Width of the gap in points (not degrees)
+    
+    var body: some View {
+        ZStack {
+            // When not active, show gradient version
+            if !isActive {
+                Path { path in
+                    path.addArc(
+                        center: center,
+                        radius: radius,
+                        startAngle: Angle(degrees: startAngle),
+                        endAngle: Angle(degrees: endAngle),
+                        clockwise: false
+                    )
+                }
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.2)]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
+                )
+            }
+            
+            // When active, show colored version
+            if isActive {
+                Path { path in
+                    path.addArc(
+                        center: center,
+                        radius: radius,
+                        startAngle: Angle(degrees: startAngle),
+                        endAngle: Angle(degrees: endAngle),
+                        clockwise: false
+                    )
+                }
+                .stroke(
+                    isFirstBeat ? Color.accentBlue : Color.accentBlue,
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
+                )
+            }
+        }
+        // Add a subtle animation when segment becomes active
+        .animation(.easeInOut(duration: 0.1), value: isActive)
+    }
+}
+
+// MARK: - Segmented Circle View
+struct SegmentedCircleView: View {
+    @ObservedObject var metronome: MetronomeEngine
+    let diameter: CGFloat
+    let lineWidth: CGFloat
+    
+    private var radius: CGFloat {
+        (diameter - lineWidth) / 2
+    }
+    
+    // Fixed gap width in points
+    private let gapWidthPoints: CGFloat = 7.0
+    
+    var body: some View {
+        ZStack {
+            // Background circle (optional - helps see the full circle)
+            Circle()
+                .stroke(Color.gray.opacity(0.1), lineWidth: lineWidth)
+                .frame(width: diameter - lineWidth, height: diameter - lineWidth)
+            
+            // Draw each segment based on the time signature
+            ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beatIndex in
+                let (startAngle, endAngle) = angleRangeForBeat(beatIndex)
+                
+                ArcSegment(
+                    center: CGPoint(x: diameter/2, y: diameter/2),
+                    radius: radius,
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    lineWidth: lineWidth,
+                    isActive: beatIndex == metronome.currentBeat && metronome.isPlaying,
+                    isFirstBeat: beatIndex == 0,
+                    gapWidth: gapWidthPoints
+                )
+            }
+            
+            // Draw square-like dividers between segments
+            ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beatIndex in
+                let dividerAngle = angleForDivider(beatIndex)
+                
+                // Create the divider "tick" at each segment boundary
+                Rectangle()
+                    .fill(Color.background) // White divider
+                    .frame(width: gapWidthPoints, height: lineWidth+1)
+                    .offset(x: 0, y: -radius) // Position at the circle's edge
+                    .rotationEffect(Angle(degrees: dividerAngle))
+                    .position(x: diameter/2, y: diameter/2)
+            }
+        }
+        .frame(width: diameter, height: diameter)
+    }
+    
+    // Calculate angle for placing square dividers
+    private func angleForDivider(_ index: Int) -> Double {
+        // Each beat takes up an equal portion of the full circle
+        let degreesPerBeat = 360.0 / Double(metronome.beatsPerMeasure)
+        
+        // Starting at top (270 degrees in SwiftUI coordinates where 0 is at 3 o'clock)
+        // and going clockwise
+        let startAngle = 270.0
+        let dividerAngle = startAngle + (Double(index) * degreesPerBeat)
+        
+        // Normalize to 0-360 range
+        return dividerAngle.truncatingRemainder(dividingBy: 360.0)
+    }
+    
+    // Calculate start and end angles for each beat segment, leaving space for the divider
+    private func angleRangeForBeat(_ beat: Int) -> (start: Double, end: Double) {
+        // Calculate how many degrees each segment should cover
+        let totalAvailableDegrees = 360.0
+        let degreesPerBeat = totalAvailableDegrees / Double(metronome.beatsPerMeasure)
+        
+        // Calculate gap in degrees based on fixed pixel width
+        // This is an approximation and will depend on the actual circle size
+        let gapDegrees = (gapWidthPoints / (2 * .pi * radius)) * 360.0
+        
+        // Get the base angle for this beat (at the divider)
+        let dividerAngle = angleForDivider(beat)
+        
+        // Start a bit after the divider, end a bit before the next divider
+        let startAngle = dividerAngle + (gapDegrees / 2)
+        let endAngle = dividerAngle + degreesPerBeat - (gapDegrees / 2)
+        
+        return (startAngle, endAngle)
+    }
+}
 
 // MARK: - Dial Control Component
 struct DialControl: View {
@@ -48,8 +189,6 @@ struct DialControl: View {
                 diameter: dialSize - 20,
                 lineWidth: ringLineWidth
             )
-            
-            CircleArcView()
             
             // Center knob with play/pause button
             ZStack {
@@ -160,8 +299,91 @@ struct DialControl: View {
     }
 }
 
+// MARK: - Combined Metronome View
+struct CombinedMetronomeView: View {
+    @StateObject private var metronome = MetronomeEngine()
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Main control dial (which includes the segmented circle visualization)
+            DialControl(metronome: metronome)
+            
+            // Tempo display
+            Text("\(Int(metronome.tempo)) BPM")
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+            
+            // Time signature controls
+            HStack(spacing: 30) {
+                VStack {
+                    Text("Beats Per Measure")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Stepper("\(metronome.beatsPerMeasure)", value: Binding(
+                        get: { self.metronome.beatsPerMeasure },
+                        set: { self.metronome.beatsPerMeasure = $0 }
+                    ), in: 1...12)
+                    .frame(width: 120)
+                }
+                
+                VStack {
+                    Text("Beat Unit")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Picker("", selection: Binding(
+                        get: { self.metronome.beatUnit },
+                        set: { self.metronome.beatUnit = $0 }
+                    )) {
+                        Text("Quarter").tag(4)
+                        Text("Eighth").tag(8)
+                        Text("Half").tag(2)
+                        Text("Whole").tag(1)
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 120)
+                }
+            }
+            .padding(.top, 10)
+            
+            // Additional metronome controls could go here
+            HStack(spacing: 20) {
+                Button(action: {
+                    // Decrease tempo by 5
+                    metronome.updateTempo(to: max(metronome.tempo - 5, metronome.minTempo))
+                }) {
+                    Image(systemName: "minus.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundColor(Color("AccentBlue"))
+                }
+                
+                Button(action: {
+                    metronome.togglePlayback()
+                }) {
+                    Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 50))
+                        .foregroundColor(Color("AccentBlue"))
+                }
+                
+                Button(action: {
+                    // Increase tempo by 5
+                    metronome.updateTempo(to: min(metronome.tempo + 5, metronome.maxTempo))
+                }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundColor(Color("AccentBlue"))
+                }
+            }
+            .padding(.top, 10)
+        }
+        .padding()
+        .background(Color.background)
+    }
+}
+
+
+
 #Preview {
-    // Create a sample MetronomeEngine for the preview
-    let sampleMetronome = MetronomeEngine()
-    return DialControl(metronome: sampleMetronome)
+    CombinedMetronomeView()
 }
