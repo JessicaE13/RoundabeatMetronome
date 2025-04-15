@@ -110,7 +110,7 @@ struct SegmentedCircleView: View {
                 
                 // Create the divider "tick" at each segment boundary
                 Rectangle()
-                    .fill(Color.red) // Red divider
+                    .fill(Color("Background")) // Red divider
                     .frame(width: gapWidthPoints, height: lineWidth+1)
                     .rotationEffect(Angle(degrees: angle + 90)) // Add 90 to align rectangle properly
                     .position(x: x, y: y)
@@ -187,7 +187,7 @@ struct DialControl: View {
                         endRadius: dialSize/2
                     )
                 )
-                .frame(width: dialSize, height: dialSize)
+                .frame(width: dialSize*0.8, height: dialSize*0.8)
             
             // Segmented ring showing beats in the time signature
             SegmentedCircleView(
