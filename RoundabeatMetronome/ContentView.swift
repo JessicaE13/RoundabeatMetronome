@@ -280,14 +280,16 @@ struct BPMDisplayView: View {
         HStack(spacing: 30) {
             // BPM Display with gestures
             VStack(spacing: 5) {
-                Text("bpm")
-                    .font(.footnote)
+                Text("B P M")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
                     .foregroundColor(.gray)
                 
                 Text("\(Int(metronome.tempo))")
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
                     .contentTransition(.numericText())
-                    .fontWeight(.light)
+                    .fontWeight(.regular)
+                    .foregroundColor(Color.white)
                     .animation(.spring(response: 0.3), value: Int(metronome.tempo))
                     .frame(minWidth: 90)
                     // Make the BPM text tappable to show keypad
@@ -331,8 +333,9 @@ struct BPMDisplayView: View {
             
             // Time Signature Button
             VStack(spacing: 5) {
-                Text("time")
-                    .font(.footnote)
+                Text("T I M E")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
                     .foregroundColor(.gray)
                     .lineLimit(nil)
                 
@@ -340,9 +343,10 @@ struct BPMDisplayView: View {
                     showTimeSignaturePicker = true
                 }) {
                     Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
                         .animation(.spring(), value: metronome.beatsPerMeasure)
-                        .fontWeight(.light)
+                        .fontWeight(.regular)
+                        .foregroundColor(Color.white)
                         .animation(.spring(), value: metronome.beatUnit)
                         .frame(minWidth: 90)
                 }
@@ -400,7 +404,7 @@ struct ContentView: View {
                 // Title
                 Text("r o u n d a b e a t")
                     .font(.body)
-                    .fontWeight(.light)
+                    .fontWeight(.semibold)
                     .padding(50)
                     .foregroundStyle(.gray)
                 
