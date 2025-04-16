@@ -33,7 +33,7 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.2)]),
+                        gradient: Gradient(colors: [Color.black.opacity(1.0), Color.black.opacity(0.95)]),
                         startPoint: .top,
                         endPoint: .bottom
                     ),
@@ -54,7 +54,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color.accentBlue.opacity(0.4) : Color.accentBlue.opacity(0.4),
+                    isFirstBeat ? Color.colorGlow.opacity(0.4) : Color.colorGlow.opacity(0.4),
                     style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
                 )
                 .blur(radius: 4)
@@ -69,7 +69,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color.accentBlue : Color.accentBlue,
+                    isFirstBeat ? Color.colorGlow : Color.colorGlow,
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
                 )
             }
@@ -186,24 +186,78 @@ struct DialControl: View {
     private let maxRotation: Double = 150 // Degrees
     private let ringLineWidth: CGFloat = 5
     
+    
+  
+    
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
         self._dialRotation = State(initialValue: tempoToRotation(metronome.tempo))
     }
     
     var body: some View {
+        
+
+        
+        
+
+        
+        
+        
         ZStack {
-            // Outer dial background with gradient for better visuals
+             //Outer dial background with gradient for better visuals - this is the old one
             Circle()
                 .fill(
                     RadialGradient(
-                        gradient: Gradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.5)]),
+                        gradient: Gradient(colors: [Color.white.opacity(0.3), Color.white.opacity(0.4)]),
                         center: .center,
                         startRadius: 0,
                         endRadius: dialSize/2
                     )
                 )
                 .frame(width: dialSize*0.82, height: dialSize*0.82)
+                .overlay(
+                    ZStack {
+                        // Add 60 tick marks (one for each minute/second)
+                        ForEach(0..<60) { index in
+                            Rectangle()
+                                .fill(index % 5 == 0 ? Color.black.opacity(0.3) : Color.black.opacity(0.2))
+                                .frame(width: index % 5 == 0 ? 2 : 1, height: index % 5 == 0 ? 10 : 5)
+                                .offset(y: (dialSize * 0.82 / 2 - 15) * -1)
+                                .rotationEffect(.degrees(Double(index) * 6))
+                        }
+                    }
+                    
+                        .rotationEffect(Angle(degrees: dialRotation)) // This makes the tick marks rotate with the dial
+                )
+            //donut shaped thing
+            
+//            ZStack {
+//                //dial colors
+//                let nearblack = Color(white: 0.02)
+//                let outerDialGradient = LinearGradient(
+//                    colors: [Color(white: 0.40), Color(white: 0.30)],
+//                    startPoint: .topLeading,
+//                    endPoint: .bottomTrailing
+//                )
+//                let outerDialCircle = Circle().fill(outerDialGradient)
+//                outerDialCircle
+//                
+//                ZStack {
+//                    Group{
+//                        outerDialCircle
+//                        outerDialCircle
+//                            .rotationEffect(.degrees(180))
+//                            .frame(width: 180)
+//                    }
+//                    .blur(radius: 16)
+//                }
+//                .frame(width: dialSize*0.82, height: dialSize*0.82)
+//                
+//                Circle()
+//                    .fill(outerDialGradient)
+//                    .frame(width: 50)
+//            }
+// 
             
             // Segmented ring showing beats in the time signature
             SegmentedCircleView(
@@ -218,13 +272,17 @@ struct DialControl: View {
                 Circle()
                     .fill(Color.background)
                     .frame(width: knobSize, height: knobSize)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.black.opacity(0.5), lineWidth: 0.5)
+                    )
                     .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                 
                 // Play/pause icon with constant glow effect
                 Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 30))
-                    .foregroundColor(Color("AccentBlue"))
-                    .shadow(color: Color("AccentBlue").opacity(0.7), radius: 3, x: 0, y: 0)
+                    .foregroundColor(Color("colorGlow"))
+                    .shadow(color: Color("colorGlow").opacity(0.7), radius: 3, x: 0, y: 0)
             }
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .medium)
@@ -381,7 +439,7 @@ struct CombinedMetronomeView: View {
                 }) {
                     Image(systemName: "minus.circle.fill")
                         .font(.system(size: 30))
-                        .foregroundColor(Color("AccentBlue"))
+                        .foregroundColor(Color("colorGlow"))
                 }
                 
                 Button(action: {
@@ -389,7 +447,7 @@ struct CombinedMetronomeView: View {
                 }) {
                     Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                         .font(.system(size: 50))
-                        .foregroundColor(Color("AccentBlue"))
+                        .foregroundColor(Color("colorGlow"))
                 }
                 
                 Button(action: {
@@ -398,7 +456,7 @@ struct CombinedMetronomeView: View {
                 }) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 30))
-                        .foregroundColor(Color("AccentBlue"))
+                        .foregroundColor(Color("colorGlow"))
                 }
             }
             .padding(.top, 10)

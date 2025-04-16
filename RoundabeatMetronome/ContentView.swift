@@ -272,97 +272,96 @@ class MetronomeEngine: ObservableObject {
 struct BPMDisplayView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Binding var isShowingKeypad: Bool
+    @Binding var showTimeSignaturePicker: Bool
     @State private var dragOffset: CGFloat = 0
     @State private var previousTempo: Double = 120
     
     var body: some View {
-        VStack(spacing: 5) {
+        HStack(spacing: 30) {
+            // BPM Display with gestures
+            VStack(spacing: 5) {
+                Text("bpm")
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                
+                Text("\(Int(metronome.tempo))")
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .contentTransition(.numericText())
+                    .fontWeight(.light)
+                    .animation(.spring(response: 0.3), value: Int(metronome.tempo))
+                    .frame(minWidth: 90)
+                    // Make the BPM text tappable to show keypad
+                    .onTapGesture {
+                        // Add haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
+                        isShowingKeypad = true
+                    }
+                    // Add vertical swipe gesture
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                dragOffset = value.translation.height
+                                
+                                // Calculate tempo change based on drag distance
+                                // Negative offset (swipe up) increases tempo
+                                let tempoChange = -dragOffset * 0.2
+                                let newTempo = previousTempo + tempoChange
+                                
+                                // Update tempo with clamping
+                                metronome.updateTempo(to: newTempo)
+                            }
+                            .onEnded { _ in
+                                // Reset drag offset
+                                dragOffset = 0
+                                // Store the current tempo for next drag
+                                previousTempo = metronome.tempo
+                                
+                                // Add haptic feedback
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
+                            }
+                    )
+            }
             
-            Text("BPM")
-                .font(.headline)
-                .foregroundColor(.gray)
+            // Divider for visual separation
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .frame(width: 1, height: 70)
             
-            Text("\(Int(metronome.tempo))")
-                .font(.system(size: 50, weight: .bold, design: .default))
-                .contentTransition(.numericText())
-                .animation(.spring(response: 0.3), value: Int(metronome.tempo))
-            
-                // Make the BPM text tappable to show keypad
-                .onTapGesture {
-                    // Add haptic feedback
-                    let generator = UIImpactFeedbackGenerator(style: .light)
-                    generator.impactOccurred()
-                    isShowingKeypad = true
+            // Time Signature Button
+            VStack(spacing: 5) {
+                Text("time")
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .lineLimit(nil)
+                
+                Button(action: {
+                    showTimeSignaturePicker = true
+                }) {
+                    Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .animation(.spring(), value: metronome.beatsPerMeasure)
+                        .fontWeight(.light)
+                        .animation(.spring(), value: metronome.beatUnit)
+                        .frame(minWidth: 90)
                 }
-            
-                // Add vertical swipe gesture
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            dragOffset = value.translation.height
-                            
-                            // Calculate tempo change based on drag distance
-                            // Negative offset (swipe up) increases tempo
-                            let tempoChange = -dragOffset * 0.2
-                            let newTempo = previousTempo + tempoChange
-                            
-                            // Update tempo with clamping
-                            metronome.updateTempo(to: newTempo)
-                        }
-                        .onEnded { _ in
-                            // Reset drag offset
-                            dragOffset = 0
-                            // Store the current tempo for next drag
-                            previousTempo = metronome.tempo
-                            
-                            // Add haptic feedback
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
-                        }
-                )
-
+                .buttonStyle(PlainButtonStyle())
+            }
         }
+        .padding(20) // Increased padding inside the rounded rectangle
+        .frame(width: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color("BPM"))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color(.black), lineWidth: 2)
+        )
+        .padding(.top, -100)
     }
 }
-
-// MARK: - App Delegate
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        setupAudioSession()
-        return true
-    }
-    
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        // Reinitialize audio session when app becomes active
-        setupAudioSession()
-    }
-    
-    private func setupAudioSession() {
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            
-            // Use .playback category for best audio performance
-            try audioSession.setCategory(.playback, mode: .default)
-            
-            // Request a specific buffer duration for lower latency
-            try audioSession.setPreferredIOBufferDuration(0.005) // 5ms buffer
-            
-            // Set sample rate to standard high quality audio
-            try audioSession.setPreferredSampleRate(44100)
-            
-            // Activate the session
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-            
-            print("✅ Audio session configured successfully")
-            print("  - Buffer duration: \(audioSession.ioBufferDuration) seconds")
-            print("  - Sample rate: \(audioSession.sampleRate) Hz")
-        } catch {
-            print("❌ Failed to set up audio session: \(error)")
-        }
-    }
-}
-
-
 
 // MARK: - Content View
 
@@ -386,52 +385,14 @@ struct ContentView: View {
             // Main metronome interface
             VStack(spacing: 25) {
                 
-            
-            
                 
                 
-                HStack {
-                    
-                    // BPM Display with gestures
-                    BPMDisplayView(
-                        metronome: metronome,
-                        isShowingKeypad: $showBPMKeypad
-                    )
-                    
-                    // Time Signature Button
-                    Button(action: {
-                        showTimeSignaturePicker = true
-                    }) {
-                        HStack {
-                            Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .frame(width: 80)
-                                .animation(.spring(), value: metronome.beatsPerMeasure)
-                                .animation(.spring(), value: metronome.beatUnit)
-                            
-                            Image(systemName: "chevron.down")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .cornerRadius(8)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                }
-                .padding(16) // Add padding inside the rounded rectangle
-                .frame(width: 320)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color("BPM")) // Choose your desired background color
+                
+                BPMDisplayView(
+                    metronome: metronome,
+                    isShowingKeypad: $showBPMKeypad,
+                    showTimeSignaturePicker: $showTimeSignaturePicker
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color(.black), lineWidth: 2) // Optional: adds a border
-                )
-                .padding(.top,-100)
                 
                 
                 
@@ -442,10 +403,6 @@ struct ContentView: View {
                     .fontWeight(.light)
                     .padding(50)
                     .foregroundStyle(.gray)
-                
-                
-                
-                
                 
                 
                 // Visual Beat Indicator with high-performance animation
@@ -486,12 +443,48 @@ struct ContentView: View {
                 //                .buttonStyle(PlainButtonStyle())
                 
                 
-                
+                HStack (spacing: 0) {
+                    
+                    // Left chevron (decrease BPM)
+                            Button(action: {
+                                // Decrease tempo by 1
+                                metronome.updateTempo(to: metronome.tempo - 1)
+                                // Add haptic feedback
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
+                                // Update previous tempo
+                                previousTempo = metronome.tempo
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 22, weight: .medium))
+                                    .foregroundColor(Color.white.opacity(0.4))
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Circle())
+                            }
                 // New Dial Control with Play/Pause Button
                 DialControl(metronome: metronome)
-                    .padding(.top, -10)
-                    .padding(.bottom, -30)
+ 
                 
+                // Right chevron (increase BPM)
+                Button(action: {
+                    // Increase tempo by 1
+                    metronome.updateTempo(to: metronome.tempo + 1)
+                    // Add haptic feedback
+                    let generator = UIImpactFeedbackGenerator(style: .light)
+                    generator.impactOccurred()
+                    // Update previous tempo
+                    previousTempo = metronome.tempo
+                }) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 22, weight: .medium))
+                        .foregroundColor(Color.white.opacity(0.4))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Circle())
+                }
+            }
+               
+               .padding(.top, -10)
+               .padding(.bottom, -30)
                 
             }
             .padding()

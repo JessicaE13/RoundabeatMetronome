@@ -15,7 +15,6 @@ struct TimeSignaturePickerView: View {
     // For custom time signature input
     @State private var customNumerator = 4
     @State private var customDenominator = 4
-    @State private var isShowingCustom = false
     
     var body: some View {
         ScrollView {
@@ -25,7 +24,7 @@ struct TimeSignaturePickerView: View {
                     Spacer()
                     Text("Time Signature:   \(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
                         .font(.title3)
-                        .fontWeight(.bold)
+                        .fontWeight(.light)
                         .multilineTextAlignment(.leading)
                         
                     Spacer()
@@ -41,249 +40,99 @@ struct TimeSignaturePickerView: View {
                     .padding(-5.0)
      
                 
-                // Simple Time section
-                
-                VStack(alignment: .leading, spacing: 15) {
-                    
-                    // Section header
-                    HStack {
-                        Text("Simple Time")
-                            .font(.headline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.blue.opacity(0.2))
-                            .cornerRadius(8)
-                        
-                        Text("Each beat divides into 2 equal parts")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                    
-                    HStack(spacing: 15) {
-                        // Duple row
-                        Text("Duple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-                        timeSignatureButton(numerator: 2, denominator: 2)
-                        timeSignatureButton(numerator: 2, denominator: 4)
+                // Simple Time section - Center-aligned
+                VStack(alignment: .center, spacing: 15) {
+                    HStack (alignment: .center, spacing: 15) {
                         Spacer()
-                    }
-                    
-                    HStack(spacing: 15) {
-                        // Triple row
-                        Text("Triple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-                        
-                        timeSignatureButton(numerator: 3, denominator: 2)
                         timeSignatureButton(numerator: 3, denominator: 4)
-                        timeSignatureButton(numerator: 3, denominator: 8)
-                        Spacer()
-                    }
-                                      
-                    HStack(spacing: 15) {
-                        // Quadruple row
-                        Text("Quadruple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-                        timeSignatureButton(numerator: 4, denominator: 2)
                         timeSignatureButton(numerator: 4, denominator: 4)
-                        timeSignatureButton(numerator: 4, denominator: 8)
-                        Spacer()
-                    }
-                }
-                .padding(.bottom, 10)
-                
-                // Compound Time section
-                VStack(alignment: .leading, spacing: 15) {
-                    // Section header
-                    
-                    HStack {
-                        Text("Compound Time")
-                            .font(.headline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.green.opacity(0.2))
-                            .cornerRadius(8)
-                        
-                        Text("Each beat divides into 3 equal parts")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                    
-
-                    
-                    HStack(spacing: 15) {
-                        // Duple row
-                        Text("Duple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-                        timeSignatureButton(numerator: 6, denominator: 4)
-                        timeSignatureButton(numerator: 6, denominator: 8)
-                        timeSignatureButton(numerator: 6, denominator: 16)
-                        Spacer()
-                    }
-
-                    
-                    HStack(spacing: 15) {
-                        
-                        // Triple row
-                        Text("Triple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-                        timeSignatureButton(numerator: 9, denominator: 4)
-                        timeSignatureButton(numerator: 9, denominator: 8)
-                        timeSignatureButton(numerator: 9, denominator: 16)
-                        Spacer()
-                    }
-                    
-
-                    
-                    HStack(spacing: 15) {
-                        // Quadruple row
-                        Text("Quadruple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-                        timeSignatureButton(numerator: 12, denominator: 4)
-                        timeSignatureButton(numerator: 12, denominator: 8)
-                        timeSignatureButton(numerator: 12, denominator: 16)
-                        Spacer()
-                    }
-                }
-                .padding(.bottom, 10)
-                
-                // Irregular Time section
-                VStack(alignment: .leading, spacing: 15) {
-                    
-                    HStack {
-                        // Section header
-                        Text("Irregular Time")
-                            .font(.headline)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange.opacity(0.2))
-                            .cornerRadius(8)
-                        
-                        Text("Uneven groupings of beats")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                    
-   
-                    
-                    HStack(spacing: 15) {
-                        // Quintuple row
-                        Text("Quintuple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-            
                         timeSignatureButton(numerator: 5, denominator: 4)
-                        timeSignatureButton(numerator: 5, denominator: 8)
                         Spacer()
                     }
                     
-
-                    
-                    HStack(spacing: 15) {
-                        // Septuple row
-                        Text("Septuple")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 5)
-                        timeSignatureButton(numerator: 7, denominator: 4)
+                    HStack(alignment: .center, spacing: 15) {
+                        Spacer()
+                        timeSignatureButton(numerator: 6, denominator: 8)
                         timeSignatureButton(numerator: 7, denominator: 8)
+                        timeSignatureButton(numerator: 12, denominator: 8)
                         Spacer()
                     }
                 }
+                .padding(.bottom, 10)
+                
+        
+
                 
                 Divider()
                     .padding(.vertical, 10)
                 
-                // Custom time signature
+                // Custom time signature - Always visible now
                 HStack {
                     Spacer()
-                    Button(action: {
-                        isShowingCustom.toggle()
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                            Text("Custom Time Signature")
+                    Text("Custom Time Signature")
+                        .font(.headline)
+                        .foregroundColor(.colorPurpleBackground)
+                    Spacer()
+                }
+                
+                HStack {
+                    Spacer()
+                    HStack(spacing: 20) {
+                        // Numerator picker
+                        VStack {
+                            Text("Beats")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            
+                            Picker("Numerator", selection: $customNumerator) {
+                                ForEach(1...32, id: \.self) { num in
+                                    Text("\(num)").tag(num)
+                                }
+                            }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(width: 80, height: 100)
+                            .clipped()
                         }
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 15)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
+                        
+                        Text("/")
+                            .font(.title)
+                            .fontWeight(.light)
+                        
+                        // Denominator picker
+                        VStack {
+                            Text("Note Value")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            
+                            Picker("Denominator", selection: $customDenominator) {
+                                ForEach([1, 2, 4, 8, 16, 32], id: \.self) { denom in
+                                    Text("\(denom)").tag(denom)
+                                }
+                            }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(width: 80, height: 100)
+                            .clipped()
+                        }
                     }
                     Spacer()
                 }
                 
-                if isShowingCustom {
-                    HStack {
-                        Spacer()
-                        HStack(spacing: 20) {
-                            // Numerator picker
-                            VStack {
-                                Text("Beats")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                
-                                Picker("Numerator", selection: $customNumerator) {
-                                    ForEach(1...32, id: \.self) { num in
-                                        Text("\(num)").tag(num)
-                                    }
-                                }
-                                .pickerStyle(WheelPickerStyle())
-                                .frame(width: 80, height: 100)
-                                .clipped()
-                            }
-                            
-                            Text("/")
-                                .font(.title)
-                                .fontWeight(.bold)
-                            
-                            // Denominator picker
-                            VStack {
-                                Text("Note Value")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                
-                                Picker("Denominator", selection: $customDenominator) {
-                                    ForEach([1, 2, 4, 8, 16, 32], id: \.self) { denom in
-                                        Text("\(denom)").tag(denom)
-                                    }
-                                }
-                                .pickerStyle(WheelPickerStyle())
-                                .frame(width: 80, height: 100)
-                                .clipped()
-                            }
-                        }
-                        Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        metronome.updateTimeSignature(numerator: customNumerator, denominator: customDenominator)
+                        isShowingPicker = false
+                    }) {
+                        Text("Apply Custom")
+                            .fontWeight(.light)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 20)
+                            .background(Color.colorPurpleBackground)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                     }
-                    
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            metronome.updateTimeSignature(numerator: customNumerator, denominator: customDenominator)
-                            isShowingPicker = false
-                        }) {
-                            Text("Apply Custom")
-                                .fontWeight(.medium)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 20)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                        .padding(.top, 10)
-                        Spacer()
-                    }
+                    .padding(.top, 10)
+                    Spacer()
                 }
             }
             .padding(.horizontal, 20)
@@ -303,14 +152,14 @@ struct TimeSignaturePickerView: View {
         }) {
             VStack(spacing: 3) {
                 Text("\(numerator)/\(denominator)")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 16, weight: .light))
             }
             .frame(width: 75, height: 40)
             .background(
                 RoundedRectangle(cornerRadius: 10)
                     .fill(
                         numerator == metronome.beatsPerMeasure &&
-                        denominator == metronome.beatUnit ? Color.blue : Color.gray.opacity(0.1)
+                        denominator == metronome.beatUnit ? Color.colorPurpleBackground : Color.gray.opacity(0.1)
                     )
             )
             .foregroundColor(

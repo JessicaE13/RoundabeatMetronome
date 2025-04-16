@@ -29,6 +29,8 @@ struct NumberPadView: View {
                 Spacer()
                 Text("Enter BPM")
                     .font(.headline)
+                    .fontWeight(.light)
+                
                 Spacer()
                 Button(action: {
                     isShowingKeypad = false
@@ -41,7 +43,7 @@ struct NumberPadView: View {
             .padding(.bottom, 10)
             
             TextField("", text: $inputValue)
-                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .font(.system(size: 40, weight: .light, design: .rounded))
                 .multilineTextAlignment(.center)
                 .keyboardType(.numberPad)
                 .padding()
@@ -75,7 +77,8 @@ struct NumberPadView: View {
                         isFirstInput = true
                     }) {
                         Text("Clear")
-                            .font(.system(size: 22, weight: .medium))
+                            .font(.system(size: 22, weight: .light))
+                            .fontWeight(.light)
                             .foregroundColor(.white)
                             .frame(width: 80, height: 60)
                             .background(Color.gray)
@@ -94,7 +97,7 @@ struct NumberPadView: View {
                         }
                     }) {
                         Image(systemName: "delete.left")
-                            .font(.system(size: 22, weight: .medium))
+                            .font(.system(size: 22, weight: .light))
                             .foregroundColor(.white)
                             .frame(width: 80, height: 60)
                             .background(Color.gray)
@@ -107,11 +110,11 @@ struct NumberPadView: View {
                 submitValue()
             }) {
                 Text("Set Tempo")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 22, weight: .light))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue)
+                    .background(Color.colorPurpleBackground)
                     .cornerRadius(10)
             }
             .padding(.top, 10)
@@ -141,10 +144,10 @@ struct NumberPadView: View {
             generator.impactOccurred()
         }) {
             Text(number)
-                .font(.system(size: 28, weight: .medium))
+                .font(.system(size: 28, weight: .light))
                 .foregroundColor(.white)
                 .frame(width: 80, height: 60)
-                .background(Color.blue)
+                .background(Color.colorPurpleBackground)
                 .cornerRadius(10)
         }
     }
