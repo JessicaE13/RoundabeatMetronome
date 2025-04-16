@@ -43,6 +43,22 @@ struct ArcSegment: View {
             
             // When active, show colored version
             if isActive {
+                
+                Path { path in
+                    path.addArc(
+                        center: center,
+                        radius: radius,
+                        startAngle: Angle(degrees: startAngle),
+                        endAngle: Angle(degrees: endAngle),
+                        clockwise: false
+                    )
+                }
+                .stroke(
+                    isFirstBeat ? Color.accentBlue.opacity(0.4) : Color.accentBlue.opacity(0.4),
+                    style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
+                )
+                .blur(radius: 4)
+                
                 Path { path in
                     path.addArc(
                         center: center,
@@ -111,7 +127,7 @@ struct SegmentedCircleView: View {
                 // Create the divider "tick" at each segment boundary
                 Rectangle()
                     .fill(Color("Background")) // Red divider
-                    .frame(width: gapWidthPoints, height: lineWidth+1)
+                    .frame(width: gapWidthPoints, height: lineWidth)
                     .rotationEffect(Angle(degrees: angle + 90)) // Add 90 to align rectangle properly
                     .position(x: x, y: y)
             }
@@ -165,10 +181,10 @@ struct DialControl: View {
     
     // Constants
     private let dialSize: CGFloat = 275
-    private let knobSize: CGFloat = 275/2.5
+    private let knobSize: CGFloat = 275/3
     private let minRotation: Double = -150 // Degrees
     private let maxRotation: Double = 150 // Degrees
-    private let ringLineWidth: CGFloat = 7
+    private let ringLineWidth: CGFloat = 5
     
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
@@ -181,13 +197,13 @@ struct DialControl: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        gradient: Gradient(colors: [Color.gray.opacity(0.2), Color.gray.opacity(0.3)]),
+                        gradient: Gradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.5)]),
                         center: .center,
                         startRadius: 0,
                         endRadius: dialSize/2
                     )
                 )
-                .frame(width: dialSize*0.8, height: dialSize*0.8)
+                .frame(width: dialSize*0.82, height: dialSize*0.82)
             
             // Segmented ring showing beats in the time signature
             SegmentedCircleView(
@@ -198,14 +214,17 @@ struct DialControl: View {
             
             // Center knob with play/pause button
             ZStack {
+                // Main button background
                 Circle()
-                    .fill(metronome.isPlaying ? Color.background : Color.background)
+                    .fill(Color.background)
                     .frame(width: knobSize, height: knobSize)
                     .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                 
+                // Play/pause icon with constant glow effect
                 Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 30))
                     .foregroundColor(Color("AccentBlue"))
+                    .shadow(color: Color("AccentBlue").opacity(0.7), radius: 3, x: 0, y: 0)
             }
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .medium)
@@ -213,16 +232,17 @@ struct DialControl: View {
                 metronome.togglePlayback()
             }
             
+            
             // Debug visual - shows when drag is detected (remove in production)
-            if isDragging {
-                Text("Dragging: \(Int(metronome.tempo)) BPM")
-                    .foregroundColor(.white)
-                    .padding(8)
-                    .background(Color.blue.opacity(0.7))
-                    .cornerRadius(8)
-                    .position(x: dialSize/2, y: dialSize - 30)
-                    .transition(.opacity)
-            }
+//            if isDragging {
+//                Text("Dragging: \(Int(metronome.tempo)) BPM")
+//                    .foregroundColor(.white)
+//                    .padding(8)
+//                    .background(Color.blue.opacity(0.7))
+//                    .cornerRadius(8)
+//                    .position(x: dialSize/2, y: dialSize - 30)
+//                    .transition(.opacity)
+//            }
         }
         .frame(width: dialSize, height: dialSize)
         // Use the entire dial as a drag target with a simple gesture recognizer

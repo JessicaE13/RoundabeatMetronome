@@ -362,6 +362,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 }
 
+
+
 // MARK: - Content View
 
 struct ContentView: View {
@@ -384,13 +386,8 @@ struct ContentView: View {
             // Main metronome interface
             VStack(spacing: 25) {
                 
-                // Title
-                Text("r o u n d a b e a t")
-                    .font(.body)
-                    .fontWeight(.light)
-                    .padding(.top, 5)
-                    .foregroundStyle(.gray)
-                
+            
+            
                 
                 
                 HStack {
@@ -434,6 +431,21 @@ struct ContentView: View {
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(Color(.black), lineWidth: 2) // Optional: adds a border
                 )
+                .padding(.top,-100)
+                
+                
+                
+                
+                // Title
+                Text("r o u n d a b e a t")
+                    .font(.body)
+                    .fontWeight(.light)
+                    .padding(50)
+                    .foregroundStyle(.gray)
+                
+                
+                
+                
                 
                 
                 // Visual Beat Indicator with high-performance animation
