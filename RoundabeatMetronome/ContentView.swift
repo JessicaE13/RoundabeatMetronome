@@ -356,10 +356,10 @@ struct BPMDisplayView: View {
             }
         }
         .padding(20) // Increased padding inside the rounded rectangle
-        .frame(width: 320)
+        .frame(width: 280, height: 95)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color("BPM"))
+                .fill(Color("colorDial"))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)

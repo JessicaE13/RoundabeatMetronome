@@ -5,6 +5,8 @@
 //  Created on 4/15/25.
 //
 
+
+
 import SwiftUI
 
 // MARK: - Beat Segment Arc View
@@ -124,16 +126,34 @@ struct SegmentedCircleView: View {
                 let x = diameter/2 + cos(angle * .pi / 180) * radius
                 let y = diameter/2 + sin(angle * .pi / 180) * radius
                 
+                // Check if this divider is adjacent to the active beat
+                let isAdjacentToActiveBeat = isAdjacentToBeat(index: beatIndex, activeBeat: metronome.currentBeat)
+                let shouldBeTransparent = isAdjacentToActiveBeat && metronome.isPlaying
+                
                 // Create the divider "tick" at each segment boundary
                 Rectangle()
-                    .fill(Color("Background"))
+                    .fill(shouldBeTransparent ? Color.clear : Color("Background"))
                     .frame(width: gapWidthPoints, height: lineWidth)
                     .rotationEffect(Angle(degrees: angle + 90)) // Add 90 to align rectangle properly
                     .position(x: x, y: y)
+                    .animation(.easeInOut(duration: 0.1), value: shouldBeTransparent)
             }
             
         }
         .frame(width: diameter, height: diameter)
+    }
+    
+    // Check if a divider is adjacent to the active beat
+    private func isAdjacentToBeat(index: Int, activeBeat: Int) -> Bool {
+        // In a circular arrangement, need to handle wrapping around
+        let totalBeats = metronome.beatsPerMeasure
+        
+        // The divider at index is before beat index and after beat (index-1)
+        let beatAfterDivider = index
+        let beatBeforeDivider = (index - 1 + totalBeats) % totalBeats
+        
+        // Return true if either adjacent beat is the active one
+        return beatAfterDivider == activeBeat || beatBeforeDivider == activeBeat
     }
     
     // Calculate angle for placing square dividers
