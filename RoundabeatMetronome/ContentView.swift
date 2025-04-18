@@ -371,8 +371,73 @@ struct BPMDisplayView: View {
 
 // MARK: - Content View
 
-struct ContentView: View {
+import SwiftUI
+
+// MARK: - Settings View
+struct SettingsView: View {
+    var body: some View {
+        NavigationView {
+            List {
+                Section(header: Text("Sound Options")) {
+                    Toggle("Enable Sound", isOn: .constant(true))
+                    
+                    NavigationLink(destination: Text("Sound Selection")) {
+                        HStack {
+                            Text("Click Sound")
+                            Spacer()
+                            Text("Woodblock")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+                
+                Section(header: Text("Visual Options")) {
+                    Toggle("Flash Screen on First Beat", isOn: .constant(true))
+                    Toggle("Dark Mode", isOn: .constant(true))
+                }
+                
+                Section(header: Text("About")) {
+                    NavigationLink(destination: Text("RoundaBeat Metronome\nVersion 1.0")) {
+                        Text("App Information")
+                    }
+                }
+            }
+            .navigationTitle("Settings")
+        }
+    }
+}
+
+// MARK: - Main Tab View
+struct MainTabView: View {
     @StateObject private var metronome = MetronomeEngine()
+    @State private var selectedTab = 0
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            // Metronome Tab
+            ContentView(metronome: metronome)
+                .tabItem {
+                    Image(systemName: "metronome")
+                    Text("Metronome")
+                }
+                .tag(0)
+            
+            // Settings Tab
+            SettingsView()
+                .tabItem {
+                    Image(systemName: "gearshape")
+                    Text("Settings")
+                }
+                .tag(1)
+        }
+        .accentColor(Color("colorGlow"))
+    }
+}
+
+// MARK: - Content View
+struct ContentView: View {
+    // Use an ObservedObject instead of a StateObject to share it between tabs
+    @ObservedObject var metronome: MetronomeEngine
     @State private var isEditingTempo = false
     @State private var showTimeSignaturePicker = false
     @State private var showBPMKeypad = false
@@ -380,13 +445,18 @@ struct ContentView: View {
     // State for tap tempo feature
     @State private var lastTapTime: Date?
     @State private var tapTempoBuffer: [TimeInterval] = []
+    @State private var previousTempo: Double = 120
+    
+    init(metronome: MetronomeEngine) {
+        self.metronome = metronome
+        self._previousTempo = State(initialValue: metronome.tempo)
+    }
     
     var body: some View {
         ZStack {
-            
             //Background color
             ZStack {
-             //    Base color
+                // Base color
                 Color("Background")
                     .ignoresSafeArea()
                 
@@ -409,118 +479,65 @@ struct ContentView: View {
             
             // Main metronome interface
             VStack(spacing: 25) {
-                
-                
-                
-                
                 BPMDisplayView(
                     metronome: metronome,
                     isShowingKeypad: $showBPMKeypad,
                     showTimeSignaturePicker: $showTimeSignaturePicker
                 )
                 
-                
-                
-                
                 // Title
                 Text("r o u n d a b e a t")
-                
                     .font(.body)
                     .fontWeight(.bold)
                     .padding(50)
                     .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 1, x: 1, y: 1) // Dark shadow for depth
-                    .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1) // Light highlight for emboss effect
-          
+                    .shadow(color: .black.opacity(0.2), radius: 1, x: 1, y: 1)
+                    .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1)
                 
-                
-                // Visual Beat Indicator with high-performance animation
-                //                HStack(spacing: 15) {
-                //                    ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beat in
-                //                        // Use ZStack for better animation performance
-                //                        ZStack {
-                //                            // Background circle
-                //                            Circle()
-                //                                .frame(width: 20, height: 20)
-                //                                .foregroundColor(beat == metronome.currentBeat && metronome.isPlaying ?
-                //                                               (beat == 0 ? .blue : .red) : .gray.opacity(0.5))
-                //
-                //                            // Animated pulse for the active beat
-                //                            if beat == metronome.currentBeat && metronome.isPlaying {
-                //                                Circle()
-                //                                    .frame(width: 20, height: 20)
-                //                                    .foregroundColor(beat == 0 ? .blue : .red)
-                //                                    .scaleEffect(1.5)
-                //                                    .opacity(0)
-                //                                    .animation(.easeOut(duration: 0.2).repeatCount(1), value: metronome.currentBeat)
-                //                            }
-                //                        }
-                //                    }
-                //                }
-                //
-                // Tap Tempo Button
-                //                Button(action: {
-                //                    calculateTapTempo()
-                //                }) {
-                //                    Text("Tap Tempo")
-                //                        .font(.headline)
-                //                        .padding(.vertical, 8)
-                //                        .padding(.horizontal, 16)
-                //                        .background(Color.blue.opacity(0.1))
-                //                        .cornerRadius(8)
-                //                }
-                //                .buttonStyle(PlainButtonStyle())
-                
-                
-                HStack (spacing: 15) {
-                    
+                HStack(spacing: 15) {
                     // Left chevron (decrease BPM)
-                            Button(action: {
-                                // Decrease tempo by 1
-                                metronome.updateTempo(to: metronome.tempo - 1)
-                                // Add haptic feedback
-                                let generator = UIImpactFeedbackGenerator(style: .light)
-                                generator.impactOccurred()
-                                // Update previous tempo
-                                previousTempo = metronome.tempo
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 22, weight: .medium))
-                                    .foregroundColor(Color.white)
-                                    .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1) // Dark shadow for depth
-                                    .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1) // Light highlight for emboss effect
-                                    .frame(width: 44, height: 44)
-                                    .contentShape(Circle())
-                            }
+                    Button(action: {
+                        // Decrease tempo by 1
+                        metronome.updateTempo(to: metronome.tempo - 1)
+                        // Add haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
+                        // Update previous tempo
+                        previousTempo = metronome.tempo
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 22, weight: .medium))
+                            .foregroundColor(Color.white)
+                            .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1)
+                            .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Circle())
+                    }
                     
+                    // Main Dial Control with Play/Pause Button
+                    DialControl(metronome: metronome)
                     
-                // New Dial Control with Play/Pause Button
-                DialControl(metronome: metronome)
- 
-                
-                // Right chevron (increase BPM)
-                Button(action: {
-                    // Increase tempo by 1
-                    metronome.updateTempo(to: metronome.tempo + 1)
-                    // Add haptic feedback
-                    let generator = UIImpactFeedbackGenerator(style: .light)
-                    generator.impactOccurred()
-                    // Update previous tempo
-                    previousTempo = metronome.tempo
-                }) {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 22, weight: .medium))
-                        .foregroundColor(Color.white)
-                        .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1) // Dark shadow for depth
-                        .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1) // Light highlight for emboss effect
-                        .frame(width: 44, height: 44)
-                        .contentShape(Circle())
+                    // Right chevron (increase BPM)
+                    Button(action: {
+                        // Increase tempo by 1
+                        metronome.updateTempo(to: metronome.tempo + 1)
+                        // Add haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
+                        // Update previous tempo
+                        previousTempo = metronome.tempo
+                    }) {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 22, weight: .medium))
+                            .foregroundColor(Color.white)
+                            .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1)
+                            .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Circle())
+                    }
                 }
-            }
-               
-               .padding(.top, -10)
-               .padding(.bottom, -30)
-                
+                .padding(.top, -10)
+                .padding(.bottom, -30)
             }
             .padding()
             .onAppear {
@@ -557,9 +574,6 @@ struct ContentView: View {
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
     }
-    
-    // Storage for previous tempo to use with gestures
-    @State private var previousTempo: Double = 120
     
     // Function to prepare the audio system for low latency
     private func prepareAudioSystem() {
@@ -617,13 +631,15 @@ struct ContentView: View {
         
         // Update last tap time
         lastTapTime = now
-          
-        
     }
-    
 }
 
-
+// Update the main entry point of the app
 #Preview {
-    ContentView()
+    MainTabView()
 }
+
+//
+//#Preview {
+//    ContentView()
+//}
