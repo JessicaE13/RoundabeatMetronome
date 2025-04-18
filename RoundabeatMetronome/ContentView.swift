@@ -145,7 +145,7 @@ class MetronomeEngine: ObservableObject {
         
         print("🔄 Metronome started at \(tempo) BPM")
     }
-    
+
     @objc private func updateMetronome(displayLink: CADisplayLink) {
         let currentTime = CACurrentMediaTime()
         let deltaTime = currentTime - lastUpdateTime
@@ -156,16 +156,16 @@ class MetronomeEngine: ObservableObject {
         
         // Check if it's time for the next beat
         if timeAccumulator >= beatInterval {
-            // Execute beat
+            // Execute beat - first increment the beat counter
             currentBeat = (currentBeat + 1) % beatsPerMeasure
+            
+            // Then play the click
             playClick()
             
             // Reset accumulator, accounting for potential overflow
-            // This helps maintain accurate timing by carrying over extra time
             timeAccumulator -= beatInterval
             
             // If there's still a significant accumulation, adjust further
-            // This helps prevent drift over time
             if timeAccumulator > beatInterval * 0.1 {
                 timeAccumulator = 0
             }
@@ -386,7 +386,7 @@ struct ContentView: View {
             
             //Background color
             ZStack {
-                // Base color
+             //    Base color
                 Color("Background")
                     .ignoresSafeArea()
                 
