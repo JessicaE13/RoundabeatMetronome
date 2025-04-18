@@ -33,7 +33,7 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.black.opacity(1.0), Color.black.opacity(0.95)]),
+                        gradient: Gradient(colors: [Color.gray.opacity(0.45), Color.gray.opacity(0.40)]),
                         startPoint: .top,
                         endPoint: .bottom
                     ),
@@ -54,7 +54,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color.colorGlow.opacity(0.4) : Color.colorGlow.opacity(0.4),
+                    isFirstBeat ? Color("colorFirstBeat").opacity(0.4) : Color.colorGlow.opacity(0.4),
                     style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
                 )
                 .blur(radius: 4)
@@ -69,7 +69,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color.colorGlow : Color.colorGlow,
+                    isFirstBeat ? Color("colorFirstBeat").opacity(0.8) : Color.colorGlow,
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
                 )
             }
@@ -126,7 +126,7 @@ struct SegmentedCircleView: View {
                 
                 // Create the divider "tick" at each segment boundary
                 Rectangle()
-                    .fill(Color("Background")) // Red divider
+                    .fill(Color("Background"))
                     .frame(width: gapWidthPoints, height: lineWidth)
                     .rotationEffect(Angle(degrees: angle + 90)) // Add 90 to align rectangle properly
                     .position(x: x, y: y)
@@ -140,13 +140,14 @@ struct SegmentedCircleView: View {
     private func angleForDivider(_ index: Int) -> Double {
         // Each beat takes up an equal portion of the full circle
         let degreesPerBeat = 360.0 / Double(metronome.beatsPerMeasure)
+        let halfSegment = degreesPerBeat / 2
         
         // In standard mathematical coordinates: 0 degrees is at 3 o'clock
         // 270 degrees is at 12 o'clock
         let startAngle = 270.0
         
         // Calculate angle with index 0 always at 12 o'clock
-        let angle = startAngle + (Double(index) * degreesPerBeat)
+        let angle = startAngle - halfSegment + (Double(index) * degreesPerBeat)
         
         return angle
     }
@@ -196,73 +197,31 @@ struct DialControl: View {
     
     var body: some View {
         
-
-        
-        
-
-        
-        
-        
         ZStack {
              //Outer dial background with gradient for better visuals - this is the old one
+           
             Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [Color.white.opacity(0.3), Color.white.opacity(0.4)]),
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: dialSize/2
-                    )
-                )
-                .frame(width: dialSize*0.82, height: dialSize*0.82)
+                .fill(Color("colorDial"))
+                .frame(width: dialSize, height: dialSize)
                 .overlay(
                     ZStack {
                         // Add 60 tick marks (one for each minute/second)
                         ForEach(0..<60) { index in
                             Rectangle()
-                                .fill(index % 5 == 0 ? Color.black.opacity(0.3) : Color.black.opacity(0.2))
+                                .fill(index % 5 == 0 ? Color.white.opacity(0.7) : Color.white.opacity(0.6))
                                 .frame(width: index % 5 == 0 ? 2 : 1, height: index % 5 == 0 ? 10 : 5)
-                                .offset(y: (dialSize * 0.82 / 2 - 15) * -1)
+                                .offset(y: (dialSize / 2 - 15) * -1)
                                 .rotationEffect(.degrees(Double(index) * 6))
                         }
                     }
-                    
                         .rotationEffect(Angle(degrees: dialRotation)) // This makes the tick marks rotate with the dial
                 )
-            //donut shaped thing
-            
-//            ZStack {
-//                //dial colors
-//                let nearblack = Color(white: 0.02)
-//                let outerDialGradient = LinearGradient(
-//                    colors: [Color(white: 0.40), Color(white: 0.30)],
-//                    startPoint: .topLeading,
-//                    endPoint: .bottomTrailing
-//                )
-//                let outerDialCircle = Circle().fill(outerDialGradient)
-//                outerDialCircle
-//                
-//                ZStack {
-//                    Group{
-//                        outerDialCircle
-//                        outerDialCircle
-//                            .rotationEffect(.degrees(180))
-//                            .frame(width: 180)
-//                    }
-//                    .blur(radius: 16)
-//                }
-//                .frame(width: dialSize*0.82, height: dialSize*0.82)
-//                
-//                Circle()
-//                    .fill(outerDialGradient)
-//                    .frame(width: 50)
-//            }
-// 
             
             // Segmented ring showing beats in the time signature
+            
             SegmentedCircleView(
                 metronome: metronome,
-                diameter: dialSize - 20,
+                diameter: dialSize + 25,
                 lineWidth: ringLineWidth
             )
             
@@ -282,7 +241,7 @@ struct DialControl: View {
                 Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 30))
                     .foregroundColor(Color("colorGlow"))
-                    .shadow(color: Color("colorGlow").opacity(0.7), radius: 3, x: 0, y: 0)
+                    .shadow(color: Color("colorGlow").opacity(0.7), radius: 0, x: 0, y: 0)
             }
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .medium)

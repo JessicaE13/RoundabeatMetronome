@@ -284,6 +284,8 @@ struct BPMDisplayView: View {
                     .font(.caption2)
                     .fontWeight(.semibold)
                     .foregroundColor(.gray)
+                    .lineLimit(nil)
+                  
                 
                 Text("\(Int(metronome.tempo))")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
@@ -383,8 +385,27 @@ struct ContentView: View {
         ZStack {
             
             //Background color
-            Color("Background")
+            ZStack {
+                // Base color
+                Color("Background")
+                    .ignoresSafeArea()
+                
+                // Subtle gradient overlay
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        .white.opacity(0.15),
+                        .clear
+                    ]),
+                    startPoint: .top,
+                    endPoint: .center
+                )
                 .ignoresSafeArea()
+                
+                // Very subtle noise texture (optional)
+                Color.black.opacity(0.03)
+                    .ignoresSafeArea()
+                    .blendMode(.overlay)
+            }
             
             // Main metronome interface
             VStack(spacing: 25) {
@@ -403,10 +424,14 @@ struct ContentView: View {
                 
                 // Title
                 Text("r o u n d a b e a t")
+                
                     .font(.body)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
                     .padding(50)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.2), radius: 1, x: 1, y: 1) // Dark shadow for depth
+                    .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1) // Light highlight for emboss effect
+          
                 
                 
                 // Visual Beat Indicator with high-performance animation
@@ -447,7 +472,7 @@ struct ContentView: View {
                 //                .buttonStyle(PlainButtonStyle())
                 
                 
-                HStack (spacing: 0) {
+                HStack (spacing: 15) {
                     
                     // Left chevron (decrease BPM)
                             Button(action: {
@@ -461,10 +486,14 @@ struct ContentView: View {
                             }) {
                                 Image(systemName: "chevron.left")
                                     .font(.system(size: 22, weight: .medium))
-                                    .foregroundColor(Color.white.opacity(0.4))
+                                    .foregroundColor(Color.white)
+                                    .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1) // Dark shadow for depth
+                                    .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1) // Light highlight for emboss effect
                                     .frame(width: 44, height: 44)
                                     .contentShape(Circle())
                             }
+                    
+                    
                 // New Dial Control with Play/Pause Button
                 DialControl(metronome: metronome)
  
@@ -481,7 +510,9 @@ struct ContentView: View {
                 }) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 22, weight: .medium))
-                        .foregroundColor(Color.white.opacity(0.4))
+                        .foregroundColor(Color.white)
+                        .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1) // Dark shadow for depth
+                        .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1) // Light highlight for emboss effect
                         .frame(width: 44, height: 44)
                         .contentShape(Circle())
                 }
