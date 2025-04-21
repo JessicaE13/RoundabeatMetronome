@@ -268,7 +268,6 @@ class MetronomeEngine: ObservableObject {
     }
 }
 
-
 // MARK: - Settings View
 struct SettingsView: View {
     var body: some View {
@@ -436,10 +435,8 @@ struct ContentView: View {
                             .contentShape(Circle())
                     }
                 }
-                .padding(.top, -10)
-                .padding(.bottom, -30)
             }
-            .padding()
+
             .onAppear {
                 // Prepare audio system as soon as view appears
                 prepareAudioSystem()
@@ -474,7 +471,7 @@ struct ContentView: View {
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
         
-        Spacer()
+       
         
     }
     

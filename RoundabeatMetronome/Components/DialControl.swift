@@ -22,6 +22,10 @@ struct ArcSegment: View {
     
     var body: some View {
         ZStack {
+            
+            
+            
+            
             // When not active, show gradient version
             if !isActive {
                 Path { path in
@@ -408,7 +412,7 @@ struct CombinedMetronomeView: View {
                     .frame(width: 120)
                 }
             }
-            .padding(.top, 10)
+
             
             // Additional metronome controls could go here
             HStack(spacing: 20) {

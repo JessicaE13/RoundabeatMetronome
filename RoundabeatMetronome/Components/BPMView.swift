@@ -108,7 +108,7 @@ struct BPMView: View {
                 .stroke(Color(.black), lineWidth: 2)
                 .frame(width: 300, height: 175)
         )
-        .padding(.top, -100)
+
     }
 }
 
