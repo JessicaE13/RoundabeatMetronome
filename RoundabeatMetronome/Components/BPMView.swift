@@ -18,6 +18,7 @@ struct BPMView: View {
     var body: some View {
         
         HStack(spacing: 30) {
+            
             // BPM Display with gestures
             VStack(spacing: 5) {
                 Text("B P M")
@@ -30,7 +31,7 @@ struct BPMView: View {
                     .font(.system(size: 36, weight: .bold, design: .default))
                     .contentTransition(.numericText())
                     .fontWeight(.regular)
-                    .foregroundColor(Color.white)
+                    .foregroundColor(Color.black)
                     .animation(.spring(response: 0.3), value: Int(metronome.tempo))
                     .frame(minWidth: 90)
                     // Make the BPM text tappable to show keypad
@@ -89,7 +90,7 @@ struct BPMView: View {
                         .font(.system(size: 36, weight: .bold, design: .default))
                         .animation(.spring(), value: metronome.beatsPerMeasure)
                         .fontWeight(.regular)
-                        .foregroundColor(Color.white)
+                        .foregroundColor(Color.black)
                         .animation(.spring(), value: metronome.beatUnit)
                         .frame(minWidth: 90)
                 }
@@ -97,15 +98,15 @@ struct BPMView: View {
             }
         }
         .padding(20) // Increased padding inside the rounded rectangle
-        .frame(width: 280, height: 95)
+        .frame(width: 280, height: 175)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color("colorDial"))
+                .fill(Color("Background").opacity(0.8))
                 .frame(width: 300, height: 175)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color(.black), lineWidth: 2)
+                .stroke(Color("Background"), lineWidth: 2)
                 .frame(width: 300, height: 175)
         )
 

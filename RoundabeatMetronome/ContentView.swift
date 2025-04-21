@@ -90,8 +90,17 @@ struct ContentView: View {
             //Background color
             ZStack {
                 // Base color
-                Color("Background")
-                    .ignoresSafeArea()
+                
+                //Background
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.gray.opacity(0.2),
+                        Color.gray.opacity(0.1)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 // Subtle gradient overlay
                 LinearGradient(
@@ -113,7 +122,7 @@ struct ContentView: View {
             // Main metronome interface
             VStack(spacing: 25) {
                 
-                Spacer()
+      
                 
                 BPMView(
                     metronome: metronome,
@@ -121,13 +130,13 @@ struct ContentView: View {
                     showTimeSignaturePicker: $showTimeSignaturePicker
                 )
                 
-                Spacer()
+
                 
                 // Title
                 
                 TitleView()
                 
-                Spacer()
+ 
                 
                 HStack(spacing: 15) {
                     // Left chevron (decrease BPM)
@@ -206,9 +215,6 @@ struct ContentView: View {
         }
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
-        
-       
-        
     }
     
     // Function to prepare the audio system for low latency
@@ -269,10 +275,6 @@ struct ContentView: View {
         lastTapTime = now
     }
 }
-
-
-
-
 
 // Update the main entry point of the app
 #Preview {
