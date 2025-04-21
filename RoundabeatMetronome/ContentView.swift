@@ -62,7 +62,7 @@ class MetronomeEngine: ObservableObject {
                     let files = try fileManager.contentsOfDirectory(atPath: resourcePath)
                     for file in files {
                         if file.lowercased().contains("wood") &&
-                           (file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a")) {
+                            (file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a")) {
                             soundURL = URL(fileURLWithPath: resourcePath).appendingPathComponent(file)
                             print("Found potential sound file: \(file)")
                             break
@@ -145,7 +145,7 @@ class MetronomeEngine: ObservableObject {
         
         print("🔄 Metronome started at \(tempo) BPM")
     }
-
+    
     @objc private func updateMetronome(displayLink: CADisplayLink) {
         let currentTime = CACurrentMediaTime()
         let deltaTime = currentTime - lastUpdateTime
@@ -351,6 +351,7 @@ struct ContentView: View {
     var body: some View {
         
         ZStack {
+            
             //Background color
             ZStack {
                 // Base color
@@ -376,22 +377,22 @@ struct ContentView: View {
             
             // Main metronome interface
             VStack(spacing: 25) {
+                
+                Spacer()
+                
                 BPMView(
                     metronome: metronome,
                     isShowingKeypad: $showBPMKeypad,
                     showTimeSignaturePicker: $showTimeSignaturePicker
                 )
-                .padding(.top, 175.0)
-              
+                
+                Spacer()
                 
                 // Title
-                Text("r o u n d a b e a t")
-                    .font(.body)
-                    .fontWeight(.bold)
-                    .padding(50)
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 1, x: 2, y: 1)
-                    .shadow(color: .white.opacity(0.1), radius: 1, x: -2, y: -1)
+                
+                TitleView()
+                
+                Spacer()
                 
                 HStack(spacing: 15) {
                     // Left chevron (decrease BPM)
@@ -472,6 +473,9 @@ struct ContentView: View {
         }
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
+        
+        Spacer()
+        
     }
     
     // Function to prepare the audio system for low latency
@@ -532,6 +536,10 @@ struct ContentView: View {
         lastTapTime = now
     }
 }
+
+
+
+
 
 // Update the main entry point of the app
 #Preview {
