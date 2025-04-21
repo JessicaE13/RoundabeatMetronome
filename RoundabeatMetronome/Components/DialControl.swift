@@ -211,138 +211,157 @@ struct DialControl: View {
     private let maxRotation: Double = 150 // Degrees
     private let ringLineWidth: CGFloat = 5
     
-    
-  
-    
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
         self._dialRotation = State(initialValue: tempoToRotation(metronome.tempo))
     }
     
     var body: some View {
-        
         ZStack {
-             //Outer dial background with gradient for better visuals - this is the old one
-           
-            Circle()
-                .fill(Color("colorDial"))
-                .frame(width: dialSize, height: dialSize)
-                .overlay(
-                    ZStack {
-                        // Add 60 tick marks (one for each minute/second)
-                        ForEach(0..<60) { index in
-                            Rectangle()
-                                .fill(index % 5 == 0 ? Color.white.opacity(0.7) : Color.white.opacity(0.6))
-                                .frame(width: index % 5 == 0 ? 2 : 1, height: index % 5 == 0 ? 10 : 5)
-                                .offset(y: (dialSize / 2 - 15) * -1)
-                                .rotationEffect(.degrees(Double(index) * 6))
-                        }
-                    }
-                        .rotationEffect(Angle(degrees: dialRotation)) // This makes the tick marks rotate with the dial
-                )
-            
-            // Segmented ring showing beats in the time signature
-            
-            SegmentedCircleView(
-                metronome: metronome,
-                diameter: dialSize + 25,
-                lineWidth: ringLineWidth
-            )
-            
-            // Center knob with play/pause button
-            ZStack {
-                // Main button background
-                Circle()
-                    .fill(Color.background)
-                    .frame(width: knobSize, height: knobSize)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.black.opacity(0.5), lineWidth: 0.5)
-                    )
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
-                
-                // Play/pause icon with constant glow effect
-                Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 30))
-                    .foregroundColor(Color("colorGlow"))
-                    .shadow(color: Color("colorGlow").opacity(0.7), radius: 0, x: 0, y: 0)
-            }
-            .onTapGesture {
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
-                metronome.togglePlayback()
-            }
-            
-            
-            // Debug visual - shows when drag is detected (remove in production)
-//            if isDragging {
-//                Text("Dragging: \(Int(metronome.tempo)) BPM")
-//                    .foregroundColor(.white)
-//                    .padding(8)
-//                    .background(Color.blue.opacity(0.7))
-//                    .cornerRadius(8)
-//                    .position(x: dialSize/2, y: dialSize - 30)
-//                    .transition(.opacity)
-//            }
+            dialBackground
+            segmentedRing
+            centerKnob
         }
         .frame(width: dialSize, height: dialSize)
-        // Use the entire dial as a drag target with a simple gesture recognizer
-        .gesture(
-            DragGesture(minimumDistance: 1)
-                .onChanged { value in
-                    isDragging = true
-                    
-                    // Calculate the center of the dial
-                    let center = CGPoint(x: dialSize/2, y: dialSize/2)
-                    
-                    // Calculate the current angle
-                    let angle = calculateAngle(
-                        center: center,
-                        point: value.location
-                    )
-                    
-                    // Process the angle change
-                    if let prevAngle = previousAngle {
-                        // Calculate the angle delta (how much we've rotated)
-                        var angleDelta = angle - prevAngle
-                        
-                        // Handle wraparound at 0/360 degrees
-                        if angleDelta > 180 {
-                            angleDelta -= 360
-                        } else if angleDelta < -180 {
-                            angleDelta += 360
-                        }
-                        
-                        // Apply a sensitivity factor
-                        let sensitivity = 0.4
-                        
-                        // Calculate tempo change (positive = clockwise = increase tempo)
-                        let tempoChange = angleDelta * sensitivity
-                        let newTempo = metronome.tempo + tempoChange
-                        
-                        // Update the tempo
-                        metronome.updateTempo(to: newTempo)
-                        
-                        // Add haptic feedback
-                        if abs(tempoChange) > 0.5 {
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred(intensity: 0.2)
-                        }
-                    }
-                    
-                    // Save the current angle for next comparison
-                    previousAngle = angle
-                }
-                .onEnded { _ in
-                    isDragging = false
-                    previousAngle = nil
-                }
-        )
+        .gesture(createDragGesture())
         .onChange(of: metronome.tempo) { _, newTempo in
             // Update dial rotation when tempo changes from any source
             dialRotation = tempoToRotation(newTempo)
         }
     }
+
+    // MARK: - View Components
+    
+    private var dialBackground: some View {
+        Circle()
+            .fill(Color("colorDial"))
+            .frame(width: dialSize, height: dialSize)
+            .overlay(dialTickMarks)
+    }
+    
+    private var dialTickMarks: some View {
+        ZStack {
+            // Add 60 tick marks (one for each minute/second)
+            ForEach(0..<60) { index in
+                tickMark(at: index)
+            }
+        }
+        .rotationEffect(Angle(degrees: dialRotation))
+    }
+    
+    private func tickMark(at index: Int) -> some View {
+        let isLargeTick = index % 5 == 0
+        
+        return Rectangle()
+            .fill(isLargeTick ? Color.white.opacity(0.7) : Color.white.opacity(0.6))
+            .frame(width: isLargeTick ? 2 : 1, height: isLargeTick ? 10 : 5)
+            .offset(y: (dialSize / 2 - 15) * -1)
+            .rotationEffect(.degrees(Double(index) * 6))
+    }
+    
+    private var segmentedRing: some View {
+        SegmentedCircleView(
+            metronome: metronome,
+            diameter: dialSize + 25,
+            lineWidth: ringLineWidth
+        )
+    }
+    
+    private var centerKnob: some View {
+        ZStack {
+            knobBackground
+            playPauseIcon
+        }
+        .onTapGesture {
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
+            metronome.togglePlayback()
+        }
+    }
+    
+    private var knobBackground: some View {
+        Circle()
+            .fill(Color.background)
+            .frame(width: knobSize, height: knobSize)
+            .overlay(
+                Circle()
+                    .stroke(Color.black.opacity(0.5), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
+    }
+    
+    private var playPauseIcon: some View {
+        Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
+            .font(.system(size: 30))
+            .foregroundColor(Color("colorGlow"))
+            .shadow(color: Color("colorGlow").opacity(0.7), radius: 0, x: 0, y: 0)
+    }
+    
+    // MARK: - Gesture Handling
+    
+    private func createDragGesture() -> some Gesture {
+        DragGesture(minimumDistance: 1)
+            .onChanged { value in
+                handleDragChange(value)
+            }
+            .onEnded { _ in
+                isDragging = false
+                previousAngle = nil
+            }
+    }
+    
+    private func handleDragChange(_ value: DragGesture.Value) {
+        isDragging = true
+        
+        // Calculate the center of the dial
+        let center = CGPoint(x: dialSize/2, y: dialSize/2)
+        
+        // Calculate the current angle
+        let angle = calculateAngle(center: center, point: value.location)
+        
+        // Process the angle change if we have a previous angle
+        guard let prevAngle = previousAngle else {
+            previousAngle = angle
+            return
+        }
+        
+        // Calculate the angle delta (how much we've rotated)
+        let angleDelta = calculateAngleDelta(from: prevAngle, to: angle)
+        
+        // Apply a sensitivity factor
+        let sensitivity = 0.4
+        
+        // Calculate tempo change (positive = clockwise = increase tempo)
+        let tempoChange = angleDelta * sensitivity
+        let newTempo = metronome.tempo + tempoChange
+        
+        // Update the tempo
+        metronome.updateTempo(to: newTempo)
+        
+        // Add haptic feedback
+        if abs(tempoChange) > 0.5 {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred(intensity: 0.2)
+        }
+        
+        // Save the current angle for next comparison
+        previousAngle = angle
+    }
+    
+    private func calculateAngleDelta(from prevAngle: Double, to currentAngle: Double) -> Double {
+        var angleDelta = currentAngle - prevAngle
+        
+        // Handle wraparound at 0/360 degrees
+        if angleDelta > 180 {
+            angleDelta -= 360
+        } else if angleDelta < -180 {
+            angleDelta += 360
+        }
+        
+        return angleDelta
+    }
+    
+    // MARK: - Utility Functions
     
     // Convert tempo to rotation angle
     private func tempoToRotation(_ tempo: Double) -> Double {
@@ -365,7 +384,6 @@ struct DialControl: View {
         return degrees
     }
 }
-
 // MARK: - Combined Metronome View
 struct CombinedMetronomeView: View {
     @StateObject private var metronome = MetronomeEngine()
