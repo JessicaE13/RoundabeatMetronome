@@ -33,6 +33,8 @@ class MetronomeEngine: ObservableObject {
     private var lastUpdateTime: TimeInterval = 0
     private var beatInterval: TimeInterval = 0.5 // 60.0 / 120 BPM
     private var timeAccumulator: TimeInterval = 0
+    private var nextBeatTime: TimeInterval = 0
+    private var firstBeatPlayed = false
     
     init() {
         setupAudioPlayers()
@@ -132,52 +134,50 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
+
+
     private func startMetronome() {
         // Reset tracking variables
         currentBeat = 0
-        lastUpdateTime = CACurrentMediaTime()
-        timeAccumulator = 0
         
-        // Calculate the beat interval based on current tempo
+        // Calculate the beat interval
         calculateBeatInterval()
         
-        // Play the first click immediately
-        playClick()
+        // Set the precise time for the first beat (now)
+        let now = CACurrentMediaTime()
+        nextBeatTime = now
+        firstBeatPlayed = false
         
-        // Use CADisplayLink for more precise timing
+        // Use CADisplayLink for timing
         displayLink = CADisplayLink(target: self, selector: #selector(updateMetronome))
         displayLink?.preferredFramesPerSecond = 60 // Set to 60fps for smooth timing
         displayLink?.add(to: .main, forMode: .common)
-        
-        print("🔄 Metronome started at \(tempo) BPM")
     }
-    
+
     @objc private func updateMetronome(displayLink: CADisplayLink) {
         let currentTime = CACurrentMediaTime()
-        let deltaTime = currentTime - lastUpdateTime
-        lastUpdateTime = currentTime
         
-        // Accumulate time until we reach the next beat interval
-        timeAccumulator += deltaTime
-        
-        // Check if it's time for the next beat
-        if timeAccumulator >= beatInterval {
-            // Execute beat - first increment the beat counter
-            currentBeat = (currentBeat + 1) % beatsPerMeasure
+        // If we've reached or passed the time for the next beat
+        if currentTime >= nextBeatTime {
+            // Play the click (or skip if this is the immediate first beat and already played)
+            if !firstBeatPlayed {
+                playClick()
+                firstBeatPlayed = true
+            } else {
+                // For all subsequent beats, increment and play
+                currentBeat = (currentBeat + 1) % beatsPerMeasure
+                playClick()
+            }
             
-            // Then play the click
-            playClick()
+            // Schedule the next beat with precise timing
+            nextBeatTime += beatInterval
             
-            // Reset accumulator, accounting for potential overflow
-            timeAccumulator -= beatInterval
-            
-            // If there's still a significant accumulation, adjust further
-            if timeAccumulator > beatInterval * 0.1 {
-                timeAccumulator = 0
+            // Prevent drift by realigning if we're significantly off
+            if nextBeatTime < currentTime - 0.01 {
+                nextBeatTime = currentTime + beatInterval
             }
         }
     }
-    
     private func stopMetronome() {
         // Stop the display link
         displayLink?.invalidate()
