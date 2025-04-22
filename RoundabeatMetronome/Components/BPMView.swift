@@ -7,6 +7,28 @@
 
 import SwiftUI
 
+// Custom shape for rounded corners
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+    
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
+    }
+}
+
+// Extension to apply corner radius to specific corners
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
 // MARK: - BPM Display Component with Gestures
 struct BPMView: View {
     @ObservedObject var metronome: MetronomeEngine
@@ -100,22 +122,22 @@ struct BPMView: View {
         .padding(20) // Increased padding inside the rounded rectangle
         .frame(width: 280, height: 175)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Rectangle()
                 .fill(Color("Background").opacity(0.8))
                 .frame(width: 300, height: 175)
+                .cornerRadius(16, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            Rectangle()
                 .stroke(Color("Background"), lineWidth: 2)
                 .frame(width: 300, height: 175)
+                .cornerRadius(16, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
         )
-
     }
 }
 
 
 #Preview {
-
     BPMView(
         metronome: MetronomeEngine(),
         isShowingKeypad: .constant(false),

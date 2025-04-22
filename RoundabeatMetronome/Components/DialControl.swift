@@ -281,11 +281,11 @@ struct DialControl: View {
     
     private var knobBackground: some View {
         Circle()
-            .fill(Color.background)
+            .fill(Color.white.opacity(0.9))
             .frame(width: knobSize, height: knobSize)
             .overlay(
                 Circle()
-                    .stroke(Color.black.opacity(0.5), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
             )
             .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
     }
@@ -293,7 +293,7 @@ struct DialControl: View {
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
             .font(.system(size: 30))
-            .foregroundColor(Color("colorGlow"))
+            .foregroundColor(Color.black.opacity(0.9))
             .shadow(color: Color("colorGlow").opacity(0.7), radius: 0, x: 0, y: 0)
     }
     
