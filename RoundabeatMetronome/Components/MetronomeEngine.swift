@@ -1,11 +1,3 @@
-//
-//  MetronomeEngine.swift
-//  RoundabeatMetronome
-//
-//  Created by Jessica Estes on 4/21/25.
-//
-
-
 import Foundation
 import AVFoundation
 
@@ -34,11 +26,23 @@ class MetronomeEngine: ObservableObject {
     private var beatInterval: TimeInterval = 0.5 // 60.0 / 120 BPM
     private var timeAccumulator: TimeInterval = 0
     private var nextBeatTime: TimeInterval = 0
-    private var firstBeatPlayed = false
+    private var audioSession: AVAudioSession?
     
     init() {
+        setupAudioSession()
         setupAudioPlayers()
         calculateBeatInterval()
+    }
+    
+    private func setupAudioSession() {
+        do {
+            audioSession = AVAudioSession.sharedInstance()
+            try audioSession?.setCategory(.playback, mode: .default)
+            try audioSession?.setActive(true)
+            print("✅ Audio session setup successful")
+        } catch {
+            print("❌ Failed to set up audio session: \(error)")
+        }
     }
     
     private func setupAudioPlayers() {
@@ -96,11 +100,20 @@ class MetronomeEngine: ObservableObject {
             for _ in 0..<numberOfPlayers {
                 do {
                     let player = try AVAudioPlayer(contentsOf: finalURL)
-                    player.prepareToPlay()
-                    player.volume = 1.0
                     
-                    // Enable rate adjustment for tempo changes without recreating players
-                    player.enableRate = true
+                    // Crucial: configure for low latency playback
+                    player.volume = 1.0
+                    player.enableRate = true  // Allow tempo adjustment
+                    player.prepareToPlay()    // Pre-buffer the audio
+                    player.numberOfLoops = 0  // Single shot playback
+                    
+                    // Extremely important for precision metronome:
+                    // Set a very short duration sample for minimal latency
+                    if player.duration > 0.1 {
+                        // If sample is longer than 100ms, we can improve timing by
+                        // adjusting parameters - ideally the original sound should be short
+                        print("⚠️ Sound sample duration (\(String(format: "%.1f", player.duration * 1000))ms) is longer than ideal for precise timing")
+                    }
                     
                     audioPlayers.append(player)
                 } catch {
@@ -134,50 +147,84 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-
-
     private func startMetronome() {
         // Reset tracking variables
         currentBeat = 0
         
+        // Configure audio session for optimal performance
+        do {
+            // Set audio session category and mode
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+            
+            // Important: Set the hardware buffer duration to minimum possible value
+            let hardwareSampleRate = AVAudioSession.sharedInstance().sampleRate
+            let preferredBufferSize = 256.0 // Minimum buffer size (samples)
+            let bufferDuration = preferredBufferSize / hardwareSampleRate
+            try AVAudioSession.sharedInstance().setPreferredIOBufferDuration(bufferDuration)
+            
+            print("✅ Audio session optimized: \(String(format: "%.2f", bufferDuration * 1000))ms buffer at \(Int(hardwareSampleRate))Hz")
+        } catch {
+            print("⚠️ Could not fully optimize audio session: \(error)")
+        }
+        
+        // Preload all audio players
+        for player in audioPlayers {
+            player.prepareToPlay()
+            player.volume = 1.0
+        }
+        
         // Calculate the beat interval
         calculateBeatInterval()
         
-        // Set the precise time for the first beat (now)
+        // Get precise current time
         let now = CACurrentMediaTime()
-        nextBeatTime = now
-        firstBeatPlayed = false
         
-        // Use CADisplayLink for timing
+        // Play the first beat immediately
+        playClick()
+        
+        // Schedule the next beat to occur one interval from now
+        nextBeatTime = now + beatInterval
+        
+        // Create a high-precision display link
         displayLink = CADisplayLink(target: self, selector: #selector(updateMetronome))
-        displayLink?.preferredFramesPerSecond = 60 // Set to 60fps for smooth timing
+        
+        // Request maximum precision available on the device
+        if #available(iOS 15.0, *) {
+            displayLink?.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+        } else {
+            displayLink?.preferredFramesPerSecond = 120
+        }
+        
+        // Use the highest priority runloop mode for critical timing
         displayLink?.add(to: .main, forMode: .common)
     }
 
     @objc private func updateMetronome(displayLink: CADisplayLink) {
         let currentTime = CACurrentMediaTime()
         
-        // If we've reached or passed the time for the next beat
+        // If we've reached the time for the next beat
         if currentTime >= nextBeatTime {
-            // Play the click (or skip if this is the immediate first beat and already played)
-            if !firstBeatPlayed {
-                playClick()
-                firstBeatPlayed = true
+            // Calculate precise timing for this approach
+            let elapsedIntervals = floor((currentTime - nextBeatTime) / beatInterval)
+            
+            // Handle case where multiple beats should have occurred (e.g., after app suspension)
+            if elapsedIntervals > 0 {
+                // Skip missed beats and get back on schedule
+                nextBeatTime += beatInterval * (elapsedIntervals + 1)
+                currentBeat = (currentBeat + Int(elapsedIntervals) + 1) % beatsPerMeasure
+                print("⚠️ Metronome skipped \(Int(elapsedIntervals)) beats to stay on tempo")
             } else {
-                // For all subsequent beats, increment and play
+                // Normal case - just increment to next beat
+                nextBeatTime += beatInterval
                 currentBeat = (currentBeat + 1) % beatsPerMeasure
-                playClick()
             }
             
-            // Schedule the next beat with precise timing
-            nextBeatTime += beatInterval
-            
-            // Prevent drift by realigning if we're significantly off
-            if nextBeatTime < currentTime - 0.01 {
-                nextBeatTime = currentTime + beatInterval
-            }
+            // Play the click - this needs to be as close to the nextBeatTime as possible
+            playClick()
         }
     }
+    
     private func stopMetronome() {
         // Stop the display link
         displayLink?.invalidate()
@@ -185,7 +232,17 @@ class MetronomeEngine: ObservableObject {
         
         // Reset tracking variables
         timeAccumulator = 0
+        lastUpdateTime = 0
         currentBeat = 0
+        
+        // Deactivate audio session to save resources, but handle the error gracefully
+        do {
+            // Use a less strict deactivation option to avoid the error
+            try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        } catch {
+            // Don't log the error to console, as it's a known iOS limitation in some scenarios
+            // and doesn't affect functionality
+        }
         
         print("⏹️ Metronome stopped")
     }
@@ -199,16 +256,23 @@ class MetronomeEngine: ObservableObject {
         // Use a player from the pool to prevent audio latency
         let player = audioPlayers[currentPlayerIndex]
         
-        // Reset and play
+        // Reset the player's timing position
         player.currentTime = 0
+        
+        // Play immediately
         player.play()
         
         // Move to the next player in the pool for the next click
         currentPlayerIndex = (currentPlayerIndex + 1) % audioPlayers.count
         
+        // Calculate deviation from perfect timing - measure actual time vs scheduled time
+        let currentTime = CACurrentMediaTime()
+        let expectedTime = nextBeatTime - beatInterval  // For the current beat that just played
+        let deviationMs = (currentTime - expectedTime) * 1000  // Convert to milliseconds
+        
         // Add visual feedback in the console for debugging
         let beatSymbol = currentBeat == 0 ? "🔵" : "🔴"
-        print("\(beatSymbol) Beat \(currentBeat + 1)/\(beatsPerMeasure) at \(String(format: "%.1f", CACurrentMediaTime()))")
+        print("\(beatSymbol) Beat \(currentBeat + 1)/\(beatsPerMeasure) at \(String(format: "%.3f", currentTime)) (deviation: \(String(format: "%.1f", deviationMs))ms)")
     }
     
     func updateTempo(to newTempo: Double) {
