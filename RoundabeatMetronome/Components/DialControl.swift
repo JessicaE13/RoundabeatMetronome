@@ -60,7 +60,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color("colorFirstBeat").opacity(0.4) : Color.colorGlow.opacity(0.4),
+                    isFirstBeat ? Color("colorPurpleBackground").opacity(0.4) : Color("colorPurpleBackground").opacity(0.4),
                     style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
                 )
                 .blur(radius: 4)
@@ -75,7 +75,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color("colorFirstBeat").opacity(0.8) : Color.colorGlow,
+                    isFirstBeat ? Color("colorPurpleBackground").opacity(0.8) : Color("colorPurpleBackground"),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
                 )
             }
@@ -294,7 +294,7 @@ struct DialControl: View {
         Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
             .font(.system(size: 30))
             .foregroundColor(Color.black.opacity(0.9))
-            .shadow(color: Color("colorGlow").opacity(0.7), radius: 0, x: 0, y: 0)
+            .shadow(color: Color("colorPurpleBackground").opacity(0.7), radius: 0, x: 0, y: 0)
     }
     
     // MARK: - Gesture Handling

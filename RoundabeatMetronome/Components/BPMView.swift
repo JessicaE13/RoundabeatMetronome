@@ -120,17 +120,17 @@ struct BPMView: View {
             }
         }
         .padding(20) // Increased padding inside the rounded rectangle
-        .frame(width: 280, height: 175)
+        .frame(width: 280, height: 150)
         .background(
             Rectangle()
-                .fill(Color("Background").opacity(0.8))
-                .frame(width: 300, height: 175)
+                .fill(Color("calculatorColor").opacity(0.8))
+                .frame(width: 300, height: 150)
                 .cornerRadius(16, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
         )
         .overlay(
             Rectangle()
-                .stroke(Color("Background"), lineWidth: 2)
-                .frame(width: 300, height: 175)
+                .stroke(Color("calculatorColor"), lineWidth: 2)
+                .frame(width: 300, height: 150)
                 .cornerRadius(16, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
         )
     }

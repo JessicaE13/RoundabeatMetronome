@@ -94,18 +94,18 @@ struct ContentView: View {
                 //Background
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color.gray.opacity(0.2),
-                        Color.gray.opacity(0.1)
+                        Color("Background").opacity(0.9),
+                        Color("Background").opacity(0.95)
                     ]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
                 
-                // Subtle gradient overlay
+              //   Subtle gradient overlay
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        .white.opacity(0.15),
+                        .white.opacity(0.85),
                         .clear
                     ]),
                     startPoint: .top,
@@ -113,7 +113,7 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
                 
-                // Very subtle noise texture (optional)
+             //    Very subtle noise texture (optional)
                 Color.black.opacity(0.03)
                     .ignoresSafeArea()
                     .blendMode(.overlay)
