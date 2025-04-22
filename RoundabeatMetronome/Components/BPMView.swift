@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 // Custom shape for rounded corners
 struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
@@ -41,8 +42,58 @@ struct BPMView: View {
         
         HStack(spacing: 30) {
             
+            VStack {
+                
+                // Time Signature Button
+                VStack(spacing: 5) {
+                    Text("T I M E")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.gray)
+                        .lineLimit(nil)
+                    
+                    Button(action: {
+                        showTimeSignaturePicker = true
+                    }) {
+                        Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
+                            .font(.system(size: 20, weight: .bold, design: .default))
+                            .animation(.spring(), value: metronome.beatsPerMeasure)
+                            .fontWeight(.regular)
+                            .foregroundColor(Color.black)
+                            .animation(.spring(), value: metronome.beatUnit)
+                            .frame(minWidth: 90)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                
+                
+                // Time Signature Button
+                VStack(spacing: 5) {
+                    Text("T I M E")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.gray)
+                        .lineLimit(nil)
+                    
+                    Button(action: {
+                        showTimeSignaturePicker = true
+                    }) {
+                        Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
+                            .font(.system(size: 20, weight: .bold, design: .default))
+                            .animation(.spring(), value: metronome.beatsPerMeasure)
+                            .fontWeight(.regular)
+                            .foregroundColor(Color.black)
+                            .animation(.spring(), value: metronome.beatUnit)
+                            .frame(minWidth: 90)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            
+            
             // BPM Display with gestures
             VStack(spacing: 5) {
+
                 Text("B P M")
                     .font(.caption2)
                     .fontWeight(.semibold)
@@ -50,12 +101,12 @@ struct BPMView: View {
                     .lineLimit(nil)
                 
                 Text("\(Int(metronome.tempo))")
-                    .font(.system(size: 36, weight: .bold, design: .default))
+                    .font(.system(size: 30, weight: .bold, design: .default))
                     .contentTransition(.numericText())
                     .fontWeight(.regular)
                     .foregroundColor(Color.black)
                     .animation(.spring(response: 0.3), value: Int(metronome.tempo))
-                    .frame(minWidth: 90)
+                    .frame(minWidth: 50)
                     // Make the BPM text tappable to show keypad
                     .onTapGesture {
                         // Add haptic feedback
@@ -91,33 +142,54 @@ struct BPMView: View {
                     )
             }
             
-            
-            // Divider for visual separation
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 1, height: 70)
-            
-            // Time Signature Button
-            VStack(spacing: 5) {
-                Text("T I M E")
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.gray)
-                    .lineLimit(nil)
+            VStack {
                 
-                Button(action: {
-                    showTimeSignaturePicker = true
-                }) {
-                    Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
-                        .font(.system(size: 36, weight: .bold, design: .default))
-                        .animation(.spring(), value: metronome.beatsPerMeasure)
-                        .fontWeight(.regular)
-                        .foregroundColor(Color.black)
-                        .animation(.spring(), value: metronome.beatUnit)
-                        .frame(minWidth: 90)
+                // Time Signature Button
+                VStack(spacing: 5) {
+                    Text("T I M E")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.gray)
+                        .lineLimit(nil)
+                    
+                    Button(action: {
+                        showTimeSignaturePicker = true
+                    }) {
+                        Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
+                            .font(.system(size: 20, weight: .bold, design: .default))
+                            .animation(.spring(), value: metronome.beatsPerMeasure)
+                            .fontWeight(.regular)
+                            .foregroundColor(Color.black)
+                            .animation(.spring(), value: metronome.beatUnit)
+                            .frame(minWidth: 90)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .buttonStyle(PlainButtonStyle())
+                
+                
+                // Time Signature Button
+                VStack(spacing: 5) {
+                    Text("T I M E")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.gray)
+                        .lineLimit(nil)
+                    
+                    Button(action: {
+                        showTimeSignaturePicker = true
+                    }) {
+                        Text("\(metronome.beatsPerMeasure)/\(metronome.beatUnit)")
+                            .font(.system(size: 20, weight: .bold, design: .default))
+                            .animation(.spring(), value: metronome.beatsPerMeasure)
+                            .fontWeight(.regular)
+                            .foregroundColor(Color.black)
+                            .animation(.spring(), value: metronome.beatUnit)
+                            .frame(minWidth: 90)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
             }
+
         }
         .padding(20) // Increased padding inside the rounded rectangle
         .frame(width: 280, height: 150)
@@ -125,13 +197,13 @@ struct BPMView: View {
             Rectangle()
                 .fill(Color("calculatorColor").opacity(0.8))
                 .frame(width: 300, height: 150)
-                .cornerRadius(16, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                .cornerRadius(10, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
         )
         .overlay(
             Rectangle()
                 .stroke(Color("calculatorColor"), lineWidth: 2)
                 .frame(width: 300, height: 150)
-                .cornerRadius(16, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                .cornerRadius(10, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
         )
     }
 }
