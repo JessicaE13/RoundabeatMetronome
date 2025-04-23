@@ -46,7 +46,7 @@ struct BPMView: View {
             RoundedRectangle(cornerRadius: 15)
              //   .fill(.shadow(.inner(radius: 1, x: 1, y: 1)))
                 .foregroundStyle(Color.gray.opacity(0.25111))
-                .frame(width: 375, height: 175)
+                .frame(width: 390, height: 175)
             
             HStack {
                 

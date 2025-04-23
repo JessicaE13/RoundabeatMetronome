@@ -69,7 +69,7 @@ struct ContentView: View {
                 //Background
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color("colorBackgroundCream").opacity(0.9),
+                        Color("colorBackgroundCream").opacity(0.19),
                         Color("colorBackgroundCream").opacity(0.95)
                     ]),
                     startPoint: .topLeading,
@@ -77,28 +77,25 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
                 
-              //   Subtle gradient overlay
+                //   Subtle gradient overlay
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        .white.opacity(0.5),
+                        .white.opacity(0.75),
                         .clear
                     ]),
-                    startPoint: .top,
+                    startPoint: .bottom,
                     endPoint: .center
                 )
                 .ignoresSafeArea()
                 
-             //    Very subtle noise texture (optional)
-                Color.black.opacity(0.3)
+                //    Very subtle noise texture (optional)
+                Color.black.opacity(0.73)
                     .ignoresSafeArea()
                     .blendMode(.overlay)
             }
             
             // Main metronome interface
             VStack(spacing: 25) {
-                
-//                RectangleView()
-      
                 
                 BPMView(
                     metronome: metronome,
@@ -110,50 +107,11 @@ struct ContentView: View {
                 
                 TitleView()
                 
-                HStack(spacing: 15) {
-                    // Left chevron (decrease BPM)
-                    Button(action: {
-                        // Decrease tempo by 1
-                        metronome.updateTempo(to: metronome.tempo - 1)
-                        // Add haptic feedback
-                        let generator = UIImpactFeedbackGenerator(style: .light)
-                        generator.impactOccurred()
-                        // Update previous tempo
-                        previousTempo = metronome.tempo
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundColor(Color.white)
-                            .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1)
-                            .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Circle())
-                    }
-                    
-                    // Main Dial Control with Play/Pause Button
-                    DialControl(metronome: metronome)
-                    
-                    // Right chevron (increase BPM)
-                    Button(action: {
-                        // Increase tempo by 1
-                        metronome.updateTempo(to: metronome.tempo + 1)
-                        // Add haptic feedback
-                        let generator = UIImpactFeedbackGenerator(style: .light)
-                        generator.impactOccurred()
-                        // Update previous tempo
-                        previousTempo = metronome.tempo
-                    }) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundColor(Color.white)
-                            .shadow(color: .black.opacity(0.1), radius: 1, x: 1, y: 1)
-                            .shadow(color: .white.opacity(0.1), radius: 1, x: -1, y: -1)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Circle())
-                    }
-                }
+                // Main Dial Control with Play/Pause Button
+                DialControl(metronome: metronome)
+                
             }
-
+            
             .onAppear {
                 // Prepare audio system as soon as view appears
                 prepareAudioSystem()
