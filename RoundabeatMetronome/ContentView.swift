@@ -122,22 +122,18 @@ struct ContentView: View {
             // Main metronome interface
             VStack(spacing: 25) {
                 
-                RectangleView()
+//                RectangleView()
       
                 
-//                BPMView(
-//                    metronome: metronome,
-//                    isShowingKeypad: $showBPMKeypad,
-//                    showTimeSignaturePicker: $showTimeSignaturePicker
-//                )
-                
-
+                BPMView(
+                    metronome: metronome,
+                    isShowingKeypad: $showBPMKeypad,
+                    showTimeSignaturePicker: $showTimeSignaturePicker
+                )
                 
                 // Title
                 
                 TitleView()
-                
- 
                 
                 HStack(spacing: 15) {
                     // Left chevron (decrease BPM)
