@@ -96,14 +96,11 @@ struct SegmentedCircleView: View {
     }
     
     // Fixed gap width in points
-    private let gapWidthPoints: CGFloat = 7.0
+    private let gapWidthPoints: CGFloat = 15.0
     
     var body: some View {
         ZStack {
-            // Background circle (optional - helps see the full circle)
-            Circle()
-                .stroke(Color.gray.opacity(0.1), lineWidth: lineWidth)
-                .frame(width: diameter - lineWidth, height: diameter - lineWidth)
+
             
             // Draw each segment based on the time signature
             ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beatIndex in
@@ -121,27 +118,7 @@ struct SegmentedCircleView: View {
                 )
             }
             
-            // Draw square-like dividers between segments
-            ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beatIndex in
-                // Use the angleForDivider function
-                let angle = angleForDivider(beatIndex)
-                
-                // Calculate position using trigonometry instead of offset+rotation
-                let x = diameter/2 + cos(angle * .pi / 180) * radius
-                let y = diameter/2 + sin(angle * .pi / 180) * radius
-                
-                // Check if this divider is adjacent to the active beat
-                let isAdjacentToActiveBeat = isAdjacentToBeat(index: beatIndex, activeBeat: metronome.currentBeat)
-                let shouldBeTransparent = isAdjacentToActiveBeat && metronome.isPlaying
-                
-                // Create the divider "tick" at each segment boundary
-                Rectangle()
-                    .fill(shouldBeTransparent ? Color.clear : Color("Background"))
-                    .frame(width: gapWidthPoints, height: lineWidth)
-                    .rotationEffect(Angle(degrees: angle + 90)) // Add 90 to align rectangle properly
-                    .position(x: x, y: y)
-                    .animation(.easeInOut(duration: 0.1), value: shouldBeTransparent)
-            }
+            // Rectangle dividers have been removed
             
         }
         .frame(width: diameter, height: diameter)
@@ -196,7 +173,6 @@ struct SegmentedCircleView: View {
         return (startAngle, endAngle)
     }
 }
-
 // MARK: - Dial Control Component
 struct DialControl: View {
     @ObservedObject var metronome: MetronomeEngine
@@ -209,7 +185,7 @@ struct DialControl: View {
     private let knobSize: CGFloat = 275/3
     private let minRotation: Double = -150 // Degrees
     private let maxRotation: Double = 150 // Degrees
-    private let ringLineWidth: CGFloat = 5
+    private let ringLineWidth: CGFloat = 10
     
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
@@ -262,7 +238,7 @@ struct DialControl: View {
     private var segmentedRing: some View {
         SegmentedCircleView(
             metronome: metronome,
-            diameter: dialSize + 25,
+            diameter: dialSize + 45,
             lineWidth: ringLineWidth
         )
     }

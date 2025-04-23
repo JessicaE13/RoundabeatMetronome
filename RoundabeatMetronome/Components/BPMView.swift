@@ -44,19 +44,19 @@ struct BPMView: View {
         ZStack {
             
             RoundedRectangle(cornerRadius: 15)
-                .fill(.shadow(.inner(radius: 1, x: 1, y: 1)))
-                .foregroundStyle(Color("calculatorColor"))
-                .frame(width: 300, height: 175)
+             //   .fill(.shadow(.inner(radius: 1, x: 1, y: 1)))
+                .foregroundStyle(Color.gray.opacity(0.25111))
+                .frame(width: 375, height: 175)
             
-            HStack(spacing: 5) {
+            HStack {
                 
                 VStack {
                     ZStack {
                         
                         VStack{
                             RoundedRectangle(cornerRadius: 15)
-                                .fill(.colorGlow.opacity(0.3))
-                                .frame(width: 85, height: 135)
+                                .fill(.white.opacity(0.3))
+                                .frame(width: 85, height: 150)
                             
                         }
                         VStack (spacing: 20){
@@ -108,73 +108,72 @@ struct BPMView: View {
                 ZStack {
                     
                     
-                        RoundedRectangle(cornerRadius: 15)
-                            .fill(.colorGlow.opacity(0.3))
-                            .frame(width: 85, height: 135)
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(.colorGlow.opacity(0.3))
+                        .frame(width: 175, height: 150)
                     
-                // BPM Display with gestures
-                VStack(spacing: 5) {
-                    
-                    Text("B P M")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.gray)
-                        .lineLimit(nil)
-                    
-                    Text("\(Int(metronome.tempo))")
-                        .font(.system(size: 30, weight: .bold, design: .default))
-                        .contentTransition(.numericText())
-                        .fontWeight(.bold)
-                        .foregroundColor(Color.black)
-                        .animation(.spring(response: 0.3), value: Int(metronome.tempo))
-                        .frame(minWidth: 50)
-                    // Make the BPM text tappable to show keypad
-                        .onTapGesture {
-                            // Add haptic feedback
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
-                            isShowingKeypad = true
-                        }
-                    
-                    Text("Allegro")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.gray)
-                        .lineLimit(nil)
-                    
-                    // Add vertical swipe gesture
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    dragOffset = value.translation.height
-                                    
-                                    // Calculate tempo change based on drag distance
-                                    // Negative offset (swipe up) increases tempo
-                                    let tempoChange = -dragOffset * 0.2
-                                    let newTempo = previousTempo + tempoChange
-                                    
-                                    // Update tempo with clamping
-                                    metronome.updateTempo(to: newTempo)
-                                }
-                                .onEnded { _ in
-                                    // Reset drag offset
-                                    dragOffset = 0
-                                    // Store the current tempo for next drag
-                                    previousTempo = metronome.tempo
-                                    
-                                    // Add haptic feedback
-                                    let generator = UIImpactFeedbackGenerator(style: .light)
-                                    generator.impactOccurred()
-                                }
-                        )
+                    // BPM Display with gestures
+                    VStack {
+                        
+                        Text("B P M")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.gray)
+                            .lineLimit(nil)
+                        
+                        Text("\(Int(metronome.tempo))")
+                            .font(.system(size: 65, weight: .medium, design: .default))
+                            .contentTransition(.numericText())
+                            .foregroundColor(Color.black)
+                            .animation(.spring(response: 0.3), value: Int(metronome.tempo))
+                            .frame(minWidth: 50)
+                        // Make the BPM text tappable to show keypad
+                            .onTapGesture {
+                                // Add haptic feedback
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
+                                isShowingKeypad = true
+                            }
+                        
+                        Text("Allegro")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.gray)
+                            .lineLimit(nil)
+                        
+                        // Add vertical swipe gesture
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        dragOffset = value.translation.height
+                                        
+                                        // Calculate tempo change based on drag distance
+                                        // Negative offset (swipe up) increases tempo
+                                        let tempoChange = -dragOffset * 0.2
+                                        let newTempo = previousTempo + tempoChange
+                                        
+                                        // Update tempo with clamping
+                                        metronome.updateTempo(to: newTempo)
+                                    }
+                                    .onEnded { _ in
+                                        // Reset drag offset
+                                        dragOffset = 0
+                                        // Store the current tempo for next drag
+                                        previousTempo = metronome.tempo
+                                        
+                                        // Add haptic feedback
+                                        let generator = UIImpactFeedbackGenerator(style: .light)
+                                        generator.impactOccurred()
+                                    }
+                            )
+                    }
                 }
-            }
                 
                 VStack {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 15)
+                        RoundedRectangle(cornerRadius: 10)
                             .fill(.colorGlow.opacity(0.3))
-                            .frame(width: 85, height: 135)
+                            .frame(width: 85, height: 150)
                         // Tap Button
                         VStack(spacing: 5) {
                             Image(systemName: "lock.fill")
@@ -183,20 +182,14 @@ struct BPMView: View {
                                 .fontWeight(.medium)
                                 .foregroundColor(.gray)
                                 .lineLimit(nil)
-                                .padding()
+                            
                         }
-                       
-                      
+                        
+                        
                     }
                 }
-                
-                
-                
             }
         }
-        .padding(20) // Increased padding inside the rounded rectangle
-        .frame(width: 280, height: 150)
-    
     }
 }
 

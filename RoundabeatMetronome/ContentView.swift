@@ -38,32 +38,7 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - Main Tab View
-struct MainTabView: View {
-    @StateObject private var metronome = MetronomeEngine()
-    @State private var selectedTab = 0
-    
-    var body: some View {
-        TabView(selection: $selectedTab) {
-            // Metronome Tab
-            ContentView(metronome: metronome)
-                .tabItem {
-                    Image(systemName: "metronome")
-                    Text("Metronome")
-                }
-                .tag(0)
-            
-            // Settings Tab
-            SettingsView()
-                .tabItem {
-                    Image(systemName: "gearshape")
-                    Text("Settings")
-                }
-                .tag(1)
-        }
-        .accentColor(Color("colorGlow"))
-    }
-}
+
 
 // MARK: - Content View
 struct ContentView: View {
@@ -94,8 +69,8 @@ struct ContentView: View {
                 //Background
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color("Background").opacity(0.9),
-                        Color("Background").opacity(0.95)
+                        Color("colorBackgroundCream").opacity(0.9),
+                        Color("colorBackgroundCream").opacity(0.95)
                     ]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -105,7 +80,7 @@ struct ContentView: View {
               //   Subtle gradient overlay
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        .white.opacity(0.85),
+                        .white.opacity(0.5),
                         .clear
                     ]),
                     startPoint: .top,
@@ -114,7 +89,7 @@ struct ContentView: View {
                 .ignoresSafeArea()
                 
              //    Very subtle noise texture (optional)
-                Color.black.opacity(0.03)
+                Color.black.opacity(0.3)
                     .ignoresSafeArea()
                     .blendMode(.overlay)
             }
@@ -273,12 +248,9 @@ struct ContentView: View {
     }
 }
 
-// Update the main entry point of the app
-#Preview {
-    MainTabView()
-}
 
-//
-//#Preview {
-//    ContentView()
-//}
+#Preview {
+    ContentView(
+        metronome: MetronomeEngine()
+    )
+}
