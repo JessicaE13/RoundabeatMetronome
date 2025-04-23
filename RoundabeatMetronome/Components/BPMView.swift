@@ -43,28 +43,26 @@ struct BPMView: View {
         
         ZStack {
             
-            RoundedRectangle(cornerRadius: 15)
-             //   .fill(.shadow(.inner(radius: 1, x: 1, y: 1)))
-                .foregroundStyle(Color.gray.opacity(0.25111))
-                .frame(width: 390, height: 175)
+            RoundedRectangle(cornerRadius: 5)
+           
+                .foregroundStyle(Color.gray.opacity(0.25))
+                .frame(width: .infinity, height: 150)
+               
             
             HStack {
-                
                 VStack {
                     ZStack {
-                        
                         VStack{
-                            RoundedRectangle(cornerRadius: 15)
+                            RoundedRectangle(cornerRadius: 5)
                                 .fill(.white.opacity(0.3))
-                                .frame(width: 85, height: 150)
-                            
+                                .frame(width: 85, height: 125)
                         }
                         VStack (spacing: 20){
                             // Time Signature Button
                             VStack(spacing: 5) {
-                                Text("T I M E")
-                                    .font(.system(size: 9, weight: .medium, design: .default))
-                                    .foregroundColor(.gray)
+                                Text("TIME")
+                                    .font(.system(size: 9, weight: .regular, design: .default))
+                                    .foregroundColor(.gray.opacity(0.75))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -83,9 +81,9 @@ struct BPMView: View {
                             
                             // Time Signature Button
                             VStack(spacing: 5) {
-                                Text("R H Y T H M")
-                                    .font(.system(size: 9, weight: .medium, design: .default))
-                                    .foregroundColor(.gray)
+                                Text("RHYTHM")
+                                    .font(.system(size: 9, weight: .regular, design: .default))
+                                    .foregroundColor(.gray.opacity(0.75))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -108,21 +106,21 @@ struct BPMView: View {
                 ZStack {
                     
                     
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(.colorGlow.opacity(0.3))
-                        .frame(width: 175, height: 150)
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(.white.opacity(0.3))
+                        .frame(width: 175, height: 125)
                     
                     // BPM Display with gestures
                     VStack {
                         
-                        Text("B P M")
+                        Text("BPM")
                             .font(.caption2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.gray)
+                            .fontWeight(.regular)
+                            .foregroundColor(.gray.opacity(0.75))
                             .lineLimit(nil)
                         
                         Text("\(Int(metronome.tempo))")
-                            .font(.system(size: 65, weight: .medium, design: .default))
+                            .font(.system(size: 50, weight: .bold, design: .default))
                             .contentTransition(.numericText())
                             .foregroundColor(Color.black)
                             .animation(.spring(response: 0.3), value: Int(metronome.tempo))
@@ -171,21 +169,23 @@ struct BPMView: View {
                 
                 VStack {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(.colorGlow.opacity(0.3))
-                            .frame(width: 85, height: 150)
+                        RoundedRectangle(cornerRadius: 5)
+                            .fill(.white.opacity(0.3))
+                            .frame(width: 85, height: 125)
+                        
                         // Tap Button
-                        VStack(spacing: 5) {
+                        ZStack {
                             Image(systemName: "lock.fill")
-                            Text("T A P")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.gray)
+                                .foregroundColor(Color.gray)
+                                .padding(.bottom, 75.0)
+                            
+                            Text("TAP")
+                                .font(.headline)
+                                .fontWeight(.bold)
                                 .lineLimit(nil)
+                               
                             
                         }
-                        
-                        
                     }
                 }
             }

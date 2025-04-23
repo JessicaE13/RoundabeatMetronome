@@ -75,7 +75,7 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color("colorPurpleBackground").opacity(0.8) : Color("colorPurpleBackground"),
+                    isFirstBeat ? Color("colorGlow").opacity(0.8) : Color("colorGlow"),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
                 )
             }
@@ -267,7 +267,7 @@ struct DialControl: View {
     }
     
     private var playPauseIcon: some View {
-        Image(systemName: metronome.isPlaying ? "pause.fill" : "play.fill")
+        Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
             .font(.system(size: 30))
             .foregroundColor(Color.black.opacity(0.9))
             .shadow(color: Color("colorPurpleBackground").opacity(0.7), radius: 0, x: 0, y: 0)

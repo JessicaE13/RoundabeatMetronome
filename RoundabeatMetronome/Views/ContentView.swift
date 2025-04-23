@@ -3,45 +3,10 @@
 import SwiftUI
 import AVFoundation
 
-
-// MARK: - Settings View
-struct SettingsView: View {
-    var body: some View {
-        NavigationView {
-            List {
-                Section(header: Text("Sound Options")) {
-                    Toggle("Enable Sound", isOn: .constant(true))
-                    
-                    NavigationLink(destination: Text("Sound Selection")) {
-                        HStack {
-                            Text("Click Sound")
-                            Spacer()
-                            Text("Woodblock")
-                                .foregroundColor(.gray)
-                        }
-                    }
-                }
-                
-                Section(header: Text("Visual Options")) {
-                    Toggle("Flash Screen on First Beat", isOn: .constant(true))
-                    Toggle("Dark Mode", isOn: .constant(true))
-                }
-                
-                Section(header: Text("About")) {
-                    NavigationLink(destination: Text("RoundaBeat Metronome\nVersion 1.0")) {
-                        Text("App Information")
-                    }
-                }
-            }
-            .navigationTitle("Settings")
-        }
-    }
-}
-
-
-
 // MARK: - Content View
+
 struct ContentView: View {
+    
     // Use an ObservedObject instead of a StateObject to share it between tabs
     @ObservedObject var metronome: MetronomeEngine
     @State private var isEditingTempo = false
@@ -62,14 +27,12 @@ struct ContentView: View {
         
         ZStack {
             
-            //Background color
             ZStack {
-                // Base color
-                
+    
                 //Background
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color("colorBackgroundCream").opacity(0.19),
+                        Color("colorBackgroundCream").opacity(0.90),
                         Color("colorBackgroundCream").opacity(0.95)
                     ]),
                     startPoint: .topLeading,
@@ -78,18 +41,18 @@ struct ContentView: View {
                 .ignoresSafeArea()
                 
                 //   Subtle gradient overlay
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        .white.opacity(0.75),
-                        .clear
-                    ]),
-                    startPoint: .bottom,
-                    endPoint: .center
-                )
-                .ignoresSafeArea()
+//                LinearGradient(
+//                    gradient: Gradient(colors: [
+//                        .white.opacity(0.75),
+//                        .clear
+//                    ]),
+//                    startPoint: .bottom,
+//                    endPoint: .center
+//                )
+//                .ignoresSafeArea()
                 
                 //    Very subtle noise texture (optional)
-                Color.black.opacity(0.73)
+                Color.black.opacity(0.25)
                     .ignoresSafeArea()
                     .blendMode(.overlay)
             }
