@@ -23,9 +23,6 @@ struct ArcSegment: View {
     var body: some View {
         ZStack {
             
-            
-            
-            
             // When not active, show gradient version
             if !isActive {
                 Path { path in
@@ -60,10 +57,10 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color("colorPurpleBackground").opacity(0.4) : Color("colorPurpleBackground").opacity(0.4),
+                    isFirstBeat ? Color("skinGreen").opacity(0.4) : Color("colorPurpleBackground").opacity(0.4),
                     style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
                 )
-                .blur(radius: 4)
+                .blur(radius: 10)
                 
                 Path { path in
                     path.addArc(
@@ -258,6 +255,7 @@ struct DialControl: View {
     private var knobBackground: some View {
         Circle()
             .fill(Color.white.opacity(0.9))
+        
             .frame(width: knobSize, height: knobSize)
             .overlay(
                 Circle()
@@ -406,37 +404,6 @@ struct CombinedMetronomeView: View {
                     .frame(width: 120)
                 }
             }
-
-            
-            // Additional metronome controls could go here
-            HStack(spacing: 20) {
-                Button(action: {
-                    // Decrease tempo by 5
-                    metronome.updateTempo(to: max(metronome.tempo - 5, metronome.minTempo))
-                }) {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 30))
-                        .foregroundColor(Color("colorGlow"))
-                }
-                
-                Button(action: {
-                    metronome.togglePlayback()
-                }) {
-                    Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(Color("colorGlow"))
-                }
-                
-                Button(action: {
-                    // Increase tempo by 5
-                    metronome.updateTempo(to: min(metronome.tempo + 5, metronome.maxTempo))
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 30))
-                        .foregroundColor(Color("colorGlow"))
-                }
-            }
-            .padding(.top, 10)
         }
         .padding()
         .background(Color.background)

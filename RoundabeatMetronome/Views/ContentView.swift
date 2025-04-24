@@ -18,6 +18,9 @@ struct ContentView: View {
     @State private var tapTempoBuffer: [TimeInterval] = []
     @State private var previousTempo: Double = 120
     
+    // Background Color
+//    @State private var backgroundColor = Color("skinRed")
+    
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
         self._previousTempo = State(initialValue: metronome.tempo)
@@ -32,8 +35,8 @@ struct ContentView: View {
                 //Background
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color("colorBackgroundCream").opacity(0.90),
-                        Color("colorBackgroundCream").opacity(0.95)
+                        AppTheme.backgroundColor.opacity(0.90),
+                        AppTheme.backgroundColor.opacity(0.95)
                     ]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing

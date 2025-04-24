@@ -8,30 +8,10 @@
 import SwiftUI
 
 
-// Custom shape for rounded corners
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-    
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
-    }
-}
-
-// Extension to apply corner radius to specific corners
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
-    }
-}
-
 // MARK: - BPM Display Component with Gestures
+
 struct BPMView: View {
+    
     @ObservedObject var metronome: MetronomeEngine
     @Binding var isShowingKeypad: Bool
     @Binding var showTimeSignaturePicker: Bool
@@ -43,26 +23,26 @@ struct BPMView: View {
         
         ZStack {
             
-            RoundedRectangle(cornerRadius: 5)
-           
-                .foregroundStyle(Color.gray.opacity(0.25))
-                .frame(width: .infinity, height: 150)
-               
-            
+//            RoundedRectangle(cornerRadius: 5)
+//                .foregroundStyle(Color.gray.opacity(0.25))
+//                .frame(width: .infinity, height: 150)
+                           
             HStack {
                 VStack {
                     ZStack {
                         VStack{
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(.white.opacity(0.3))
+                                .fill(.white.opacity(0.1))
                                 .frame(width: 85, height: 125)
                         }
+                        
                         VStack (spacing: 20){
+                            
                             // Time Signature Button
                             VStack(spacing: 5) {
                                 Text("TIME")
                                     .font(.system(size: 9, weight: .regular, design: .default))
-                                    .foregroundColor(.gray.opacity(0.75))
+                                    .foregroundColor(.black.opacity(0.4))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -73,7 +53,7 @@ struct BPMView: View {
                                         .animation(.spring(), value: metronome.beatsPerMeasure)
                                         .foregroundColor(Color.black)
                                         .animation(.spring(), value: metronome.beatUnit)
-                                        .frame(minWidth: 90)
+                                        .frame(minWidth: 85)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -83,7 +63,7 @@ struct BPMView: View {
                             VStack(spacing: 5) {
                                 Text("RHYTHM")
                                     .font(.system(size: 9, weight: .regular, design: .default))
-                                    .foregroundColor(.gray.opacity(0.75))
+                                    .foregroundColor(.black.opacity(0.4))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -94,7 +74,7 @@ struct BPMView: View {
                                         .animation(.spring(), value: metronome.beatsPerMeasure)
                                         .foregroundColor(Color.black)
                                         .animation(.spring(), value: metronome.beatUnit)
-                                        .frame(minWidth: 90)
+                                        .frame(minWidth: 85)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -107,16 +87,15 @@ struct BPMView: View {
                     
                     
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(.white.opacity(0.3))
+                        .fill(.white.opacity(0.1))
                         .frame(width: 175, height: 125)
                     
                     // BPM Display with gestures
                     VStack {
                         
                         Text("BPM")
-                            .font(.caption2)
-                            .fontWeight(.regular)
-                            .foregroundColor(.gray.opacity(0.75))
+                            .font(.system(size: 9, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.4))
                             .lineLimit(nil)
                         
                         Text("\(Int(metronome.tempo))")
@@ -134,9 +113,8 @@ struct BPMView: View {
                             }
                         
                         Text("Allegro")
-                            .font(.caption2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.gray)
+                            .font(.system(size: 9, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.4))
                             .lineLimit(nil)
                         
                         // Add vertical swipe gesture
@@ -170,13 +148,13 @@ struct BPMView: View {
                 VStack {
                     ZStack {
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(.white.opacity(0.3))
+                            .fill(.white.opacity(0.1))
                             .frame(width: 85, height: 125)
                         
                         // Tap Button
                         ZStack {
                             Image(systemName: "lock.fill")
-                                .foregroundColor(Color.gray)
+                                .foregroundColor(Color.black.opacity(0.4))
                                 .padding(.bottom, 75.0)
                             
                             Text("TAP")
@@ -194,10 +172,26 @@ struct BPMView: View {
 }
 
 
+
+
 #Preview {
-    BPMView(
-        metronome: MetronomeEngine(),
-        isShowingKeypad: .constant(false),
-        showTimeSignaturePicker: .constant(false)
-    )
+    ZStack {
+        // Add the background gradient
+        LinearGradient(
+            gradient: Gradient(colors: [
+                AppTheme.backgroundColor.opacity(0.90),
+                AppTheme.backgroundColor.opacity(0.95)
+            ]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+        
+        // Add the BPMView on top
+        BPMView(
+            metronome: MetronomeEngine(),
+            isShowingKeypad: .constant(false),
+            showTimeSignaturePicker: .constant(false)
+        )
+    }
 }
