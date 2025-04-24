@@ -10,7 +10,7 @@ import SwiftUI
 struct TitleView: View {
     var body: some View {
         Text("r o u n d a b e a t")
-            .font(.system(.title3, design: .default))
+            .font(.system(.title2, design: .default))
             .fontWeight(.medium)
             .foregroundStyle(
                          LinearGradient(
