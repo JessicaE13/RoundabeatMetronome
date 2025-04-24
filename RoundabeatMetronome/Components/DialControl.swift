@@ -9,7 +9,15 @@
 
 import SwiftUI
 
+extension Color {
+    func darker(by percentage: CGFloat = 0.1) -> Color {
+        return self.opacity(1.0 - percentage)
+    }
+}
+
+
 // MARK: - Beat Segment Arc View
+
 struct ArcSegment: View {
     let center: CGPoint
     let radius: CGFloat
@@ -23,6 +31,7 @@ struct ArcSegment: View {
     var body: some View {
         ZStack {
             
+
             // When not active, show gradient version
             if !isActive {
                 Path { path in
@@ -36,7 +45,9 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.gray.opacity(0.45), Color.gray.opacity(0.40)]),
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.15), Color.black.opacity(0.15)
+                        ]),
                         startPoint: .top,
                         endPoint: .bottom
                     ),
@@ -57,10 +68,10 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color("skinGreen").opacity(0.4) : Color("colorPurpleBackground").opacity(0.4),
+                    isFirstBeat ? Color(.gray.opacity(0.4)) : Color(.gray.opacity(0.4)),
                     style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
                 )
-                .blur(radius: 10)
+                    .blur(radius: 10)
                 
                 Path { path in
                     path.addArc(
@@ -72,9 +83,11 @@ struct ArcSegment: View {
                     )
                 }
                 .stroke(
-                    isFirstBeat ? Color("colorGlow").opacity(0.8) : Color("colorGlow"),
+                    isFirstBeat ? Color.white.opacity(0.9) : Color.white.opacity(0.9),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
                 )
+                .shadow(color: isFirstBeat ? Color.white.opacity(0.1) : Color.white.opacity(0.1), radius: 4, x: 0, y: 0)
+                .blur(radius: 2)
             }
         }
         // Add a subtle animation when segment becomes active
@@ -82,7 +95,9 @@ struct ArcSegment: View {
     }
 }
 
+
 // MARK: - Segmented Circle View
+
 struct SegmentedCircleView: View {
     @ObservedObject var metronome: MetronomeEngine
     let diameter: CGFloat
@@ -170,7 +185,10 @@ struct SegmentedCircleView: View {
         return (startAngle, endAngle)
     }
 }
+
+
 // MARK: - Dial Control Component
+
 struct DialControl: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var dialRotation: Double = 0.0
@@ -204,14 +222,73 @@ struct DialControl: View {
     }
 
     // MARK: - View Components
-    
     private var dialBackground: some View {
-        Circle()
-            .fill(Color("colorDial"))
-            .frame(width: dialSize, height: dialSize)
-            .overlay(dialTickMarks)
-    }
-    
+    ZStack {
+            // Base layer - darker outer shadow for depth
+            Circle()
+                .fill(Color("colorDial"))
+                .frame(width: dialSize, height: dialSize)
+                .shadow(color: Color.black.opacity(0.5), radius: 10, x: 0, y: 6)
+            
+            // Donut shape with hollow center
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color("colorDial").opacity(0.9),
+                            Color("colorDial").opacity(1.0),
+                            Color("colorDial").darker(by: 0.2)
+                        ]),
+                        center: .topLeading,
+                        startRadius: 0,
+                        endRadius: dialSize
+                    )
+                )
+                .frame(width: dialSize, height: dialSize)
+                .overlay(
+                    // This creates the hollow center
+                    Circle()
+                        .fill(Color.clear)
+                        .frame(width: dialSize, height: dialSize)
+                        .blendMode(.destinationOut)
+                )
+                .compositingGroup()
+            
+            // Inner edge highlight
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.3),
+                            Color.white.opacity(0.1),
+                            Color.white.opacity(0.0)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round)
+                )
+                .frame(width: dialSize - 4, height: dialSize - 4)
+            
+            // Inner circle edge - to create the inner edge of the donut
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.black.opacity(0.3),
+                            Color.black.opacity(0.1),
+                            Color.clear,
+                            Color.white.opacity(0.1)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
+                )
+                .frame(width: dialSize/2, height: dialSize/2)
+        }
+        .overlay(dialTickMarks)
+   }
     private var dialTickMarks: some View {
         ZStack {
             // Add 60 tick marks (one for each minute/second)
@@ -254,12 +331,22 @@ struct DialControl: View {
     
     private var knobBackground: some View {
         Circle()
-            .fill(Color.white.opacity(0.9))
-        
+            .fill(.black.opacity(0.950))
             .frame(width: knobSize, height: knobSize)
             .overlay(
                 Circle()
-                    .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+            )
+            .overlay(
+                Circle()
+                   .fill(Color("colorDial").opacity(0.8))
+//                    .fill(
+//                        LinearGradient(
+//                            gradient: Gradient(colors: [Color.white.opacity(0.2), Color.clear]),
+//                            startPoint: .top,
+//                            endPoint: .bottom
+//                        )
+//                    )
             )
             .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
     }
@@ -267,7 +354,7 @@ struct DialControl: View {
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
             .font(.system(size: 30))
-            .foregroundColor(Color.black.opacity(0.9))
+            .foregroundColor(Color.white.opacity(0.8))
             .shadow(color: Color("colorPurpleBackground").opacity(0.7), radius: 0, x: 0, y: 0)
     }
     

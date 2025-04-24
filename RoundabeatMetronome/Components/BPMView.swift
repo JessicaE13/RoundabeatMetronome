@@ -20,22 +20,38 @@ struct BPMView: View {
     
     var body: some View {
         
+
         
         ZStack {
+            RoundedRectangle(cornerRadius: 7)
+                .foregroundStyle(Color.white.opacity(0.1)) // Using the built-in blur material
+                .frame(width: 385, height: 155)  // Using maxWidth instead of width
+              // .background(.regularMaterial)
+            //   .blur(radius: 10)
+                .shadow(radius: 5)
             
-//            RoundedRectangle(cornerRadius: 5)
-//                .foregroundStyle(Color.gray.opacity(0.25))
-//                .frame(width: .infinity, height: 150)
-                           
+            
             HStack {
                 VStack {
                     ZStack {
                         VStack{
+                       
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(.white.opacity(0.1))
+                                .fill(LinearGradient(
+                                    gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
+                                    startPoint: .top,
+                                    endPoint: .bottomTrailing)
+                                )
                                 .frame(width: 85, height: 125)
-                        }
+                                .shadow(color: Color.white.opacity(0.4), radius: 6, x: 0, y: 0)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(Color.white.opacity(0.6), lineWidth: 0.5)
+                                )
+                                
                         
+                            
+                        }
                         VStack (spacing: 20){
                             
                             // Time Signature Button
@@ -87,9 +103,17 @@ struct BPMView: View {
                     
                     
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(.white.opacity(0.1))
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
+                            startPoint: .top,
+                            endPoint: .bottomTrailing)
+                        )
                         .frame(width: 175, height: 125)
-                    
+                        .shadow(color: Color.white.opacity(0.4), radius: 6, x: 0, y: 0)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(Color.white.opacity(0.6), lineWidth: 0.5)
+                        )
                     // BPM Display with gestures
                     VStack {
                         
@@ -148,8 +172,18 @@ struct BPMView: View {
                 VStack {
                     ZStack {
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(.white.opacity(0.1))
+                            .fill(LinearGradient(
+                                gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
+                                startPoint: .top,
+                                endPoint: .bottomTrailing)
+                            )
                             .frame(width: 85, height: 125)
+                            .shadow(color: Color.white.opacity(0.4), radius: 6, x: 0, y: 0)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.white.opacity(0.6), lineWidth: 0.5)
+                            )
+                        
                         
                         // Tap Button
                         ZStack {
@@ -161,7 +195,7 @@ struct BPMView: View {
                                 .font(.headline)
                                 .fontWeight(.bold)
                                 .lineLimit(nil)
-                               
+                            
                             
                         }
                     }

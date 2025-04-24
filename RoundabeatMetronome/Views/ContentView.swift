@@ -43,16 +43,16 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
                 
-                //   Subtle gradient overlay
-//                LinearGradient(
-//                    gradient: Gradient(colors: [
-//                        .white.opacity(0.75),
-//                        .clear
-//                    ]),
-//                    startPoint: .bottom,
-//                    endPoint: .center
-//                )
-//                .ignoresSafeArea()
+        //           Subtle gradient overlay
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        .white.opacity(0.01),
+                        .white.opacity(0.2)
+                    ]),
+                    startPoint: .bottom,
+                    endPoint: .center
+                )
+                .ignoresSafeArea()
                 
                 //    Very subtle noise texture (optional)
                 Color.black.opacity(0.25)
@@ -63,12 +63,15 @@ struct ContentView: View {
             // Main metronome interface
             VStack(spacing: 25) {
                 
+              
+                
                 BPMView(
                     metronome: metronome,
                     isShowingKeypad: $showBPMKeypad,
                     showTimeSignaturePicker: $showTimeSignaturePicker
                 )
                 
+            
                 // Title
                 
                 TitleView()

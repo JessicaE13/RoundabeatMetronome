@@ -10,11 +10,16 @@ import SwiftUI
 struct TitleView: View {
     var body: some View {
         Text("r o u n d a b e a t")
-            .font(.body)
+            .font(.system(.title2, design: .default))
             .fontWeight(.bold)
-            .foregroundStyle(.black.opacity(0.85))
-//            .shadow(color: .black.opacity(0.2), radius: 1, x: 2, y: 1)
-//            .shadow(color: .white.opacity(0.1), radius: 1, x: -2, y: -1)
+            .foregroundStyle(
+                         LinearGradient(
+                            colors: [.black.opacity(0.7), .black.opacity(0.9), .black.opacity(0.6)],
+                             startPoint: .leading,
+                             endPoint: .trailing
+                         )
+                     )
+            .shadow(radius: 1)
             .padding(35.0)
     
     }
