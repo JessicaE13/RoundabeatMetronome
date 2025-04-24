@@ -50,8 +50,8 @@ struct BPMView: View {
                             // Time Signature Button - centered
                             VStack(spacing: 5) {
                                 Text("TIME")
-                                    .font(.system(size: 9, weight: .regular, design: .default))
-                                    .foregroundColor(.black.opacity(0.9))
+                                    .font(.system(size: 8, weight: .regular, design: .default))
+                                    .foregroundColor(.black.opacity(0.75))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -88,8 +88,8 @@ struct BPMView: View {
                             // Rhythm Button - centered
                             VStack(spacing: 5) {
                                 Text("RHYTHM")
-                                    .font(.system(size: 9, weight: .regular, design: .default))
-                                    .foregroundColor(.black.opacity(0.9))
+                                    .font(.system(size: 8, weight: .regular, design: .default))
+                                    .foregroundColor(.black.opacity(0.75))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -129,8 +129,8 @@ struct BPMView: View {
                     VStack {
                         
                         Text("BPM")
-                            .font(.system(size: 9, weight: .regular, design: .default))
-                            .foregroundColor(.black.opacity(0.9))
+                            .font(.system(size: 8, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.75))
                             .lineLimit(nil)
                         
                         Text("\(Int(metronome.tempo))")
@@ -148,8 +148,8 @@ struct BPMView: View {
                             }
                         
                         Text("Allegro")
-                            .font(.system(size: 9, weight: .regular, design: .default))
-                            .foregroundColor(.black.opacity(0.9))
+                            .font(.system(size: 8, weight: .regular, design: .default))
+                            .foregroundColor(.black.opacity(0.75))
                             .lineLimit(nil)
                         
                         // Add vertical swipe gesture
