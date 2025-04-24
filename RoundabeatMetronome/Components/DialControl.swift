@@ -46,7 +46,7 @@ struct ArcSegment: View {
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color.white.opacity(0.15), Color.black.opacity(0.15)
+                            Color.white.opacity(0.15), Color.white.opacity(0.1)
                         ]),
                         startPoint: .top,
                         endPoint: .bottom
@@ -188,19 +188,26 @@ struct SegmentedCircleView: View {
 
 
 // MARK: - Dial Control Component
-
 struct DialControl: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var dialRotation: Double = 0.0
     @State private var previousAngle: Double?
     @State private var isDragging: Bool = false
+    @State private var isKnobTouched: Bool = false
     
     // Constants
     private let dialSize: CGFloat = 275
     private let knobSize: CGFloat = 275/3
+    // Added variable for the inner donut size (as a ratio of dialSize)
+    private let innerDonutRatio: CGFloat = 0.35 // Adjust this value to change inner circle size
     private let minRotation: Double = -150 // Degrees
     private let maxRotation: Double = 150 // Degrees
     private let ringLineWidth: CGFloat = 10
+    
+    // Computed property for inner donut diameter
+    private var innerDonutDiameter: CGFloat {
+        return knobSize + 4 // Just 4 pixels larger than the knob
+    }
     
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
@@ -219,6 +226,10 @@ struct DialControl: View {
             // Update dial rotation when tempo changes from any source
             dialRotation = tempoToRotation(newTempo)
         }
+        // Detect touch on the entire dial area
+        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+            isKnobTouched = pressing
+        }, perform: {})
     }
 
     // MARK: - View Components
@@ -246,10 +257,10 @@ struct DialControl: View {
                 )
                 .frame(width: dialSize, height: dialSize)
                 .overlay(
-                    // This creates the hollow center
+                    // This creates the hollow center - now using the computed property
                     Circle()
                         .fill(Color.clear)
-                        .frame(width: dialSize, height: dialSize)
+                        .frame(width: innerDonutDiameter, height: innerDonutDiameter)
                         .blendMode(.destinationOut)
                 )
                 .compositingGroup()
@@ -270,7 +281,7 @@ struct DialControl: View {
                 )
                 .frame(width: dialSize - 4, height: dialSize - 4)
             
-            // Inner circle edge - to create the inner edge of the donut
+            // Inner circle edge - updated to use the computed property
             Circle()
                 .stroke(
                     LinearGradient(
@@ -285,10 +296,12 @@ struct DialControl: View {
                     ),
                     lineWidth: 2
                 )
-                .frame(width: dialSize/2, height: dialSize/2)
+                .frame(width: innerDonutDiameter, height: innerDonutDiameter)
         }
         .overlay(dialTickMarks)
    }
+    
+    
     private var dialTickMarks: some View {
         ZStack {
             // Add 60 tick marks (one for each minute/second)
@@ -302,11 +315,23 @@ struct DialControl: View {
     private func tickMark(at index: Int) -> some View {
         let isLargeTick = index % 5 == 0
         
-        return Rectangle()
-            .fill(isLargeTick ? Color.white.opacity(0.7) : Color.white.opacity(0.6))
-            .frame(width: isLargeTick ? 2 : 1, height: isLargeTick ? 10 : 5)
-            .offset(y: (dialSize / 2 - 15) * -1)
-            .rotationEffect(.degrees(Double(index) * 6))
+        return ZStack {
+            // Reduced glow effect when knob is touched
+            if isKnobTouched {
+                Rectangle()
+                    .fill(Color.white.opacity(0.4))
+                    .frame(width: isLargeTick ? 2 : 1, height: isLargeTick ? 10 : 5)
+                    .blur(radius: 2)
+            }
+            
+            // Main tick mark - keeping the same size whether glowing or not
+            Rectangle()
+                .fill(isKnobTouched ? Color.white.opacity(0.8) : (isLargeTick ? Color.white.opacity(0.7) : Color.white.opacity(0.6)))
+                .frame(width: isLargeTick ? 2 : 1, height: isLargeTick ? 10 : 5)
+        }
+        .offset(y: (dialSize / 2 - 15) * -1)
+        .rotationEffect(.degrees(Double(index) * 6))
+        .animation(isKnobTouched ? .easeInOut(duration: 0.1) : .none, value: isKnobTouched)
     }
     
     private var segmentedRing: some View {
@@ -327,11 +352,12 @@ struct DialControl: View {
             generator.impactOccurred()
             metronome.togglePlayback()
         }
+        // No need for touch detection here as we're handling it at the ZStack level
     }
     
     private var knobBackground: some View {
         Circle()
-            .fill(.black.opacity(0.950))
+            .fill(Color("colorDial").opacity(0.950))
             .frame(width: knobSize, height: knobSize)
             .overlay(
                 Circle()
@@ -352,21 +378,41 @@ struct DialControl: View {
     }
     
     private var playPauseIcon: some View {
-        Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
-            .font(.system(size: 30))
-            .foregroundColor(Color.white.opacity(0.8))
-            .shadow(color: Color("colorPurpleBackground").opacity(0.7), radius: 0, x: 0, y: 0)
-    }
+           ZStack {
+               // Glow effect for the icon
+               if isKnobTouched || metronome.isPlaying {
+                   Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
+                       .font(.system(size: 30))
+                       .foregroundColor(Color.white.opacity(0.5))
+                       .blur(radius: 3)
+               }
+               
+               // Main icon
+               Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
+                   .font(.system(size: 30))
+                   .foregroundColor(
+                       (isKnobTouched && !metronome.isPlaying) || metronome.isPlaying
+                       ? Color.white.opacity(0.9)
+                       : Color.white.opacity(0.8)
+                   )
+                   .shadow(color: Color("colorPurpleBackground").opacity(0.7), radius: 0, x: 0, y: 0)
+           }
+           .animation(isKnobTouched ? .easeInOut(duration: 0.1) : .none, value: isKnobTouched)
+       }
     
     // MARK: - Gesture Handling
     
     private func createDragGesture() -> some Gesture {
         DragGesture(minimumDistance: 1)
             .onChanged { value in
+                if !isKnobTouched {
+                    isKnobTouched = true
+                }
                 handleDragChange(value)
             }
             .onEnded { _ in
                 isDragging = false
+                isKnobTouched = false
                 previousAngle = nil
             }
     }
@@ -445,7 +491,9 @@ struct DialControl: View {
         return degrees
     }
 }
+
 // MARK: - Combined Metronome View
+
 struct CombinedMetronomeView: View {
     @StateObject private var metronome = MetronomeEngine()
     
