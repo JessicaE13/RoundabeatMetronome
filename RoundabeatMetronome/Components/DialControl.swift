@@ -361,7 +361,7 @@ struct DialControl: View {
             .frame(width: knobSize, height: knobSize)
             .overlay(
                 Circle()
-                    .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.5), lineWidth: 0.5)
             )
             .overlay(
                 Circle()

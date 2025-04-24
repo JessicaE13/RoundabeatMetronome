@@ -24,7 +24,7 @@ struct BPMView: View {
         
         ZStack {
             RoundedRectangle(cornerRadius: 7)
-                .foregroundStyle(Color.white.opacity(0.1)) // Using the built-in blur material
+                .foregroundStyle(Color.black.opacity(0.1)) // Using the built-in blur material
                 .frame(width: 385, height: 155)  // Using maxWidth instead of width
               // .background(.regularMaterial)
             //   .blur(radius: 10)
@@ -37,7 +37,7 @@ struct BPMView: View {
                         VStack{
                        
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(LinearGradient(
+                                .stroke(LinearGradient(
                                     gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
                                     startPoint: .top,
                                     endPoint: .bottomTrailing)
@@ -103,7 +103,7 @@ struct BPMView: View {
                     
                     
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(LinearGradient(
+                        .stroke(LinearGradient(
                             gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
                             startPoint: .top,
                             endPoint: .bottomTrailing)
@@ -172,7 +172,7 @@ struct BPMView: View {
                 VStack {
                     ZStack {
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(LinearGradient(
+                            .stroke(LinearGradient(
                                 gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
                                 startPoint: .top,
                                 endPoint: .bottomTrailing)
