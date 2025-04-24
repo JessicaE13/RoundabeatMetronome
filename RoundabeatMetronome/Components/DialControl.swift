@@ -8,6 +8,7 @@
 
 
 import SwiftUI
+import AVFoundation
 
 extension Color {
     func darker(by percentage: CGFloat = 0.1) -> Color {
@@ -417,6 +418,8 @@ struct DialControl: View {
             }
     }
     
+    // MARK: - Gesture Handling
+    // MARK: - Gesture Handling
     private func handleDragChange(_ value: DragGesture.Value) {
         isDragging = true
         
@@ -440,19 +443,36 @@ struct DialControl: View {
         
         // Calculate tempo change (positive = clockwise = increase tempo)
         let tempoChange = angleDelta * sensitivity
-        let newTempo = metronome.tempo + tempoChange
+        
+        // Store current tempo for comparison
+        let oldTempo = metronome.tempo
         
         // Update the tempo
+        let newTempo = metronome.tempo + tempoChange
         metronome.updateTempo(to: newTempo)
         
-        // Add haptic feedback
-        if abs(tempoChange) > 0.5 {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred(intensity: 0.2)
+        // Check if BPM value has changed by at least 1 (comparing integer values)
+        if Int(oldTempo) != Int(newTempo) {
+            // Match the exact haptic feedback used in BPMView
+            let generator = UIImpactFeedbackGenerator(style: .soft)
+            generator.impactOccurred(intensity: 0.5)
         }
+        
+        // Remove the existing stronger feedback for larger changes to match BPMView behavior
+        // (original code had an additional haptic feedback for changes > 0.5)
         
         // Save the current angle for next comparison
         previousAngle = angle
+    }
+    
+    //do i need this?
+    
+
+    // Add this function to play a subtle sound on BPM changes
+    private func playBpmChangeSound() {
+        // We need to import AVFoundation at the top of the file
+        let soundID: SystemSoundID = 1104 // This is a subtle "tick" sound
+        AudioServicesPlaySystemSound(soundID)
     }
     
     private func calculateAngleDelta(from prevAngle: Double, to currentAngle: Double) -> Double {
