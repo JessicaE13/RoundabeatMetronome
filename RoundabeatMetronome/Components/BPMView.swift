@@ -1,10 +1,3 @@
-//
-//  BPMView.swift
-//  RoundabeatMetronome
-//
-//  Created by Jessica Estes on 4/21/25.
-//
-
 import SwiftUI
 
 // MARK: - BPM Display Component with Gestures
@@ -20,12 +13,6 @@ struct BPMView: View {
     var body: some View {
         
         ZStack {
-            RoundedRectangle(cornerRadius: 7)
-                .fill(.shadow(.inner(color: .black, radius: 3, y: 2)))
-                .foregroundStyle(Color.black.opacity(0.25))
-                .frame(width: 370, height: 155)
-                
-            
             HStack {
                 VStack {
                     // Time and Rhythm containers
@@ -34,27 +21,26 @@ struct BPMView: View {
                         ZStack {
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(LinearGradient(
-                                    gradient: Gradient(colors: [Color.white.opacity(0.8), Color.white.opacity(0.7)]),
+                                    gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.5)]),
                                     startPoint: .top,
                                     endPoint: .bottomTrailing)
                                 )
                                 .frame(width: 75, height: 58)
-                                .shadow(color: Color.white.opacity(0.7), radius: 4, x: 0, y: 0)
+                                .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white.opacity(0.8), lineWidth: 0.8)
-                                        .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
+                                        .stroke(Color.white.opacity(0.6), lineWidth: 0.6)
+                                        .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
                                         .fill(Color.white.opacity(0.08))
-                                        .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
                                 )
                             // Time Signature Button - centered
                             VStack(spacing: 5) {
                                 Text("TIME")
                                     .font(.system(size: 8, weight: .regular, design: .default))
-                                    .foregroundColor(.black.opacity(0.5))
+                                    .foregroundColor(Color("colorDial").opacity(0.5))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -63,7 +49,7 @@ struct BPMView: View {
                                     Text("\(metronome.beatsPerMeasure) / \(metronome.beatUnit)")
                                         .font(.system(size: 14, weight: .bold, design: .default))
                                         .animation(.spring(), value: metronome.beatsPerMeasure)
-                                        .foregroundColor(Color.white)
+                                        .foregroundColor(Color.black)
                                         .animation(.spring(), value: metronome.beatUnit)
                                         .frame(minWidth: 75)
                                 }
@@ -76,28 +62,27 @@ struct BPMView: View {
                         ZStack {
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(LinearGradient(
-                                    gradient: Gradient(colors: [Color.white.opacity(0.8), Color.white.opacity(0.7)]),
+                                    gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.5)]),
                                     startPoint: .top,
                                     endPoint: .bottomTrailing)
                                 )
                                 .frame(width: 75, height: 58)
-                                .shadow(color: Color.white.opacity(0.7), radius: 4, x: 0, y: 0)
+                                .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white.opacity(0.8), lineWidth: 0.8)
-                                        .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
+                                        .stroke(Color.white.opacity(0.6), lineWidth: 0.6)
+                                        .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
                                         .fill(Color.white.opacity(0.08))
-                                        .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
-                                    )
+                                )
                             
                             // Rhythm Button - centered
                             VStack(spacing: 5) {
                                 Text("RHYTHM")
                                     .font(.system(size: 8, weight: .regular, design: .default))
-                                    .foregroundColor(.black.opacity(0.5))
+                                    .foregroundColor(Color("colorDial").opacity(0.5))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -106,7 +91,7 @@ struct BPMView: View {
                                     Text("\(metronome.beatsPerMeasure) / \(metronome.beatUnit)")
                                         .font(.system(size: 14, weight: .bold, design: .default))
                                         .animation(.spring(), value: metronome.beatsPerMeasure)
-                                        .foregroundColor(Color.white)
+                                        .foregroundColor(Color("colorDial"))
                                         .animation(.spring(), value: metronome.beatUnit)
                                         .frame(minWidth: 75)
                                 }
@@ -122,28 +107,27 @@ struct BPMView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 5)
                         .stroke(LinearGradient(
-                            gradient: Gradient(colors: [Color.white.opacity(0.8), Color.white.opacity(0.7)]),
+                            gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.5)]),
                             startPoint: .top,
                             endPoint: .bottomTrailing)
                         )
                         .frame(width: 175, height: 125)
-                        .shadow(color: Color.white.opacity(0.7), radius: 4, x: 0, y: 0)
+                        .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.white.opacity(0.8), lineWidth: 0.8)
-                                .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
+                                .stroke(Color.white.opacity(0.6), lineWidth: 0.6)
+                                .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
                                 .fill(Color.white.opacity(0.08))
-                                .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
                         )
                     
                     // BPM Display with gestures and +/- buttons
                     VStack {
                         Text("BPM")
                             .font(.system(size: 8, weight: .regular, design: .default))
-                            .foregroundColor(.black.opacity(0.5))
+                            .foregroundColor(Color("colorDial").opacity(0.5))
                             .lineLimit(nil)
                         
                         // Inside the HStack where the BPM display is shown
@@ -160,7 +144,7 @@ struct BPMView: View {
                             }) {
                                 Image(systemName: "minus")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .foregroundColor(Color("colorDial").opacity(0.8))
                                     .frame(width: 40, height: 60) // Larger frame for touch target
                                     .contentShape(Rectangle()) // Make entire area tappable
                             }
@@ -171,7 +155,7 @@ struct BPMView: View {
                             Text("\(Int(metronome.tempo))")
                                 .font(.system(size: 45, weight: .bold, design: .default))
                                 .contentTransition(.numericText())
-                                .foregroundColor(Color.white)
+                                .foregroundColor(Color("colorDial"))
                                 .multilineTextAlignment(.center)
                                 .animation(.spring(response: 0.3), value: Int(metronome.tempo))
                                 .frame(width: 90, alignment: .center) // Fixed width with center alignment
@@ -195,7 +179,7 @@ struct BPMView: View {
                             }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .foregroundColor(Color("colorDial").opacity(0.8))
                                     .frame(width: 40, height: 60) // Larger frame for touch target
                                     .contentShape(Rectangle()) // Make entire area tappable
                             }
@@ -204,10 +188,9 @@ struct BPMView: View {
                         }
                         .frame(width: 150) // Fixed total width for the container
                         
-                        Text("Allegro")
-                            .font(.footnote)
-                            .foregroundColor(Color.white)
-                            .fontWeight(.bold)
+                        Text("ALLEGRO")
+                            .font(.system(size: 8, weight: .regular, design: .default))
+                            .foregroundColor(Color("colorDial").opacity(0.5))
                             .lineLimit(nil)
                     }
                 }
@@ -251,32 +234,31 @@ struct BPMView: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(LinearGradient(
-                                gradient: Gradient(colors: [Color.white.opacity(0.99), Color.white.opacity(0.8)]),
+                                gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
                                 startPoint: .top,
                                 endPoint: .bottomTrailing)
                             )
                             .frame(width: 75, height: 125)
-                            .shadow(color: Color.white.opacity(0.7), radius: 4, x: 0, y: 0)
+                            .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.white.opacity(1.0), lineWidth: 0.8)
-                                    .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
+                                    .stroke(Color.white.opacity(0.7), lineWidth: 0.6)
+                                    .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
                                     .fill(Color.white.opacity(0.08))
-                                    .shadow(color: Color.white.opacity(0.6), radius: 2, x: 0, y: 0)
-                                )
+                            )
                         
                         // Tap Button
                         ZStack {
                             Image(systemName: "lock.fill")
-                                .foregroundColor(Color.black.opacity(0.4))
+                                .foregroundColor(Color("colorDial").opacity(0.4))
                                 .padding(.bottom, 75.0)
                             
                             Text("TAP")
                                 .font(.headline)
-                                .foregroundColor(Color.white)
+                                .foregroundColor(Color("colorDial"))
                                 .fontWeight(.bold)
                                 .lineLimit(nil)
                         }
