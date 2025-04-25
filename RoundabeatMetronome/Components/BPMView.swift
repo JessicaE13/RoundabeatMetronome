@@ -21,20 +21,20 @@ struct BPMView: View {
                         ZStack {
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(LinearGradient(
-                                    gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.5)]),
+                                    gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
                                     startPoint: .top,
                                     endPoint: .bottomTrailing)
                                 )
                                 .frame(width: 75, height: 58)
-                                .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
+                                .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white.opacity(0.6), lineWidth: 0.6)
-                                        .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
+                                        .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                                        .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .fill(Color.white.opacity(0.08))
+                                        .fill(Color.white.opacity(0.05))
                                 )
                             // Time Signature Button - centered
                             VStack(spacing: 5) {
@@ -62,20 +62,20 @@ struct BPMView: View {
                         ZStack {
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(LinearGradient(
-                                    gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.5)]),
+                                    gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
                                     startPoint: .top,
                                     endPoint: .bottomTrailing)
                                 )
                                 .frame(width: 75, height: 58)
-                                .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
+                                .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white.opacity(0.6), lineWidth: 0.6)
-                                        .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
+                                        .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                                        .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .fill(Color.white.opacity(0.08))
+                                        .fill(Color.white.opacity(0.05))
                                 )
                             
                             // Rhythm Button - centered
@@ -107,20 +107,20 @@ struct BPMView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 5)
                         .stroke(LinearGradient(
-                            gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.5)]),
+                            gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
                             startPoint: .top,
                             endPoint: .bottomTrailing)
                         )
                         .frame(width: 175, height: 125)
-                        .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
+                        .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.white.opacity(0.6), lineWidth: 0.6)
-                                .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
+                                .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                                .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(Color.white.opacity(0.08))
+                                .fill(Color.white.opacity(0.05))
                         )
                     
                     // BPM Display with gestures and +/- buttons
@@ -234,20 +234,20 @@ struct BPMView: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(LinearGradient(
-                                gradient: Gradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.6)]),
+                                gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
                                 startPoint: .top,
                                 endPoint: .bottomTrailing)
                             )
                             .frame(width: 75, height: 125)
-                            .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
+                            .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.white.opacity(0.7), lineWidth: 0.6)
-                                    .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
+                                    .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                                    .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .fill(Color.white.opacity(0.08))
+                                    .fill(Color.white.opacity(0.05))
                             )
                         
                         // Tap Button

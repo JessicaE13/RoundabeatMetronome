@@ -31,10 +31,39 @@ struct ArcSegment: View {
     
     var body: some View {
         ZStack {
-            
-
-            // When not active, show gradient version
+            // When not active, show gradient version with outline
             if !isActive {
+                // White outline for inactive segments
+                // Draw two arcs - one slightly larger than the other
+                Path { path in
+                    path.addArc(
+                        center: center,
+                        radius: radius + lineWidth/2 + 1, // Slightly larger radius for outer edge
+                        startAngle: Angle(degrees: startAngle),
+                        endAngle: Angle(degrees: endAngle),
+                        clockwise: false
+                    )
+                }
+                .stroke(
+                    Color.white.opacity(0.2),
+                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                )
+                
+                Path { path in
+                    path.addArc(
+                        center: center,
+                        radius: radius - lineWidth/2 - 1, // Slightly smaller radius for inner edge
+                        startAngle: Angle(degrees: startAngle),
+                        endAngle: Angle(degrees: endAngle),
+                        clockwise: false
+                    )
+                }
+                .stroke(
+                    Color.white.opacity(0.2),
+                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                )
+                
+                // Main segment fill
                 Path { path in
                     path.addArc(
                         center: center,
@@ -56,9 +85,9 @@ struct ArcSegment: View {
                 )
             }
             
-            // When active, show colored version
+            // When active, show colored version with outline
             if isActive {
-                
+                // Glow effect
                 Path { path in
                     path.addArc(
                         center: center,
@@ -72,8 +101,9 @@ struct ArcSegment: View {
                     isFirstBeat ? Color(.gray.opacity(0.4)) : Color(.gray.opacity(0.4)),
                     style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
                 )
-                    .blur(radius: 10)
+                .blur(radius: 10)
                 
+                // Main segment
                 Path { path in
                     path.addArc(
                         center: center,
@@ -89,13 +119,42 @@ struct ArcSegment: View {
                 )
                 .shadow(color: isFirstBeat ? Color.white.opacity(0.1) : Color.white.opacity(0.1), radius: 4, x: 0, y: 0)
                 .blur(radius: 2)
+                
+                // White outline for active segments - outer edge
+                Path { path in
+                    path.addArc(
+                        center: center,
+                        radius: radius + lineWidth/2 + 1,
+                        startAngle: Angle(degrees: startAngle),
+                        endAngle: Angle(degrees: endAngle),
+                        clockwise: false
+                    )
+                }
+                .stroke(
+                    Color.white.opacity(0.4),
+                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                )
+                
+                // White outline for active segments - inner edge
+                Path { path in
+                    path.addArc(
+                        center: center,
+                        radius: radius - lineWidth/2 - 1,
+                        startAngle: Angle(degrees: startAngle),
+                        endAngle: Angle(degrees: endAngle),
+                        clockwise: false
+                    )
+                }
+                .stroke(
+                    Color.white.opacity(0.4),
+                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                )
             }
         }
         // Add a subtle animation when segment becomes active
         .animation(.easeInOut(duration: 0.1), value: isActive)
     }
 }
-
 
 // MARK: - Segmented Circle View
 
@@ -197,7 +256,7 @@ struct DialControl: View {
     @State private var isKnobTouched: Bool = false
     
     // Constants
-    private let dialSize: CGFloat = 275
+    private let dialSize: CGFloat = 250
     private let knobSize: CGFloat = 275/3
     // Added variable for the inner donut size (as a ratio of dialSize)
     private let innerDonutRatio: CGFloat = 0.35 // Adjust this value to change inner circle size
@@ -338,7 +397,7 @@ struct DialControl: View {
     private var segmentedRing: some View {
         SegmentedCircleView(
             metronome: metronome,
-            diameter: dialSize + 45,
+            diameter: dialSize + 55,
             lineWidth: ringLineWidth
         )
     }
@@ -367,13 +426,7 @@ struct DialControl: View {
             .overlay(
                 Circle()
                    .fill(Color("colorDial").opacity(0.8))
-//                    .fill(
-//                        LinearGradient(
-//                            gradient: Gradient(colors: [Color.white.opacity(0.2), Color.clear]),
-//                            startPoint: .top,
-//                            endPoint: .bottom
-//                        )
-//                    )
+
             )
             .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
     }
