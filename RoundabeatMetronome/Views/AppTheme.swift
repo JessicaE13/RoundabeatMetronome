@@ -15,13 +15,14 @@ enum ThemeColor: String, CaseIterable, Identifiable {
     case red = "Red"
     case white = "White"
     case yellow = "Yellow"
+    case greige = "Greige"
     
     var id: String { self.rawValue }
 }
 
 struct AppTheme {
     // Use AppStorage for persistence between app launches
-    @AppStorage("selectedThemeColor") static var selectedTheme: String = ThemeColor.gray.rawValue
+    @AppStorage("selectedThemeColor") static var selectedTheme: String = ThemeColor.greige.rawValue
     
     // Main background color
     static var backgroundColor: Color {

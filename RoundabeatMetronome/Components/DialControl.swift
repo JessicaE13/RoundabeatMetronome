@@ -294,72 +294,72 @@ struct DialControl: View {
 
     // MARK: - View Components
     private var dialBackground: some View {
-    ZStack {
-            // Base layer - darker outer shadow for depth
-            Circle()
-                .fill(Color("colorDial"))
-                .frame(width: dialSize, height: dialSize)
-                .shadow(color: Color.black.opacity(0.5), radius: 10, x: 0, y: 6)
-            
-            // Donut shape with hollow center
-            Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            Color("colorDial").opacity(0.9),
-                            Color("colorDial").opacity(1.0),
-                            Color("colorDial").darker(by: 0.2)
-                        ]),
-                        center: .topLeading,
-                        startRadius: 0,
-                        endRadius: dialSize
+        ZStack {
+                // Base layer - darker outer shadow for depth (SHADOW REDUCED HERE)
+                Circle()
+                    .fill(Color("colorDial"))
+                    .frame(width: dialSize, height: dialSize)
+                    .shadow(color: Color.black.opacity(0.3), radius: 6, x: 0, y: 4)
+                
+                // Donut shape with hollow center
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color("colorDial").opacity(0.9),
+                                Color("colorDial").opacity(1.0),
+                                Color("colorDial").darker(by: 0.2)
+                            ]),
+                            center: .topLeading,
+                            startRadius: 0,
+                            endRadius: dialSize
+                        )
                     )
-                )
-                .frame(width: dialSize, height: dialSize)
-                .overlay(
-                    // This creates the hollow center - now using the computed property
-                    Circle()
-                        .fill(Color.clear)
-                        .frame(width: innerDonutDiameter, height: innerDonutDiameter)
-                        .blendMode(.destinationOut)
-                )
-                .compositingGroup()
-            
-            // Inner edge highlight
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.white.opacity(0.3),
-                            Color.white.opacity(0.1),
-                            Color.white.opacity(0.0)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    style: StrokeStyle(lineWidth: 2, lineCap: .round)
-                )
-                .frame(width: dialSize - 4, height: dialSize - 4)
-            
-            // Inner circle edge - updated to use the computed property
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.black.opacity(0.3),
-                            Color.black.opacity(0.1),
-                            Color.clear,
-                            Color.white.opacity(0.1)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 2
-                )
-                .frame(width: innerDonutDiameter, height: innerDonutDiameter)
-        }
-        .overlay(dialTickMarks)
-   }
+                    .frame(width: dialSize, height: dialSize)
+                    .overlay(
+                        // This creates the hollow center - now using the computed property
+                        Circle()
+                            .fill(Color.clear)
+                            .frame(width: innerDonutDiameter, height: innerDonutDiameter)
+                            .blendMode(.destinationOut)
+                    )
+                    .compositingGroup()
+                
+                // Inner edge highlight
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.white.opacity(0.3),
+                                Color.white.opacity(0.1),
+                                Color.white.opacity(0.0)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        style: StrokeStyle(lineWidth: 2, lineCap: .round)
+                    )
+                    .frame(width: dialSize - 4, height: dialSize - 4)
+                
+                // Inner circle edge - updated to use the computed property
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.black.opacity(0.3),
+                                Color.black.opacity(0.1),
+                                Color.clear,
+                                Color.white.opacity(0.1)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2
+                    )
+                    .frame(width: innerDonutDiameter, height: innerDonutDiameter)
+            }
+            .overlay(dialTickMarks)
+    }
     
     
     private var dialTickMarks: some View {
@@ -417,19 +417,19 @@ struct DialControl: View {
     
     private var knobBackground: some View {
         Circle()
-            .fill(Color("colorDial").opacity(0.950))
-            .frame(width: knobSize, height: knobSize)
-            .overlay(
-                Circle()
-                    .stroke(Color.white.opacity(0.5), lineWidth: 0.5)
-            )
-            .overlay(
-                Circle()
-                   .fill(Color("colorDial").opacity(0.8))
+               .fill(Color("colorDial").opacity(0.950))
+               .frame(width: knobSize, height: knobSize)
+               .overlay(
+                   Circle()
+                       .stroke(Color.white.opacity(0.5), lineWidth: 0.5)
+               )
+               .overlay(
+                   Circle()
+                      .fill(Color("colorDial").opacity(0.8))
 
-            )
-            .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
-    }
+               )
+               .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
+       }
     
     private var playPauseIcon: some View {
            ZStack {

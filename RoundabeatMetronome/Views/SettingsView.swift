@@ -62,7 +62,7 @@ struct ThemeColorPicker: View {
     @State private var selectedTheme = AppTheme.selectedTheme
     
     // Color options
-    let themeOptions: [ThemeColor] = [.blue, .gray, .green, .lavender, .red, .white, .yellow]
+    let themeOptions: [ThemeColor] = [.blue, .gray, .green, .lavender, .red, .white, .yellow, .greige]
     
     // Grid layout
     let columns = [

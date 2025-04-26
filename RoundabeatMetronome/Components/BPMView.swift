@@ -9,38 +9,75 @@ struct BPMView: View {
     @Binding var showTimeSignaturePicker: Bool
     @State private var dragOffset: CGFloat = 0
     @State private var previousTempo: Double = 120
+    @State private var glowIntensity: Double = 0.6 // For animating glow effect
+    
+    // Animation for the glow effect
+    let glowAnimation = Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)
     
     var body: some View {
         
         ZStack {
             HStack {
                 VStack {
-                    // Time and Rhythm containers
+                    
+  // MARK: - Time and Rhythm containers
+                    
                     VStack(spacing: 9) {
-                        // First rectangle - TIME
+                        
+  // MARK: - First rectangle - TIME
                         ZStack {
+                            // Enhanced glow effect with multiple layers
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(LinearGradient(
-                                    gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
+                                    gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)]),
                                     startPoint: .top,
                                     endPoint: .bottomTrailing)
                                 )
                                 .frame(width: 75, height: 58)
-                                .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
+                                .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
-                                        .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
+                                        .stroke(Color.white.opacity(0.8), lineWidth: 1.0)
+                                        .shadow(color: Color.white.opacity(0.6), radius: 4, x: 0, y: 0)
+                                        .blur(radius: 0.9)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .fill(Color.white.opacity(0.05))
+                                        .fill(Color.white.opacity(0.09))
+                                )
+                                .overlay(
+                                    // Inner glow effect
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
+                                        .blur(radius: 2)
+                                        .padding(1)
+                                )
+                                .overlay(
+                                    // Highlight edge for top reflection
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(0)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .center
+                                            ),
+                                            lineWidth: 1.5
+                                        )
+                                        .padding(0.5)
+                                        .blendMode(.screen)
+                                )
+                                // Add a pulsing outer glow
+                                .background(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .fill(Color.clear)
+                                        .shadow(color: Color.white.opacity(glowIntensity * 0.3), radius: 8, x: 0, y: 0)
+                                        .shadow(color: Color.white.opacity(glowIntensity * 0.2), radius: 12, x: 0, y: 0)
                                 )
                             // Time Signature Button - centered
                             VStack(spacing: 5) {
                                 Text("TIME")
                                     .font(.system(size: 8, weight: .regular, design: .default))
-                                    .foregroundColor(Color("colorDial").opacity(0.5))
+                                    .foregroundColor(Color("colorDial").opacity(0.6))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -48,41 +85,72 @@ struct BPMView: View {
                                 }) {
                                     Text("\(metronome.beatsPerMeasure) / \(metronome.beatUnit)")
                                         .font(.system(size: 14, weight: .bold, design: .default))
-                                        .animation(.spring(), value: metronome.beatsPerMeasure)
+                                        .animation(.easeOut(duration: 0.2), value: metronome.beatsPerMeasure)
                                         .foregroundColor(Color.black)
-                                        .animation(.spring(), value: metronome.beatUnit)
+                                        .animation(.easeOut(duration: 0.2), value: metronome.beatUnit)
                                         .frame(minWidth: 75)
+                                        .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
                             .frame(width: 75, height: 58) // Match the container size
                         }
                         
-                        // Second rectangle - RHYTHM
+    // MARK: - Second rectangle - RHYTHM
                         ZStack {
+                            // Enhanced glow effect with multiple layers
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(LinearGradient(
-                                    gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
+                                    gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)]),
                                     startPoint: .top,
                                     endPoint: .bottomTrailing)
                                 )
                                 .frame(width: 75, height: 58)
-                                .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
+                                .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
-                                        .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
+                                        .stroke(Color.white.opacity(0.8), lineWidth: 1.0)
+                                        .shadow(color: Color.white.opacity(0.6), radius: 4, x: 0, y: 0)
+                                        .blur(radius: 0.9)
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
-                                        .fill(Color.white.opacity(0.05))
+                                        .fill(Color.white.opacity(0.09))
+                                )
+                                .overlay(
+                                    // Inner glow effect
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
+                                        .blur(radius: 2)
+                                        .padding(1)
+                                )
+                                .overlay(
+                                    // Highlight edge for top reflection
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(0)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .center
+                                            ),
+                                            lineWidth: 1.5
+                                        )
+                                        .padding(0.5)
+                                        .blendMode(.screen)
+                                )
+                                // Add a pulsing outer glow
+                                .background(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .fill(Color.clear)
+                                        .shadow(color: Color.white.opacity(glowIntensity * 0.3), radius: 8, x: 0, y: 0)
+                                        .shadow(color: Color.white.opacity(glowIntensity * 0.2), radius: 12, x: 0, y: 0)
                                 )
                             
                             // Rhythm Button - centered
                             VStack(spacing: 5) {
                                 Text("RHYTHM")
                                     .font(.system(size: 8, weight: .regular, design: .default))
-                                    .foregroundColor(Color("colorDial").opacity(0.5))
+                                    .foregroundColor(Color("colorDial").opacity(0.6))
                                     .lineLimit(nil)
                                 
                                 Button(action: {
@@ -90,10 +158,11 @@ struct BPMView: View {
                                 }) {
                                     Text("\(metronome.beatsPerMeasure) / \(metronome.beatUnit)")
                                         .font(.system(size: 14, weight: .bold, design: .default))
-                                        .animation(.spring(), value: metronome.beatsPerMeasure)
+                                        .animation(.easeOut(duration: 0.2), value: metronome.beatsPerMeasure)
                                         .foregroundColor(Color("colorDial"))
-                                        .animation(.spring(), value: metronome.beatUnit)
+                                        .animation(.easeOut(duration: 0.2), value: metronome.beatUnit)
                                         .frame(minWidth: 75)
+                                        .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -101,33 +170,63 @@ struct BPMView: View {
                         }
                     }
                 }
+
+   // MARK: - Middle BPM Section: Rounded Rectangle
                 
-                
-                // In the middle BPM section, we'll modify the existing ZStack to include the + and - buttons
                 ZStack {
+                    // Enhanced glow effect with multiple layers
                     RoundedRectangle(cornerRadius: 5)
                         .stroke(LinearGradient(
-                            gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
+                            gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)]),
                             startPoint: .top,
                             endPoint: .bottomTrailing)
                         )
                         .frame(width: 175, height: 125)
-                        .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
+                        .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
-                                .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
+                                .stroke(Color.white.opacity(0.8), lineWidth: 1.0)
+                                .shadow(color: Color.white.opacity(0.6), radius: 4, x: 0, y: 0)
+                                .blur(radius: 0.9)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(Color.white.opacity(0.05))
+                                .fill(Color.white.opacity(0.09))
+                        )
+                        .overlay(
+                            // Inner glow effect
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
+                                .blur(radius: 2)
+                                .padding(1)
+                        )
+                        .overlay(
+                            // Highlight edge for top reflection
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(0)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .center
+                                    ),
+                                    lineWidth: 1.5
+                                )
+                                .padding(0.5)
+                                .blendMode(.screen)
+                        )
+                        // Add a pulsing outer glow
+                        .background(
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(Color.clear)
+                                .shadow(color: Color.white.opacity(glowIntensity * 0.4), radius: 8, x: 0, y: 0)
+                                .shadow(color: Color.white.opacity(glowIntensity * 0.3), radius: 14, x: 0, y: 0)
                         )
                     
                     // BPM Display with gestures and +/- buttons
                     VStack {
                         Text("BPM")
                             .font(.system(size: 8, weight: .regular, design: .default))
-                            .foregroundColor(Color("colorDial").opacity(0.5))
+                            .foregroundColor(Color("colorDial").opacity(0.6))
                             .lineLimit(nil)
                         
                         // Inside the HStack where the BPM display is shown
@@ -144,9 +243,10 @@ struct BPMView: View {
                             }) {
                                 Image(systemName: "minus")
                                     .font(.system(size: 14))
-                                    .foregroundColor(Color("colorDial").opacity(0.8))
+                                    .foregroundColor(Color("colorDial").opacity(0.9))
                                     .frame(width: 40, height: 60) // Larger frame for touch target
                                     .contentShape(Rectangle()) // Make entire area tappable
+                                    .shadow(color: Color.white.opacity(0.3), radius: 2, x: 0, y: 0)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .frame(width: 25) // Keep visual width the same
@@ -154,10 +254,11 @@ struct BPMView: View {
                             // BPM Display in a fixed-width container
                             Text("\(Int(metronome.tempo))")
                                 .font(.system(size: 45, weight: .bold, design: .default))
-                                .contentTransition(.numericText())
+                                .contentTransition(.identity) // Remove transition animation
                                 .foregroundColor(Color("colorDial"))
+                                .shadow(color: Color.white.opacity(0.5), radius: 3, x: 0, y: 0)
                                 .multilineTextAlignment(.center)
-                                .animation(.spring(response: 0.3), value: Int(metronome.tempo))
+                                .animation(.easeOut(duration: 0.2), value: Int(metronome.tempo)) // Reduced animation speed
                                 .frame(width: 90, alignment: .center) // Fixed width with center alignment
                                 // Make the BPM text tappable to show keypad
                                 .onTapGesture {
@@ -179,9 +280,10 @@ struct BPMView: View {
                             }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 14))
-                                    .foregroundColor(Color("colorDial").opacity(0.8))
+                                    .foregroundColor(Color("colorDial").opacity(0.9))
                                     .frame(width: 40, height: 60) // Larger frame for touch target
                                     .contentShape(Rectangle()) // Make entire area tappable
+                                    .shadow(color: Color.white.opacity(0.3), radius: 2, x: 0, y: 0)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .frame(width: 25) // Keep visual width the same
@@ -190,7 +292,7 @@ struct BPMView: View {
                         
                         Text("ALLEGRO")
                             .font(.system(size: 8, weight: .regular, design: .default))
-                            .foregroundColor(Color("colorDial").opacity(0.5))
+                            .foregroundColor(Color("colorDial").opacity(0.6))
                             .lineLimit(nil)
                     }
                 }
@@ -232,22 +334,52 @@ struct BPMView: View {
                 
                 VStack {
                     ZStack {
+                        // Enhanced glow effect with multiple layers
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(LinearGradient(
-                                gradient: Gradient(colors: [Color.white.opacity(0.4), Color.white.opacity(0.3)]),
+                                gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)]),
                                 startPoint: .top,
                                 endPoint: .bottomTrailing)
                             )
                             .frame(width: 75, height: 125)
-                            .shadow(color: Color.white.opacity(0.2), radius: 1, x: 0, y: 0)
+                            .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
-                                    .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
+                                    .stroke(Color.white.opacity(0.8), lineWidth: 1.0)
+                                    .shadow(color: Color.white.opacity(0.6), radius: 4, x: 0, y: 0)
+                                    .blur(radius: 0.9)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .fill(Color.white.opacity(0.05))
+                                    .fill(Color.white.opacity(0.09))
+                            )
+                            .overlay(
+                                // Inner glow effect
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
+                                    .blur(radius: 2)
+                                    .padding(1)
+                            )
+                            .overlay(
+                                // Highlight edge for top reflection
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(0)]),
+                                            startPoint: .topLeading,
+                                            endPoint: .center
+                                        ),
+                                        lineWidth: 1.5
+                                    )
+                                    .padding(0.5)
+                                    .blendMode(.screen)
+                            )
+                            // Add a pulsing outer glow
+                            .background(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(Color.clear)
+                                    .shadow(color: Color.white.opacity(glowIntensity * 0.3), radius: 8, x: 0, y: 0)
+                                    .shadow(color: Color.white.opacity(glowIntensity * 0.2), radius: 12, x: 0, y: 0)
                             )
                         
                         // Tap Button
@@ -255,15 +387,23 @@ struct BPMView: View {
                             Image(systemName: "lock.fill")
                                 .foregroundColor(Color("colorDial").opacity(0.4))
                                 .padding(.bottom, 75.0)
+                                .shadow(color: Color.white.opacity(0.3), radius: 2, x: 0, y: 0)
                             
                             Text("TAP")
                                 .font(.headline)
                                 .foregroundColor(Color("colorDial"))
                                 .fontWeight(.bold)
+                                .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
                                 .lineLimit(nil)
                         }
                     }
                 }
+            }
+        }
+        .onAppear {
+            // Start the glow animation when view appears
+            withAnimation(glowAnimation) {
+                glowIntensity = 0.8
             }
         }
     }
