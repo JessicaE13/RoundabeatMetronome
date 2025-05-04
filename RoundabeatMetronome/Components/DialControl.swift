@@ -278,7 +278,7 @@ struct DialControl: View {
             segmentedRing
             centerKnob
         }
-        .frame(width: dialSize, height: dialSize)
+        .frame(width: dialSize+55, height: dialSize+55)
         .gesture(createDragGesture())
         .onChange(of: metronome.tempo) { _, newTempo in
             // Update dial rotation when tempo changes from any source

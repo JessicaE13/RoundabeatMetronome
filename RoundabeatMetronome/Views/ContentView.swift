@@ -49,10 +49,6 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
                 
-                //Very subtle noise texture (optional)
-                Color.black.opacity(0.25)
-                    .ignoresSafeArea()
-                    .blendMode(.overlay)
             }
             
             // Main metronome interface

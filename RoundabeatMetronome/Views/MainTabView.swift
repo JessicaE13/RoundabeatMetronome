@@ -8,22 +8,27 @@ struct MainTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Content area
-            ZStack {
-                switch selectedTab {
-                case 0:
-                    ContentView(metronome: metronome)
-                case 1:
-                    Text("Sounds View")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(AppTheme.backgroundColor)
-                case 2:
-                    ThemeColorPicker()
-                case 3:
-                    SettingsView()
-                default:
-                    ContentView(metronome: metronome)
+            
+           
+                ZStack {
+                    switch selectedTab {
+                    case 0:
+                        ContentView(metronome: metronome)
+                    case 1:
+                        Text("Sounds View")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(AppTheme.backgroundColor)
+                    case 2:
+                        ThemeColorPicker()
+                    case 3:
+                        SettingsView()
+                    default:
+                        ContentView(metronome: metronome)
+                    }
                 }
-            }
+                .frame(maxHeight: .infinity)
+                
+           
             
             // Custom Capsule Tab Bar - Now with spacing between icons
             HStack(spacing: 8) { // Added spacing between tab buttons

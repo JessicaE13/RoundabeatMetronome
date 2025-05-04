@@ -20,7 +20,7 @@ struct TitleView: View {
                          )
                      )
             .shadow(radius: 1)
-            .padding(35.0)
+      
     
     }
 }
