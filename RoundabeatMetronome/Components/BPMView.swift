@@ -23,20 +23,17 @@ struct BPMView: View {
                 
                 // Pill-shaped container with TIME and RHYTHM
                 ZStack {
-                        Capsule()
-                            .fill(Color.black.opacity(0.7))
-                            .frame(width: 280, height: 50)
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                            )
+                    Capsule()
+                        .fill(Color.black.opacity(0.7))
+                        .frame(width: 200, height: 50)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
                     
                     // Content inside the pill
                     HStack(spacing: 10) {
-                        Divider()
-                            .frame(height: 30)
-                            .background(Color.white.opacity(0.3))
-                            .padding(.horizontal, 5)
+                        
                         
                         // TIME section
                         VStack(spacing: 5) {
@@ -58,13 +55,13 @@ struct BPMView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
-                        .frame(width: 120)
+                        .frame(width: 75)
                         
                         // Center divider
                         Divider()
                             .frame(height: 30)
-                            .background(Color.white.opacity(0.3))
-                            .padding(.horizontal, 5)
+                            .background(Color.white.opacity(0.4))
+                        
                         
                         // RHYTHM section
                         VStack(spacing: 5) {
@@ -86,12 +83,8 @@ struct BPMView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
-                        .frame(width: 120)
+                        .frame(width: 75)
                         
-                        Divider()
-                            .frame(height: 30)
-                            .background(Color.white.opacity(0.3))
-                            .padding(.horizontal, 5)
                     }
                 }
                 
@@ -138,7 +131,7 @@ struct BPMView: View {
                                 .padding(0.5)
                                 .blendMode(.screen)
                         )
-                        // Add a pulsing outer glow
+                    // Add a pulsing outer glow
                         .background(
                             RoundedRectangle(cornerRadius: 5)
                                 .fill(Color.clear)
@@ -185,7 +178,7 @@ struct BPMView: View {
                                 .multilineTextAlignment(.center)
                                 .animation(.easeOut(duration: 0.2), value: Int(metronome.tempo)) // Reduced animation speed
                                 .frame(width: 140, alignment: .center) // Wider fixed width with center alignment
-                                // Make the BPM text tappable to show keypad
+                            // Make the BPM text tappable to show keypad
                                 .onTapGesture {
                                     // Add haptic feedback
                                     let generator = UIImpactFeedbackGenerator(style: .light)

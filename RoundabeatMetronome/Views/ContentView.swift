@@ -26,7 +26,7 @@ struct ContentView: View {
         ZStack {
             
             ZStack {
-    
+                
                 //Background
                 LinearGradient(
                     gradient: Gradient(colors: [
@@ -56,7 +56,7 @@ struct ContentView: View {
             }
             
             // Main metronome interface
-            VStack(spacing: 0) {
+            VStack {
                 
                 // Top section with BPM display
                 BPMView(
@@ -64,16 +64,15 @@ struct ContentView: View {
                     isShowingKeypad: $showBPMKeypad,
                     showTimeSignaturePicker: $showTimeSignaturePicker
                 )
-                .padding(.top, 40)
+                
                 
                 // Title in the middle
                 TitleView()
-                    .padding(.top, -20) // Adjust the title position
+                
                 
                 // Main Dial Control with Play/Pause Button
                 DialControl(metronome: metronome)
-                    .padding(.top, -25) // Move the dial up a bit
-                    .padding(.bottom, 20)
+                
             }
             .onAppear {
                 // Prepare audio system as soon as view appears

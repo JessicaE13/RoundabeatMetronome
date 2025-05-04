@@ -5,8 +5,6 @@
 //  Created on 4/15/25.
 //
 
-
-
 import SwiftUI
 import AVFoundation
 
@@ -471,8 +469,6 @@ struct DialControl: View {
             }
     }
     
-    // MARK: - Gesture Handling
-    // MARK: - Gesture Handling
     private func handleDragChange(_ value: DragGesture.Value) {
         isDragging = true
         
@@ -566,60 +562,63 @@ struct DialControl: View {
 }
 
 // MARK: - Combined Metronome View
-
-struct CombinedMetronomeView: View {
-    @StateObject private var metronome = MetronomeEngine()
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            // Main control dial (which includes the segmented circle visualization)
-            DialControl(metronome: metronome)
-            
-            // Tempo display
-            Text("\(Int(metronome.tempo)) BPM")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(.primary)
-            
-            // Time signature controls
-            HStack(spacing: 30) {
-                VStack {
-                    Text("Beats Per Measure")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Stepper("\(metronome.beatsPerMeasure)", value: Binding(
-                        get: { self.metronome.beatsPerMeasure },
-                        set: { self.metronome.beatsPerMeasure = $0 }
-                    ), in: 1...12)
-                    .frame(width: 120)
-                }
-                
-                VStack {
-                    Text("Beat Unit")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Picker("", selection: Binding(
-                        get: { self.metronome.beatUnit },
-                        set: { self.metronome.beatUnit = $0 }
-                    )) {
-                        Text("Quarter").tag(4)
-                        Text("Eighth").tag(8)
-                        Text("Half").tag(2)
-                        Text("Whole").tag(1)
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .frame(width: 120)
-                }
-            }
-        }
-        .padding()
-        .background(Color.background)
-    }
-}
-
-
+//
+//struct CombinedMetronomeView: View {
+//    @StateObject private var metronome = MetronomeEngine()
+//    
+//    var body: some View {
+//        VStack(spacing: 20) {
+//            // Main control dial (which includes the segmented circle visualization)
+//            DialControl(metronome: metronome)
+//            
+//            // Tempo display
+//            Text("\(Int(metronome.tempo)) BPM")
+//                .font(.system(size: 24, weight: .bold, design: .rounded))
+//                .foregroundColor(.primary)
+//            
+//            // Time signature controls
+//            HStack(spacing: 30) {
+//                VStack {
+//                    Text("Beats Per Measure")
+//                        .font(.caption)
+//                        .foregroundColor(.secondary)
+//                    
+//                    Stepper("\(metronome.beatsPerMeasure)", value: Binding(
+//                        get: { self.metronome.beatsPerMeasure },
+//                        set: { self.metronome.beatsPerMeasure = $0 }
+//                    ), in: 1...12)
+//                    .frame(width: 120)
+//                }
+//                
+//                VStack {
+//                    Text("Beat Unit")
+//                        .font(.caption)
+//                        .foregroundColor(.secondary)
+//                    
+//                    Picker("", selection: Binding(
+//                        get: { self.metronome.beatUnit },
+//                        set: { self.metronome.beatUnit = $0 }
+//                    )) {
+//                        Text("Quarter").tag(4)
+//                        Text("Eighth").tag(8)
+//                        Text("Half").tag(2)
+//                        Text("Whole").tag(1)
+//                    }
+//                    .pickerStyle(MenuPickerStyle())
+//                    .frame(width: 120)
+//                }
+//            }
+//        }
+//        .padding()
+//        .background(Color.background)
+//    }
+//}
+//
+//
 
 #Preview {
-    CombinedMetronomeView()
+    DialControl(metronome:  MetronomeEngine()
+            
+    )
+    
 }

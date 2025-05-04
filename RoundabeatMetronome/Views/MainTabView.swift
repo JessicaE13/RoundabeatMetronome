@@ -45,7 +45,7 @@ struct MainTabView: View {
                 // Settings Tab Button
                 tabButton(imageName: "gearshape", title: "Settings", tab: 3)
             }
-            .frame(width: 260, height: 60) // Slightly wider to accommodate spacing
+            .frame(width: 320, height: 60) // Slightly wider to accommodate spacing
             .background(
                 Capsule()
                     .fill(Color.black.opacity(0.7))
@@ -70,7 +70,7 @@ struct MainTabView: View {
         Button(action: {
             selectedTab = tab
         }) {
-            VStack(spacing: 4) { // Increased internal spacing between icon and text
+            VStack(spacing: 3.5) { // Increased internal spacing between icon and text
                 Image(systemName: imageName)
                     .font(.system(size: 16))
                     .foregroundColor(selectedTab == tab ? Color("colorGlow") : Color.white.opacity(0.6))
