@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 import AVFoundation
 
@@ -17,9 +15,6 @@ struct ContentView: View {
     @State private var lastTapTime: Date?
     @State private var tapTempoBuffer: [TimeInterval] = []
     @State private var previousTempo: Double = 120
-    
-    // Background Color
-//    @State private var backgroundColor = Color("skinRed")
     
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
@@ -43,7 +38,7 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
                 
-        //           Subtle gradient overlay
+                //Subtle gradient overlay
                 LinearGradient(
                     gradient: Gradient(colors: [
                         .white.opacity(0.01),
@@ -54,33 +49,32 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
                 
-                //    Very subtle noise texture (optional)
+                //Very subtle noise texture (optional)
                 Color.black.opacity(0.25)
                     .ignoresSafeArea()
                     .blendMode(.overlay)
             }
             
             // Main metronome interface
-            VStack(spacing: 25) {
+            VStack(spacing: 0) {
                 
-              
-                
+                // Top section with BPM display
                 BPMView(
                     metronome: metronome,
                     isShowingKeypad: $showBPMKeypad,
                     showTimeSignaturePicker: $showTimeSignaturePicker
                 )
+                .padding(.top, 40)
                 
-            
-                // Title
-                
+                // Title in the middle
                 TitleView()
+                    .padding(.top, -20) // Adjust the title position
                 
                 // Main Dial Control with Play/Pause Button
                 DialControl(metronome: metronome)
-                
+                    .padding(.top, -25) // Move the dial up a bit
+                    .padding(.bottom, 20)
             }
-            
             .onAppear {
                 // Prepare audio system as soon as view appears
                 prepareAudioSystem()

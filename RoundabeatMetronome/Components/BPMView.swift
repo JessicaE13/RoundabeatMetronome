@@ -23,19 +23,13 @@ struct BPMView: View {
                 
                 // Pill-shaped container with TIME and RHYTHM
                 ZStack {
-                    // Dark background pill shape
-                    Capsule()
-                        .fill(Color.black.opacity(0.7))
-                        .frame(width: 310, height: 58)
-                        .overlay(
-                            Capsule()
-                                .stroke(LinearGradient(
-                                    gradient: Gradient(colors: [Color.white.opacity(0.6), Color.white.opacity(0.3)]),
-                                    startPoint: .top,
-                                    endPoint: .bottom)
-                                )
-                                .shadow(color: Color.white.opacity(glowIntensity), radius: 4, x: 0, y: 0)
-                        )
+                        Capsule()
+                            .fill(Color.black.opacity(0.7))
+                            .frame(width: 280, height: 50)
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                            )
                     
                     // Content inside the pill
                     HStack(spacing: 10) {
