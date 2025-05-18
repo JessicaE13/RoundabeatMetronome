@@ -40,11 +40,11 @@ struct BPMView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 25)
-                                .fill(Color.white.opacity(0.09))
+                                .fill(Color.black.opacity(0.9))
                         )
                         .overlay(
                             // Inner glow effect
-                            RoundedRectangle(cornerRadius: 22)
+                            RoundedRectangle(cornerRadius: 25)
                                 .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
                                 .blur(radius: 2)
                                 .padding(1)
@@ -54,7 +54,7 @@ struct BPMView: View {
                             RoundedRectangle(cornerRadius: 25)
                                 .stroke(
                                     LinearGradient(
-                                        gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(0)]),
+                                        gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(1.0)]),
                                         startPoint: .topLeading,
                                         endPoint: .center
                                     ),
@@ -75,7 +75,7 @@ struct BPMView: View {
                     VStack {
                         Text("BPM")
                             .font(.system(size: 10, weight: .heavy, design: .default)) // Slightly larger
-                            .foregroundColor(Color("colorDial").opacity(0.6))
+                            .foregroundColor(Color.white.opacity(0.6))
                             .lineLimit(nil)
                             .padding(.top, 5)
                         
@@ -93,10 +93,10 @@ struct BPMView: View {
                             }) {
                                 Image(systemName: "minus")
                                     .font(.system(size: 18)) // Larger
-                                    .foregroundColor(Color("colorDial").opacity(0.9))
+                                    .foregroundColor(Color.white.opacity(0.9))
                                    
                                     .contentShape(Rectangle()) // Make entire area tappable
-                                    .shadow(color: Color.white.opacity(0.3), radius: 2, x: 0, y: 0)
+                                    .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
                             }
                             .buttonStyle(PlainButtonStyle())
                           
@@ -105,8 +105,8 @@ struct BPMView: View {
                             Text("\(Int(metronome.tempo))")
                                 .font(.system(size: 65, weight: .bold, design: .default)) // Larger font
                                 .contentTransition(.identity) // Remove transition animation
-                                .foregroundColor(Color("colorDial"))
-                                .shadow(color: Color.white.opacity(0.5), radius: 3, x: 0, y: 0)
+                                .foregroundColor(Color.white.opacity(0.9))
+                                .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
                                 .multilineTextAlignment(.center)
                                 .animation(.easeOut(duration: 0.2), value: Int(metronome.tempo)) // Reduced animation speed
                                
@@ -130,9 +130,9 @@ struct BPMView: View {
                             }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 18)) // Larger
-                                    .foregroundColor(Color("colorDial").opacity(0.9))
+                                    .foregroundColor(Color.white.opacity(0.9))
                                     .contentShape(Rectangle()) // Make entire area tappable
-                                    .shadow(color: Color.white.opacity(0.3), radius: 2, x: 0, y: 0)
+                                    .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
                             }
                             .buttonStyle(PlainButtonStyle())
                           
@@ -141,7 +141,7 @@ struct BPMView: View {
                         
                         Text("ALLEGRO")
                             .font(.system(size: 10, weight: .heavy, design: .default)) // Slightly larger
-                            .foregroundColor(Color("colorDial").opacity(0.6))
+                            .foregroundColor(Color.white.opacity(0.6))
                             .lineLimit(nil)
                             .padding(.bottom, 5)
                     }

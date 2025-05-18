@@ -44,7 +44,7 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     Color.white.opacity(0.2),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
                 )
                 
                 Path { path in
@@ -58,7 +58,7 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     Color.white.opacity(0.2),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
                 )
                 
                 // Main segment fill
@@ -79,7 +79,7 @@ struct ArcSegment: View {
                         startPoint: .top,
                         endPoint: .bottom
                     ),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
             }
             
@@ -113,7 +113,7 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     isFirstBeat ? Color.white.opacity(0.9) : Color.white.opacity(0.9),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .shadow(color: isFirstBeat ? Color.white.opacity(0.1) : Color.white.opacity(0.1), radius: 4, x: 0, y: 0)
                 .blur(radius: 2)
@@ -130,7 +130,7 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     Color.white.opacity(0.4),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
                 )
                 
                 // White outline for active segments - inner edge
@@ -145,7 +145,7 @@ struct ArcSegment: View {
                 }
                 .stroke(
                     Color.white.opacity(0.4),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .butt)
+                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
                 )
             }
         }
@@ -260,7 +260,7 @@ struct DialControl: View {
     private let innerDonutRatio: CGFloat = 0.35 // Adjust this value to change inner circle size
     private let minRotation: Double = -150 // Degrees
     private let maxRotation: Double = 150 // Degrees
-    private let ringLineWidth: CGFloat = 10
+    private let ringLineWidth: CGFloat = 27
     
     // Computed property for inner donut diameter
     private var innerDonutDiameter: CGFloat {
@@ -395,7 +395,7 @@ struct DialControl: View {
     private var segmentedRing: some View {
         SegmentedCircleView(
             metronome: metronome,
-            diameter: dialSize + 55,
+            diameter: dialSize + 90,
             lineWidth: ringLineWidth
         )
     }
