@@ -416,10 +416,10 @@ struct DialControl: View {
     private var knobBackground: some View {
         Circle()
                .fill(Color("colorDial").opacity(0.950))
-               .frame(width: knobSize, height: knobSize)
+               .frame(width: knobSize-10, height: knobSize-10)
                .overlay(
                    Circle()
-                       .stroke(Color.white.opacity(0.5), lineWidth: 0.5)
+                 
                )
                .overlay(
                    Circle()

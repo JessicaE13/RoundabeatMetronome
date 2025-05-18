@@ -27,7 +27,7 @@ struct ContentView: View {
             
             ZStack {
                 
-                //Background
+ //Background
                 LinearGradient(
                     gradient: Gradient(colors: [
                         AppTheme.backgroundColor.opacity(0.90),
@@ -51,7 +51,7 @@ struct ContentView: View {
                 
             }
             
-            // Main metronome interface
+ // Main metronome interface
             VStack {
                 
                 // Top section with BPM display
@@ -61,14 +61,16 @@ struct ContentView: View {
                     showTimeSignaturePicker: $showTimeSignaturePicker
                 )
                 
+                Spacer()
                 
                 // Title in the middle
-                TitleView()
+                logo()
                 
+                Spacer()
                 
                 // Main Dial Control with Play/Pause Button
                 DialControl(metronome: metronome)
-                
+                Spacer()
             }
             .onAppear {
                 // Prepare audio system as soon as view appears

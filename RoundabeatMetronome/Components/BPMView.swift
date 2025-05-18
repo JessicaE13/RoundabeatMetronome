@@ -19,107 +19,39 @@ struct BPMView: View {
         ZStack {
             VStack(spacing: 12) {
                 
-                // MARK: - Time and Rhythm container (pill-shaped)
-                
-                // Pill-shaped container with TIME and RHYTHM
-                ZStack {
-                    Capsule()
-                        .fill(Color.black.opacity(0.7))
-                        .frame(width: 200, height: 50)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                        )
-                    
-                    // Content inside the pill
-                    HStack(spacing: 10) {
-                        
-                        
-                        // TIME section
-                        VStack(spacing: 5) {
-                            Text("TIME")
-                                .font(.system(size: 8, weight: .regular, design: .default))
-                                .foregroundColor(Color.white.opacity(0.7))
-                                .lineLimit(nil)
-                            
-                            Button(action: {
-                                showTimeSignaturePicker = true
-                            }) {
-                                Text("\(metronome.beatsPerMeasure) / \(metronome.beatUnit)")
-                                    .font(.system(size: 14, weight: .bold, design: .default))
-                                    .animation(.easeOut(duration: 0.2), value: metronome.beatsPerMeasure)
-                                    .foregroundColor(Color.white)
-                                    .animation(.easeOut(duration: 0.2), value: metronome.beatUnit)
-                                    .frame(minWidth: 60)
-                                    .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .frame(width: 75)
-                        
-                        // Center divider
-                        Divider()
-                            .frame(height: 30)
-                            .background(Color.white.opacity(0.4))
-                        
-                        
-                        // RHYTHM section
-                        VStack(spacing: 5) {
-                            Text("RHYTHM")
-                                .font(.system(size: 8, weight: .regular, design: .default))
-                                .foregroundColor(Color.white.opacity(0.7))
-                                .lineLimit(nil)
-                            
-                            Button(action: {
-                                showTimeSignaturePicker = true
-                            }) {
-                                Text("\(metronome.beatsPerMeasure) / \(metronome.beatUnit)")
-                                    .font(.system(size: 14, weight: .bold, design: .default))
-                                    .animation(.easeOut(duration: 0.2), value: metronome.beatsPerMeasure)
-                                    .foregroundColor(Color.white)
-                                    .animation(.easeOut(duration: 0.2), value: metronome.beatUnit)
-                                    .frame(minWidth: 60)
-                                    .shadow(color: Color.white.opacity(0.4), radius: 2, x: 0, y: 0)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .frame(width: 75)
-                        
-                    }
-                }
-                
+        
                 // MARK: - Middle BPM Section: Rounded Rectangle - Now expanded
                 
                 ZStack {
                     // Enhanced glow effect with multiple layers
-                    RoundedRectangle(cornerRadius: 5)
+                    RoundedRectangle(cornerRadius: 25)
                         .stroke(LinearGradient(
                             gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)]),
                             startPoint: .top,
                             endPoint: .bottomTrailing)
                         )
-                        .frame(width: 300, height: 160) // Expanded dimensions
+                       
                         .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 5)
+                            RoundedRectangle(cornerRadius: 25)
                                 .stroke(Color.white.opacity(0.8), lineWidth: 1.0)
                                 .shadow(color: Color.white.opacity(0.6), radius: 4, x: 0, y: 0)
                                 .blur(radius: 0.9)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 5)
+                            RoundedRectangle(cornerRadius: 25)
                                 .fill(Color.white.opacity(0.09))
                         )
                         .overlay(
                             // Inner glow effect
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: 22)
                                 .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
                                 .blur(radius: 2)
                                 .padding(1)
                         )
                         .overlay(
                             // Highlight edge for top reflection
-                            RoundedRectangle(cornerRadius: 5)
+                            RoundedRectangle(cornerRadius: 25)
                                 .stroke(
                                     LinearGradient(
                                         gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(0)]),
@@ -142,7 +74,7 @@ struct BPMView: View {
                     // BPM Display with gestures and +/- buttons
                     VStack {
                         Text("BPM")
-                            .font(.system(size: 10, weight: .regular, design: .default)) // Slightly larger
+                            .font(.system(size: 10, weight: .heavy, design: .default)) // Slightly larger
                             .foregroundColor(Color("colorDial").opacity(0.6))
                             .lineLimit(nil)
                             .padding(.top, 5)
@@ -162,12 +94,12 @@ struct BPMView: View {
                                 Image(systemName: "minus")
                                     .font(.system(size: 18)) // Larger
                                     .foregroundColor(Color("colorDial").opacity(0.9))
-                                    .frame(width: 60, height: 80) // Larger frame for touch target
+                                   
                                     .contentShape(Rectangle()) // Make entire area tappable
                                     .shadow(color: Color.white.opacity(0.3), radius: 2, x: 0, y: 0)
                             }
                             .buttonStyle(PlainButtonStyle())
-                            .frame(width: 40) // Wider visual width
+                          
                             
                             // BPM Display in a fixed-width container
                             Text("\(Int(metronome.tempo))")
@@ -177,7 +109,7 @@ struct BPMView: View {
                                 .shadow(color: Color.white.opacity(0.5), radius: 3, x: 0, y: 0)
                                 .multilineTextAlignment(.center)
                                 .animation(.easeOut(duration: 0.2), value: Int(metronome.tempo)) // Reduced animation speed
-                                .frame(width: 140, alignment: .center) // Wider fixed width with center alignment
+                               
                             // Make the BPM text tappable to show keypad
                                 .onTapGesture {
                                     // Add haptic feedback
@@ -199,17 +131,16 @@ struct BPMView: View {
                                 Image(systemName: "plus")
                                     .font(.system(size: 18)) // Larger
                                     .foregroundColor(Color("colorDial").opacity(0.9))
-                                    .frame(width: 60, height: 80) // Larger frame for touch target
                                     .contentShape(Rectangle()) // Make entire area tappable
                                     .shadow(color: Color.white.opacity(0.3), radius: 2, x: 0, y: 0)
                             }
                             .buttonStyle(PlainButtonStyle())
-                            .frame(width: 40) // Wider visual width
+                          
                         }
-                        .frame(width: 250) // Wider total width for the container
+                       
                         
                         Text("ALLEGRO")
-                            .font(.system(size: 10, weight: .regular, design: .default)) // Slightly larger
+                            .font(.system(size: 10, weight: .heavy, design: .default)) // Slightly larger
                             .foregroundColor(Color("colorDial").opacity(0.6))
                             .lineLimit(nil)
                             .padding(.bottom, 5)
@@ -251,6 +182,9 @@ struct BPMView: View {
                         }
                 )
             }
+            .frame(height: UIScreen.main.bounds.height / 3.8)
+            .padding(.horizontal, 30)
+            .padding(.top, 50)
         }
         .onAppear {
             // Start the glow animation when view appears
