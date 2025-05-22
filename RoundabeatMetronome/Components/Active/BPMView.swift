@@ -77,7 +77,7 @@ struct BPMView: View {
                                
                                     // Use format that shows only needed digits but maintains positioning
                                     Text("\(Int(metronome.tempo))")
-                                        .font(.custom("MuseoModerno-VariableFont_wght", size: 75))
+                                        .font(.custom("Museo", size: 75))
                                         .foregroundColor(Color.white.opacity(0.8))
                                         .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                                         .monospacedDigit() // Ensures all digits have equal width

@@ -4,6 +4,7 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Museo.ttf</string>
 		<string>MuseoModerno-VariableFont_wght.ttf</string>
 		<string>Kanit-Regular.ttf</string>
 		<string>blippo.ttf</string>
