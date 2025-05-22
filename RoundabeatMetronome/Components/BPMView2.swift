@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - BPM Display Component with Gestures
 
-struct BPMView: View {
+struct BPMView2: View {
     
     @ObservedObject var metronome: MetronomeEngine
     @Binding var isShowingKeypad: Bool
@@ -179,19 +179,10 @@ struct BPMView: View {
 
 #Preview {
     ZStack {
-        // Add the background gradient
-        LinearGradient(
-            gradient: Gradient(colors: [
-                AppTheme.backgroundColor.opacity(0.90),
-                AppTheme.backgroundColor.opacity(0.95)
-            ]),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+BackgroundView()
         
         // Add the BPMView on top
-        BPMView(
+        BPMView2(
             metronome: MetronomeEngine(),
             isShowingKeypad: .constant(false),
             showTimeSignaturePicker: .constant(false)

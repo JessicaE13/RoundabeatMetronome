@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct logo: View {
+struct LogoView: View {
     @State private var shimmerOffset: CGFloat = -1.0
 
     var body: some View {
@@ -52,5 +52,6 @@ struct logo: View {
 
 
 #Preview {
-    logo()
+    LogoView()
 }
+

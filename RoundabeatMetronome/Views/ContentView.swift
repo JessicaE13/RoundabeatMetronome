@@ -27,28 +27,30 @@ struct ContentView: View {
             
             ZStack {
                 
- //Background
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        AppTheme.backgroundColor.opacity(0.90),
-                        AppTheme.backgroundColor.opacity(0.95)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                BackgroundView()
                 
-                //Subtle gradient overlay
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        .white.opacity(0.01),
-                        .white.opacity(0.2)
-                    ]),
-                    startPoint: .bottom,
-                    endPoint: .center
-                )
-                .ignoresSafeArea()
-                
+// //Background
+//                LinearGradient(
+//                    gradient: Gradient(colors: [
+//                        AppTheme.backgroundColor.opacity(0.90),
+//                        AppTheme.backgroundColor.opacity(0.95)
+//                    ]),
+//                    startPoint: .topLeading,
+//                    endPoint: .bottomTrailing
+//                )
+//                .ignoresSafeArea()
+//                
+//                //Subtle gradient overlay
+//                LinearGradient(
+//                    gradient: Gradient(colors: [
+//                        .white.opacity(0.01),
+//                        .white.opacity(0.2)
+//                    ]),
+//                    startPoint: .bottom,
+//                    endPoint: .center
+//                )
+//                .ignoresSafeArea()
+//                
             }
             
  // Main metronome interface
@@ -64,12 +66,15 @@ struct ContentView: View {
                 Spacer()
                 
                 // Title in the middle
-                logo()
+                LogoView()
                 
                 Spacer()
                 
+                
+                DialView()
+                
                 // Main Dial Control with Play/Pause Button
-                DialControl(metronome: metronome)
+                //DialControl(metronome: metronome)
                 //SegmentView(metronome: metronome)
                 
                 
