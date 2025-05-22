@@ -43,7 +43,7 @@ struct BPMView: View {
                     // BPM Display with gestures and +/- buttons
                     VStack {
                         Text("BPM")
-                            .font(.system(size: 10, weight: .regular, design: .default)) // Slightly larger
+                            .font(.custom("Kanit-Regular",size: 10)) // Slightly larger
                             .kerning(1.5)
                             .foregroundColor(Color.white.opacity(0.4))
                             .lineLimit(nil)
@@ -77,7 +77,7 @@ struct BPMView: View {
                                
                                     // Use format that shows only needed digits but maintains positioning
                                     Text("\(Int(metronome.tempo))")
-                                        .font(.custom("Audiowide-Regular",size: 75))
+                                        .font(.custom("Kanit-Regular", size: 75))
                                         .foregroundColor(Color.white.opacity(0.8))
                                         .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                                         .monospacedDigit() // Ensures all digits have equal width
@@ -115,7 +115,7 @@ struct BPMView: View {
                         }
                         
                         Text("ALLEGRO")
-                            .font(.system(size: 10, weight: .regular, design: .default))
+                            .font(.custom("Kanit-Regular",size: 10)) //
                             .kerning(1.5)
                             .foregroundColor(Color.white.opacity(0.4))
                             .lineLimit(nil)
