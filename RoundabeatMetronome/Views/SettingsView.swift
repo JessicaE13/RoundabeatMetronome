@@ -21,7 +21,7 @@ struct SettingsView: View {
                         HStack {
                             Text("Click Sound")
                             Spacer()
-                            Text("Woodblock")
+                            Text("Bongo")
                                 .foregroundColor(.gray)
                         }
                     }

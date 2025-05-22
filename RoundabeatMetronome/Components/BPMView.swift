@@ -19,70 +19,64 @@ struct BPMView: View {
         ZStack {
             VStack(spacing: 12) {
                 
-        
-                // MARK: - Middle BPM Section: Rounded Rectangle - Now expanded
                 
-                ZStack {
-                    // Enhanced glow effect with multiple layers
-                    RoundedRectangle(cornerRadius: 25)
-                        .stroke(LinearGradient(
-                            gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)]),
-                            startPoint: .top,
-                            endPoint: .bottomTrailing)
-                        )
-                       
-                        .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 25)
-                                .stroke(Color.white.opacity(0.8), lineWidth: 1.0)
-                                .shadow(color: Color.white.opacity(0.6), radius: 4, x: 0, y: 0)
-                                .blur(radius: 0.9)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 25)
-                                .fill(Color.black.opacity(0.9))
-                        )
-                        .overlay(
-                            // Inner glow effect
-                            RoundedRectangle(cornerRadius: 25)
-                                .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
-                                .blur(radius: 2)
-                                .padding(1)
-                        )
-                        .overlay(
-                            // Highlight edge for top reflection
-                            RoundedRectangle(cornerRadius: 25)
-                                .stroke(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(1.0)]),
-                                        startPoint: .topLeading,
-                                        endPoint: .center
-                                    ),
-                                    lineWidth: 1.5
-                                )
-                                .padding(0.5)
-                                .blendMode(.screen)
-                        )
-                    // Add a pulsing outer glow
-                        .background(
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(Color.clear)
-                                .shadow(color: Color.white.opacity(glowIntensity * 0.4), radius: 8, x: 0, y: 0)
-                                .shadow(color: Color.white.opacity(glowIntensity * 0.3), radius: 14, x: 0, y: 0)
-                        )
+                // MARK: - Middle BPM Section: Rounded Rectangle - Now expanded
+                 
+                 ZStack {
+                     // Base shape with black fill
+                     RoundedRectangle(cornerRadius: 25)
+                         .fill(Color.black.opacity(0.9))
+                     
+                     // Inner glow effect with inset to prevent edge bleeding
+                     RoundedRectangle(cornerRadius: 25)
+                         .inset(by: 0.5)
+                         .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
+                         .blur(radius: 2)
+                     
+                     // Outer stroke with proper sizing
+                     RoundedRectangle(cornerRadius: 25)
+                         .inset(by: 0.5) // Slight inset to keep stroke within bounds
+                         .stroke(LinearGradient(
+                             gradient: Gradient(colors: [Color.white.opacity(0.9), Color.white.opacity(0.6)]),
+                             startPoint: .top,
+                             endPoint: .bottomTrailing)
+                         )
+                         .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
+                     
+                     // Highlight edge for top reflection with inset
+                     RoundedRectangle(cornerRadius: 25)
+                         .inset(by: 0.5)
+                         .stroke(
+                             LinearGradient(
+                                 gradient: Gradient(colors: [Color.white.opacity(1.0), Color.white.opacity(1.0)]),
+                                 startPoint: .topLeading,
+                                 endPoint: .center
+                             ),
+                             lineWidth: 1.5
+                         )
+                         .blendMode(.screen)
                     
                     // BPM Display with gestures and +/- buttons
                     VStack {
                         Text("BPM")
-                            .font(.system(size: 10, weight: .heavy, design: .default)) // Slightly larger
+                            .font(.system(size: 10, weight: .medium, design: .default)) // Slightly larger
+                            .kerning(1)
                             .foregroundColor(Color.white.opacity(0.6))
                             .lineLimit(nil)
-                            .padding(.top, 5)
+                          
                         
                         // Inside the HStack where the BPM display is shown
-                        HStack {
-                            // Decrease (-) Button with expanded tap area
-                            Button(action: {
+                        HStack(spacing: 15) { // Increased spacing between elements
+                            // Decrease (-) Button with fixed width container
+                            ZStack {
+                                Image(systemName: "minus")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(Color.white.opacity(0.9))
+                                    .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
+                            }
+                            .frame(width: 30, height: 30) // Fixed size container
+                            .contentShape(Rectangle()) // Make entire area tappable
+                            .onTapGesture {
                                 // Add subtle haptic feedback matching the swipe gesture
                                 let generator = UIImpactFeedbackGenerator(style: .soft)
                                 generator.impactOccurred(intensity: 0.5)
@@ -90,82 +84,71 @@ struct BPMView: View {
                                 // Decrease tempo by 1
                                 metronome.updateTempo(to: metronome.tempo - 1)
                                 previousTempo = metronome.tempo
-                            }) {
-                                Image(systemName: "minus")
-                                    .font(.system(size: 18)) // Larger
-                                    .foregroundColor(Color.white.opacity(0.9))
+                            }
+                            
+                            // BPM Display with fixed-width for 2-3 digits
+                            ZStack {
+                                // Create a fixed-width container that can accommodate up to 3 digits
+                                HStack(spacing: 0) {
+                               
+                                    // Use format that shows only needed digits but maintains positioning
+                                    Text("\(Int(metronome.tempo))")
+                                        .font(.system(size: 75, weight: .bold, design: .default))
+                                        .foregroundColor(Color.white.opacity(0.9))
+                                        .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
+                                        .monospacedDigit() // Ensures all digits have equal width
+                                        .fixedSize() // Use only the space needed
+                                    
+                               
+                                }
+                                .frame(width: 150, alignment: .center) // Fixed width container with center alignment
+                            }
+                            .contentShape(Rectangle()) // Make entire area tappable
+                            .onTapGesture {
+                                // Add haptic feedback
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
+                                isShowingKeypad = true
+                            }
+                            
+                            ZStack {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 18, weight: .bold, design: .monospaced))
                                    
-                                    .contentShape(Rectangle()) // Make entire area tappable
+                                    .foregroundColor(Color.white.opacity(0.9))
                                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
                             }
-                            .buttonStyle(PlainButtonStyle())
-                          
-                            
-                            // BPM Display in a fixed-width container
-                            Text("\(Int(metronome.tempo))")
-                                .font(.system(size: 65, weight: .bold, design: .default)) // Larger font
-                                .contentTransition(.identity) // Remove transition animation
-                                .foregroundColor(Color.white.opacity(0.9))
-                                .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
-                                .multilineTextAlignment(.center)
-                                .animation(.easeOut(duration: 0.2), value: Int(metronome.tempo)) // Reduced animation speed
-                               
-                            // Make the BPM text tappable to show keypad
-                                .onTapGesture {
-                                    // Add haptic feedback
-                                    let generator = UIImpactFeedbackGenerator(style: .light)
-                                    generator.impactOccurred()
-                                    isShowingKeypad = true
-                                }
-                            
-                            // Increase (+) Button with expanded tap area
-                            Button(action: {
-                                // Add subtle haptic feedback matching the swipe gesture
+                            .frame(width: 30, height: 30)
+                            .contentShape(Rectangle()) // Make entire area tappable
+                            .onTapGesture {
                                 let generator = UIImpactFeedbackGenerator(style: .soft)
                                 generator.impactOccurred(intensity: 0.5)
                                 
                                 // Increase tempo by 1
                                 metronome.updateTempo(to: metronome.tempo + 1)
                                 previousTempo = metronome.tempo
-                            }) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 18)) // Larger
-                                    .foregroundColor(Color.white.opacity(0.9))
-                                    .contentShape(Rectangle()) // Make entire area tappable
-                                    .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
                             }
-                            .buttonStyle(PlainButtonStyle())
-                          
                         }
-                       
                         
                         Text("ALLEGRO")
-                            .font(.system(size: 10, weight: .heavy, design: .default)) // Slightly larger
+                            .font(.system(size: 10, weight: .medium, design: .default))
+                            .kerning(1)
                             .foregroundColor(Color.white.opacity(0.6))
                             .lineLimit(nil)
-                            .padding(.bottom, 5)
                     }
                 }
-                // Apply the drag gesture to the entire BPM section
                 .gesture(
                     DragGesture()
                         .onChanged { value in
                             dragOffset = value.translation.height
-                            
-                            // Calculate tempo change based on drag distance
-                            // Negative offset (swipe up) increases tempo
                             let tempoChange = -dragOffset * 0.2
                             let newTempo = previousTempo + tempoChange
-                            
-                            // Track previous value to detect changes
                             let oldTempoInt = Int(metronome.tempo)
                             
-                            // Update tempo with clamping
                             metronome.updateTempo(to: newTempo)
                             
                             // If the integer value of the tempo changed, provide haptic feedback
                             if Int(metronome.tempo) != oldTempoInt {
-                                // Subtle haptic feedback for each BPM change
                                 let generator = UIImpactFeedbackGenerator(style: .soft)
                                 generator.impactOccurred(intensity: 0.5)
                             }
@@ -176,7 +159,6 @@ struct BPMView: View {
                             // Store the current tempo for next drag
                             previousTempo = metronome.tempo
                             
-                            // Add subtle haptic feedback matching the swipe gesture
                             let generator = UIImpactFeedbackGenerator(style: .soft)
                             generator.impactOccurred(intensity: 0.5)
                         }
@@ -184,7 +166,7 @@ struct BPMView: View {
             }
             .frame(height: UIScreen.main.bounds.height / 3.8)
             .padding(.horizontal, 30)
-            .padding(.top, 50)
+            .padding(.top, 40)
         }
         .onAppear {
             // Start the glow animation when view appears
@@ -216,4 +198,3 @@ struct BPMView: View {
         )
     }
 }
-

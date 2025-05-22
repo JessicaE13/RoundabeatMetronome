@@ -48,7 +48,7 @@ class MetronomeEngine: ObservableObject {
     private func setupAudioPlayers() {
         // Find the sound file
         let possibleExtensions = ["wav", "mp3", "aiff", "m4a"]
-        let possibleNames = ["Woodblock", "woodblock", "Wood Block", "wood_block", "wood-block"]
+        let possibleNames = ["Snap"]
         
         var soundURL: URL? = nil
         
@@ -65,7 +65,7 @@ class MetronomeEngine: ObservableObject {
         
         // If still nil, try locating the sound in the asset catalog
         if soundURL == nil {
-            print("Could not find Woodblock sound file directly, trying alternative methods...")
+            print("Could not find sound file directly, trying alternative methods...")
             
             // Try one more approach - look for any sound files in the bundle
             if let resourcePath = Bundle.main.resourcePath {
@@ -73,7 +73,7 @@ class MetronomeEngine: ObservableObject {
                 do {
                     let files = try fileManager.contentsOfDirectory(atPath: resourcePath)
                     for file in files {
-                        if file.lowercased().contains("wood") &&
+                        if file.lowercased().contains("bongo") &&
                             (file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a")) {
                             soundURL = URL(fileURLWithPath: resourcePath).appendingPathComponent(file)
                             print("Found potential sound file: \(file)")

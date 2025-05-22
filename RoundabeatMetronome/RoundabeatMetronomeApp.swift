@@ -11,7 +11,7 @@ import SwiftUI
 struct RoundabeatMetronomeApp: App {
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            ContentView(metronome: metronome)
         }
     }
 }

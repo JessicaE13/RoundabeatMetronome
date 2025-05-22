@@ -20,7 +20,7 @@ struct SegmentView: View {
                             style: StrokeStyle(lineWidth: 27, lineCap: .round)
                         )
                         .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
-                        .frame(width: 275, height: 275)
+                        .frame(width: 300, height: 300)
                     
                     // Main segment with gradient overlay - red for current beat, normal for others
                     Circle()
@@ -52,7 +52,7 @@ struct SegmentView: View {
                                 )
                                 .blendMode(.overlay)
                         )
-                        .frame(width: 275, height: 275)
+                        .frame(width: 300, height: 300)
                 }
             }
 
@@ -60,12 +60,12 @@ struct SegmentView: View {
             Circle()
                 .fill(Color.black.opacity(0.8))
                 .shadow(radius: 10)
-                .frame(width: 215)
+                .frame(width: 240)
             
             // Outer ring
             Circle()
                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                .frame(width: 215)
+                .frame(width: 240)
 
             // Inner white button background
             Circle()
@@ -98,7 +98,7 @@ struct SegmentView: View {
                     )
                 )
         }
-        .frame(width: 310, height: 310)
+        .frame(width: 350, height: 350)
         .contentShape(Rectangle())
         .clipped()
         .onTapGesture {
@@ -128,7 +128,7 @@ struct SliderView: View {
                 Text("Tempo: \(Int(metronome.tempo)) BPM")
                     .font(.headline)
                 Slider(value: $metronome.tempo, in: metronome.minTempo...metronome.maxTempo)
-                    .onChange(of: metronome.tempo) { newValue in
+                    .onChange(of: metronome.tempo) { oldValue, newValue in
                         metronome.updateTempo(to: newValue)
                     }
             }
