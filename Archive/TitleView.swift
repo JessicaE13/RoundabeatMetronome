@@ -22,6 +22,10 @@ struct TitleView: View {
             .shadow(radius: 1)
       
     
+        
+        Text("Test Font")
+          .font(.custom("Museo", size: 50))
+        
     }
 }
 

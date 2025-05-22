@@ -9,7 +9,7 @@ struct BPMView: View {
     @Binding var showTimeSignaturePicker: Bool
     @State private var dragOffset: CGFloat = 0
     @State private var previousTempo: Double = 120
-    @State private var glowIntensity: Double = 0.06 // For animating glow effect
+
     
     // Animation for the glow effect
     let glowAnimation = Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)
@@ -24,19 +24,19 @@ struct BPMView: View {
                  
                  ZStack {
                      // Base shape with black fill
-                     RoundedRectangle(cornerRadius: 25)
+                     RoundedRectangle(cornerRadius: 50)
                          .fill(Color.black.opacity(0.9))
                      
                    
                      // Outer stroke with proper sizing
-                     RoundedRectangle(cornerRadius: 25)
+                     RoundedRectangle(cornerRadius: 50)
                          .inset(by: 0.5) // Slight inset to keep stroke within bounds
                          .stroke(LinearGradient(
                              gradient: Gradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0.15)]),
                              startPoint: .top,
                              endPoint: .bottomTrailing)
                          )
-                         .shadow(color: Color.white.opacity(glowIntensity), radius: 6, x: 0, y: 0)
+                
                      
                     
                     
@@ -77,7 +77,7 @@ struct BPMView: View {
                                
                                     // Use format that shows only needed digits but maintains positioning
                                     Text("\(Int(metronome.tempo))")
-                                        .font(.custom("Museo", size: 75))
+                                        .font(.custom("MuseoModerno-Medium", size: 75))
                                         .foregroundColor(Color.white.opacity(0.8))
                                         .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                                         .monospacedDigit() // Ensures all digits have equal width
@@ -152,12 +152,7 @@ struct BPMView: View {
             .padding(.horizontal, 30)
             .padding(.top, 40)
         }
-        .onAppear {
-            // Start the glow animation when view appears
-            withAnimation(glowAnimation) {
-                glowIntensity = 0.8
-            }
-        }
+
     }
 }
 
