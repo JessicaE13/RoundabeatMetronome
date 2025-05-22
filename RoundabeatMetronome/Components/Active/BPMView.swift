@@ -9,7 +9,7 @@ struct BPMView: View {
     @Binding var showTimeSignaturePicker: Bool
     @State private var dragOffset: CGFloat = 0
     @State private var previousTempo: Double = 120
-    @State private var glowIntensity: Double = 0.6 // For animating glow effect
+    @State private var glowIntensity: Double = 0.06 // For animating glow effect
     
     // Animation for the glow effect
     let glowAnimation = Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)
@@ -32,7 +32,7 @@ struct BPMView: View {
                      RoundedRectangle(cornerRadius: 25)
                          .inset(by: 0.5) // Slight inset to keep stroke within bounds
                          .stroke(LinearGradient(
-                             gradient: Gradient(colors: [Color.white.opacity(0.25), Color.white.opacity(0.20)]),
+                             gradient: Gradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0.15)]),
                              startPoint: .top,
                              endPoint: .bottomTrailing)
                          )
@@ -43,7 +43,7 @@ struct BPMView: View {
                     // BPM Display with gestures and +/- buttons
                     VStack {
                         Text("BPM")
-                            .font(.custom("SairaSemiCondended-Regular",size: 10)) // Slightly larger
+                            .font(.custom("SairaSemiCondensed-Regular",size: 10)) // Slightly larger
                             .kerning(1.5)
                             .foregroundColor(Color.white.opacity(0.4))
                             .lineLimit(nil)
@@ -77,7 +77,7 @@ struct BPMView: View {
                                
                                     // Use format that shows only needed digits but maintains positioning
                                     Text("\(Int(metronome.tempo))")
-                                        .font(.custom("SairaSemiCondended-Regular", size: 75))
+                                        .font(.custom("MuseoModerno-VariableFont_wght", size: 75))
                                         .foregroundColor(Color.white.opacity(0.8))
                                         .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                                         .monospacedDigit() // Ensures all digits have equal width
@@ -115,7 +115,7 @@ struct BPMView: View {
                         }
                         
                         Text("ALLEGRO")
-                            .font(.custom("SairaSemiCondended-Regular",size: 10)) //
+                            .font(.custom("SairaSemiCondensed-Regular",size: 10)) //
                             .kerning(1.5)
                             .foregroundColor(Color.white.opacity(0.4))
                             .lineLimit(nil)
