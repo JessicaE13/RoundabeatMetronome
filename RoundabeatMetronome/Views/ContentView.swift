@@ -71,10 +71,10 @@ struct ContentView: View {
                 Spacer()
                 
                 
-                DialView()
+         
                 
                 // Main Dial Control with Play/Pause Button
-                //DialControl(metronome: metronome)
+                DialControl(metronome: metronome)
                 //SegmentView(metronome: metronome)
                 
                 

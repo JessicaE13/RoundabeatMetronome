@@ -12,8 +12,8 @@ class MetronomeEngine: ObservableObject {
     @Published var showTimeSignatureMenu: Bool = false
     
     // Constants for tempo range
-    let minTempo: Double = 40
-    let maxTempo: Double = 240
+    let minTempo: Double = 20
+    let maxTempo: Double = 300
     
     // Audio player pool for more responsive sound
     private var audioPlayers: [AVAudioPlayer] = []

@@ -1,5 +1,20 @@
 import SwiftUI
 
+// MARK: - Tempo Range Data Structure
+struct TempoRange {
+    let name: String
+    let minBPM: Int
+    let maxBPM: Int
+    let midBPM: Int
+    
+    init(name: String, minBPM: Int, maxBPM: Int) {
+        self.name = name
+        self.minBPM = minBPM
+        self.maxBPM = maxBPM
+        self.midBPM = (minBPM + maxBPM) / 2
+    }
+}
+
 // MARK: - BPM Display Component with Gestures
 
 struct BPMView: View {
@@ -13,6 +28,34 @@ struct BPMView: View {
     
     // Animation for the glow effect
     let glowAnimation = Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)
+    
+    // Tempo ranges in order of speed
+    let tempoRanges: [TempoRange] = [
+        TempoRange(name: "Larghissimo", minBPM: 20, maxBPM: 24),
+        TempoRange(name: "Grave", minBPM: 25, maxBPM: 40),
+        TempoRange(name: "Largo", minBPM: 41, maxBPM: 60),
+        TempoRange(name: "Larghetto", minBPM: 61, maxBPM: 66),
+        TempoRange(name: "Adagio", minBPM: 67, maxBPM: 72),
+        TempoRange(name: "Adagietto", minBPM: 73, maxBPM: 76),
+        TempoRange(name: "Andante", minBPM: 77, maxBPM: 80),
+        TempoRange(name: "Andantino", minBPM: 81, maxBPM: 92),
+        TempoRange(name: "Andante Moderato", minBPM: 93, maxBPM: 108),
+        TempoRange(name: "Moderato", minBPM: 109, maxBPM: 112),
+        TempoRange(name: "Allegretto", minBPM: 113, maxBPM: 120),
+        TempoRange(name: "Allegro", minBPM: 121, maxBPM: 168),
+        TempoRange(name: "Vivace", minBPM: 169, maxBPM: 172),
+        TempoRange(name: "Vivacissimo", minBPM: 173, maxBPM: 176),
+        TempoRange(name: "Presto", minBPM: 177, maxBPM: 200),
+        TempoRange(name: "Prestissimo", minBPM: 201, maxBPM: 400)
+    ]
+    
+    // Function to get current tempo range
+    private func getCurrentTempoRange() -> TempoRange {
+        let currentTempo = Int(metronome.tempo)
+        return tempoRanges.first { range in
+            currentTempo >= range.minBPM && currentTempo <= range.maxBPM
+        } ?? tempoRanges.first { $0.name == "Allegro" }!
+    }
     
     var body: some View {
         
@@ -41,9 +84,9 @@ struct BPMView: View {
                     
                     
                     // BPM Display with gestures and +/- buttons
-                    VStack {
+                    VStack(spacing: 8) {
                         Text("BPM")
-                            .font(.custom("SairaSemiCondensed-Regular",size: 10)) // Slightly larger
+                            .font(.system(size: 10)) // Slightly larger
                             .kerning(1.5)
                             .foregroundColor(Color.white.opacity(0.4))
                             .lineLimit(nil)
@@ -77,7 +120,8 @@ struct BPMView: View {
                                
                                     // Use format that shows only needed digits but maintains positioning
                                     Text("\(Int(metronome.tempo))")
-                                        .font(.custom("MuseoModerno-Medium", size: 75))
+                                        .font(.custom("Kanit-SemiBold", size: 80))
+                                        .kerning(2)
                                         .foregroundColor(Color.white.opacity(0.8))
                                         .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                                         .monospacedDigit() // Ensures all digits have equal width
@@ -98,7 +142,6 @@ struct BPMView: View {
                             ZStack {
                                 Image(systemName: "plus")
                                     .font(.system(size: 18, weight: .bold, design: .monospaced))
-                                   
                                     .foregroundColor(Color.white.opacity(0.9))
                                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
                             }
@@ -114,11 +157,125 @@ struct BPMView: View {
                             }
                         }
                         
-                        Text("ALLEGRO")
-                            .font(.custom("SairaSemiCondensed-Regular",size: 10)) //
-                            .kerning(1.5)
-                            .foregroundColor(Color.white.opacity(0.4))
-                            .lineLimit(nil)
+                        // MARK: - Horizontal Tempo Selector
+                        ZStack {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                ScrollViewReader { proxy in
+                                    HStack(spacing: 16) {
+                                        // Add invisible spacer at the beginning to center first item
+                                        Spacer()
+                                            .frame(width: 75)
+                                        
+                                        ForEach(tempoRanges.indices, id: \.self) { index in
+                                            let range = tempoRanges[index]
+                                            let isSelected = getCurrentTempoRange().name == range.name
+                                            
+                                            VStack(spacing: 4) {
+                                                Text(range.name.uppercased())
+                                                    .font(.system(size: 9, weight: .medium))
+                                                    .kerning(1.0)
+                                                    .foregroundColor(isSelected ?
+                                                        Color.white.opacity(0.9) :
+                                                        Color.white.opacity(0.4))
+                                                    .multilineTextAlignment(.center)
+                                                    .lineLimit(2)
+                                                    .minimumScaleFactor(0.8)
+                                                
+                                                Text("\(range.minBPM)-\(range.maxBPM)")
+                                                    .font(.custom("Kanit-Regular",size: 8))
+                                                    .foregroundColor(isSelected ?
+                                                        Color.white.opacity(0.7) :
+                                                        Color.white.opacity(0.3))
+                                            }
+                                            .frame(minWidth: 65)
+                                            .padding(.vertical, 10)
+                                            .padding(.horizontal, 12)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 15)
+                                                    .fill(isSelected ?
+                                                        Color.white.opacity(0.1) :
+                                                        Color.clear)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 15)
+                                                            .stroke(isSelected ?
+                                                                Color.white.opacity(0.2) :
+                                                                Color.clear, lineWidth: 1)
+                                                    )
+                                            )
+                                            .contentShape(Rectangle())
+                                            .onTapGesture {
+                                                let generator = UIImpactFeedbackGenerator(style: .medium)
+                                                generator.impactOccurred()
+                                                
+                                                // Set tempo to the middle of the selected range
+                                                metronome.updateTempo(to: Double(range.midBPM))
+                                                previousTempo = metronome.tempo
+                                            }
+                                            .id(index)
+                                        }
+                                        
+                                        // Add invisible spacer at the end to center last item
+                                        Spacer()
+                                            .frame(width: 75)
+                                    }
+                                    .padding(.horizontal, 50) // Increased padding to allow fade effect
+                                    .onAppear {
+                                        // Scroll to current tempo range on appear
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            if let currentIndex = tempoRanges.firstIndex(where: { $0.name == getCurrentTempoRange().name }) {
+                                                withAnimation(.easeInOut(duration: 0.5)) {
+                                                    proxy.scrollTo(currentIndex, anchor: .center)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .onChange(of: metronome.tempo) { oldValue, newValue in
+                                        // Auto-scroll to current tempo range when tempo changes with smoother animation
+                                        if let currentIndex = tempoRanges.firstIndex(where: { $0.name == getCurrentTempoRange().name }) {
+                                            withAnimation(.easeInOut(duration: 0.6)) {
+                                                proxy.scrollTo(currentIndex, anchor: .center)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .scrollBounceBehavior(.basedOnSize) // Smoother scroll behavior
+                            .clipShape(RoundedRectangle(cornerRadius: 15)) // Clip to stay within bounds
+                            
+                            // Left fade overlay
+                            HStack {
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.black.opacity(0.9),
+                                        Color.black.opacity(0.7),
+                                        Color.black.opacity(0.3),
+                                        Color.clear
+                                    ]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                                .frame(width: 30)
+                                .allowsHitTesting(false)
+                                
+                                Spacer()
+                                
+                                // Right fade overlay
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.clear,
+                                        Color.black.opacity(0.3),
+                                        Color.black.opacity(0.7),
+                                        Color.black.opacity(0.9)
+                                    ]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                                .frame(width: 30)
+                                .allowsHitTesting(false)
+                            }
+                        }
+                        .frame(height: 45)
+                        .padding(.horizontal, 20) // Constrain the entire tempo selector within the rectangle
                     }
                 }
                 .gesture(

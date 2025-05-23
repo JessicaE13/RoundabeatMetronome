@@ -15,144 +15,6 @@ extension Color {
 }
 
 
-// MARK: - Beat Segment Arc View
-
-struct ArcSegment: View {
-    let center: CGPoint
-    let radius: CGFloat
-    let startAngle: Double
-    let endAngle: Double
-    let lineWidth: CGFloat
-    let isActive: Bool
-    let isFirstBeat: Bool
-    let gapWidth: CGFloat // Width of the gap in points (not degrees)
-    
-    var body: some View {
-        ZStack {
-            // When not active, show gradient version with outline
-            if !isActive {
-                // White outline for inactive segments
-                // Draw two arcs - one slightly larger than the other
-                Path { path in
-                    path.addArc(
-                        center: center,
-                        radius: radius + lineWidth/2 + 1, // Slightly larger radius for outer edge
-                        startAngle: Angle(degrees: startAngle),
-                        endAngle: Angle(degrees: endAngle),
-                        clockwise: false
-                    )
-                }
-                .stroke(
-                    Color.white.opacity(0.2),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
-                )
-                
-                Path { path in
-                    path.addArc(
-                        center: center,
-                        radius: radius - lineWidth/2 - 1, // Slightly smaller radius for inner edge
-                        startAngle: Angle(degrees: startAngle),
-                        endAngle: Angle(degrees: endAngle),
-                        clockwise: false
-                    )
-                }
-                .stroke(
-                    Color.white.opacity(0.2),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
-                )
-                
-                // Main segment fill
-                Path { path in
-                    path.addArc(
-                        center: center,
-                        radius: radius,
-                        startAngle: Angle(degrees: startAngle),
-                        endAngle: Angle(degrees: endAngle),
-                        clockwise: false
-                    )
-                }
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.white.opacity(0.15), Color.white.opacity(0.1)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
-            }
-            
-            // When active, show colored version with outline
-            if isActive {
-                // Glow effect
-                Path { path in
-                    path.addArc(
-                        center: center,
-                        radius: radius,
-                        startAngle: Angle(degrees: startAngle),
-                        endAngle: Angle(degrees: endAngle),
-                        clockwise: false
-                    )
-                }
-                .stroke(
-                    isFirstBeat ? Color(.gray.opacity(0.4)) : Color(.gray.opacity(0.4)),
-                    style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round)
-                )
-                .blur(radius: 10)
-                
-                // Main segment
-                Path { path in
-                    path.addArc(
-                        center: center,
-                        radius: radius,
-                        startAngle: Angle(degrees: startAngle),
-                        endAngle: Angle(degrees: endAngle),
-                        clockwise: false
-                    )
-                }
-                .stroke(
-                    isFirstBeat ? Color.white.opacity(0.9) : Color.white.opacity(0.9),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
-                .shadow(color: isFirstBeat ? Color.white.opacity(0.1) : Color.white.opacity(0.1), radius: 4, x: 0, y: 0)
-                .blur(radius: 2)
-                
-                // White outline for active segments - outer edge
-                Path { path in
-                    path.addArc(
-                        center: center,
-                        radius: radius + lineWidth/2 + 1,
-                        startAngle: Angle(degrees: startAngle),
-                        endAngle: Angle(degrees: endAngle),
-                        clockwise: false
-                    )
-                }
-                .stroke(
-                    Color.white.opacity(0.4),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
-                )
-                
-                // White outline for active segments - inner edge
-                Path { path in
-                    path.addArc(
-                        center: center,
-                        radius: radius - lineWidth/2 - 1,
-                        startAngle: Angle(degrees: startAngle),
-                        endAngle: Angle(degrees: endAngle),
-                        clockwise: false
-                    )
-                }
-                .stroke(
-                    Color.white.opacity(0.4),
-                    style: StrokeStyle(lineWidth: 1, lineCap: .round)
-                )
-            }
-        }
-        // Add a subtle animation when segment becomes active
-        .animation(.easeInOut(duration: 0.1), value: isActive)
-    }
-}
 
 // MARK: - Segmented Circle View
 
@@ -166,7 +28,7 @@ struct SegmentedCircleView: View {
     }
     
     // Fixed gap width in points
-    private let gapWidthPoints: CGFloat = 15.0
+    private let gapWidthPoints: CGFloat = 36.0
     
     var body: some View {
         ZStack {
@@ -176,7 +38,7 @@ struct SegmentedCircleView: View {
             ForEach(0..<metronome.beatsPerMeasure, id: \.self) { beatIndex in
                 let (startAngle, endAngle) = angleRangeForBeat(beatIndex)
                 
-                ArcSegment(
+                ArcSegmentView(
                     center: CGPoint(x: diameter/2, y: diameter/2),
                     radius: radius,
                     startAngle: startAngle,
@@ -295,8 +157,8 @@ struct DialControl: View {
         ZStack {
                 // Base layer - darker outer shadow for depth (SHADOW REDUCED HERE)
                 Circle()
-                    .fill(Color("colorDial"))
-                    .frame(width: dialSize, height: dialSize)
+                .fill(Color.black.opacity(0.9))
+     .frame(width: dialSize, height: dialSize)
                     .shadow(color: Color.black.opacity(0.3), radius: 6, x: 0, y: 4)
                 
                 // Donut shape with hollow center

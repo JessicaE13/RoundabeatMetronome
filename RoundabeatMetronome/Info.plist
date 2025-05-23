@@ -2,8 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleIdentifier</key>
+	<string></string>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Kanit-SemiBold.ttf</string>
+		<string>Kanit-Medium.ttf</string>
+		<string>Kanit-Bold.ttf</string>
+		<string>MuseoModerno-Medium.ttf</string>
 		<string>Museo.ttf</string>
 		<string>Kanit-Regular.ttf</string>
 		<string>blippo.ttf</string>
