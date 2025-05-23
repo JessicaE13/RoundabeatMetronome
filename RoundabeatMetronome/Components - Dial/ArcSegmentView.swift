@@ -24,7 +24,7 @@ struct ArcSegmentView: View {
 
             // Always show a faint outer structure
             arcPath
-                .stroke(Color.white.opacity(0.1),
+                .stroke(Color.white.opacity(0.3),
                         style: StrokeStyle(lineWidth: lineWidth + 2, lineCap: .round))
 
             if isActive {
@@ -53,7 +53,7 @@ struct ArcSegmentView: View {
                 
                 ZStack {
                     arcPath
-                        .stroke(Color.white.opacity(0.05),
+                        .stroke(Color.white.opacity(0.5),
                                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
 
                     arcPath
@@ -61,7 +61,7 @@ struct ArcSegmentView: View {
                                 style: StrokeStyle(lineWidth: lineWidth + 1, lineCap: .round))
                     
                     arcPath
-                              .stroke(Color.black.opacity(0.1),
+                              .stroke(Color.black.opacity(0.2),
                                       style: StrokeStyle(lineWidth: lineWidth + 1, lineCap: .round))
                 }
                 .compositingGroup() // Helps blend the layers nicely

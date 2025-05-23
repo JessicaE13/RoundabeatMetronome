@@ -24,12 +24,9 @@ struct BPMView: View {
     @Binding var showTimeSignaturePicker: Bool
     @State private var dragOffset: CGFloat = 0
     @State private var previousTempo: Double = 120
-
+    @State private var showSettings = false
     
-    // Animation for the glow effect
     let glowAnimation = Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)
-    
-    // Tempo ranges in order of speed
     let tempoRanges: [TempoRange] = [
         TempoRange(name: "Larghissimo", minBPM: 20, maxBPM: 24),
         TempoRange(name: "Grave", minBPM: 25, maxBPM: 40),
@@ -47,9 +44,8 @@ struct BPMView: View {
         TempoRange(name: "Vivacissimo", minBPM: 173, maxBPM: 176),
         TempoRange(name: "Presto", minBPM: 177, maxBPM: 200),
         TempoRange(name: "Prestissimo", minBPM: 201, maxBPM: 400)
-    ]
+    ]     // Tempo ranges in order of speed
     
-    // Function to get current tempo range
     private func getCurrentTempoRange() -> TempoRange {
         let currentTempo = Int(metronome.tempo)
         return tempoRanges.first { range in
@@ -58,43 +54,71 @@ struct BPMView: View {
     }
     
     var body: some View {
-        
         ZStack {
             VStack(spacing: 12) {
                 
-                
                 // MARK: - Middle BPM Section: Rounded Rectangle - Now expanded
-                 
-                 ZStack {
-                     // Base shape with black fill
-                     RoundedRectangle(cornerRadius: 50)
-                         .fill(Color.black.opacity(0.9))
-                     
-                   
-                     // Outer stroke with proper sizing
-                     RoundedRectangle(cornerRadius: 50)
-                         .inset(by: 0.5) // Slight inset to keep stroke within bounds
-                         .stroke(LinearGradient(
-                             gradient: Gradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0.15)]),
-                             startPoint: .top,
-                             endPoint: .bottomTrailing)
-                         )
                 
-                     
+                ZStack {
                     
+                    RoundedRectangle(cornerRadius: 50)
+                        .fill(Color.black.opacity(0.9))
                     
-                    // BPM Display with gestures and +/- buttons
-                    VStack(spacing: 8) {
-                        Text("BPM")
-                            .font(.system(size: 10)) // Slightly larger
-                            .kerning(1.5)
-                            .foregroundColor(Color.white.opacity(0.4))
-                            .lineLimit(nil)
-                          
+                    RoundedRectangle(cornerRadius: 50)
+                        .offset(y: 0.5)
+                        .stroke(LinearGradient(
+                            gradient: Gradient(colors: [Color.clear, Color.white.opacity(0.7)]),
+                            startPoint: .top,
+                            endPoint: .bottom)
+                        )
+                    
+                    // MARK: - 3 Distinct Horizontal Rows
+                    VStack {
                         
-                        // Inside the HStack where the BPM display is shown
-                        HStack(spacing: 15) { // Increased spacing between elements
-                            // Decrease (-) Button with fixed width container
+                        // MARK: - Row 1: Time Signature and Settings
+                        HStack {
+                            // Time Signature
+                            Button(action: {
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
+                                showTimeSignaturePicker = true
+                            }) {
+                                HStack(spacing: 2) {
+                                    Text("\(metronome.beatsPerMeasure)")
+                                        .font(.custom("Kanit-SemiBold", size: 16))
+                                        .foregroundColor(Color.white.opacity(0.8))
+                                    
+                                    Text("/")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color.white.opacity(0.8))
+                                    
+                                    Text("\(metronome.beatUnit)")
+                                        .font(.custom("Kanit-SemiBold", size: 16))
+                                        .foregroundColor(Color.white.opacity(0.8))
+                                }
+                                .padding(.horizontal, 12)
+                            }
+                            
+                            Spacer()
+                            
+                            // Settings Icon
+                            Button(action: {
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
+                                showSettings = true
+                            }) {
+                                Image(systemName: "slider.vertical.3")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.white.opacity(0.7))
+                                    .frame(width: 32, height: 32)
+                            }
+                        }
+                        .padding(20)
+                        .frame(height: 60) // Fixed height for row 1
+                        
+                        // MARK: - Row 2: BPM Label, Number and +/- Buttons
+                        
+                        HStack(spacing: 15) {
                             ZStack {
                                 Image(systemName: "minus")
                                     .font(.system(size: 18, weight: .bold))
@@ -103,34 +127,24 @@ struct BPMView: View {
                             }
                             .frame(width: 30, height: 30) // Fixed size container
                             .contentShape(Rectangle()) // Make entire area tappable
-                            .onTapGesture {
-                                // Add subtle haptic feedback matching the swipe gesture
+                            .onTapGesture {   // Add subtle haptic feedback matching the swipe gesture
                                 let generator = UIImpactFeedbackGenerator(style: .soft)
                                 generator.impactOccurred(intensity: 0.5)
-                                
-                                // Decrease tempo by 1
-                                metronome.updateTempo(to: metronome.tempo - 1)
+                                metronome.updateTempo(to: metronome.tempo - 1) // Decrease tempo by 1
                                 previousTempo = metronome.tempo
                             }
                             
-                            // BPM Display with fixed-width for 2-3 digits
-                            ZStack {
-                                // Create a fixed-width container that can accommodate up to 3 digits
-                                HStack(spacing: 0) {
-                               
-                                    // Use format that shows only needed digits but maintains positioning
-                                    Text("\(Int(metronome.tempo))")
-                                        .font(.custom("Kanit-SemiBold", size: 80))
-                                        .kerning(2)
-                                        .foregroundColor(Color.white.opacity(0.8))
-                                        .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
-                                        .monospacedDigit() // Ensures all digits have equal width
-                                        .fixedSize() // Use only the space needed
-                                    
-                               
-                                }
-                                .frame(width: 150, alignment: .center) // Fixed width container with center alignment
+                            
+                            VStack {
+                                Text("\(Int(metronome.tempo))")
+                                    .font(.custom("Kanit-SemiBold", size: 80))
+                                    .kerning(2)
+                                    .foregroundColor(Color.white.opacity(0.8))
+                                    .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
+                                    .monospacedDigit() // Fixedwidth
                             }
+                            
+                            .frame(width: 150, alignment: .center) // Fixed width container with center alignment
                             .contentShape(Rectangle()) // Make entire area tappable
                             .onTapGesture {
                                 // Add haptic feedback
@@ -156,13 +170,14 @@ struct BPMView: View {
                                 previousTempo = metronome.tempo
                             }
                         }
+                        .frame(height: 80) // Fixed height for row 2
                         
-                        // MARK: - Horizontal Tempo Selector
+                        // MARK: - Row 3: Horizontal Tempo Selector
                         ZStack {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 ScrollViewReader { proxy in
                                     HStack(spacing: 16) {
-                                        // Add invisible spacer at the beginning to center first item
+                                   
                                         Spacer()
                                             .frame(width: 75)
                                         
@@ -175,8 +190,8 @@ struct BPMView: View {
                                                     .font(.system(size: 9, weight: .medium))
                                                     .kerning(1.0)
                                                     .foregroundColor(isSelected ?
-                                                        Color.white.opacity(0.9) :
-                                                        Color.white.opacity(0.4))
+                                                                     Color.white.opacity(0.9) :
+                                                                        Color.white.opacity(0.4))
                                                     .multilineTextAlignment(.center)
                                                     .lineLimit(2)
                                                     .minimumScaleFactor(0.8)
@@ -184,8 +199,8 @@ struct BPMView: View {
                                                 Text("\(range.minBPM)-\(range.maxBPM)")
                                                     .font(.custom("Kanit-Regular",size: 8))
                                                     .foregroundColor(isSelected ?
-                                                        Color.white.opacity(0.7) :
-                                                        Color.white.opacity(0.3))
+                                                                     Color.white.opacity(0.7) :
+                                                                        Color.white.opacity(0.3))
                                             }
                                             .frame(minWidth: 65)
                                             .padding(.vertical, 10)
@@ -193,32 +208,29 @@ struct BPMView: View {
                                             .background(
                                                 RoundedRectangle(cornerRadius: 15)
                                                     .fill(isSelected ?
-                                                        Color.white.opacity(0.1) :
-                                                        Color.clear)
+                                                          Color.white.opacity(0.1) :
+                                                            Color.clear)
                                                     .overlay(
                                                         RoundedRectangle(cornerRadius: 15)
                                                             .stroke(isSelected ?
-                                                                Color.white.opacity(0.2) :
-                                                                Color.clear, lineWidth: 1)
+                                                                    Color.white.opacity(0.2) :
+                                                                        Color.clear, lineWidth: 1)
                                                     )
                                             )
                                             .contentShape(Rectangle())
                                             .onTapGesture {
                                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                                 generator.impactOccurred()
-                                                
-                                                // Set tempo to the middle of the selected range
                                                 metronome.updateTempo(to: Double(range.midBPM))
                                                 previousTempo = metronome.tempo
                                             }
                                             .id(index)
                                         }
                                         
-                                        // Add invisible spacer at the end to center last item
                                         Spacer()
                                             .frame(width: 75)
                                     }
-                                    .padding(.horizontal, 50) // Increased padding to allow fade effect
+                                    .padding(.horizontal, 50)
                                     .onAppear {
                                         // Scroll to current tempo range on appear
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -240,44 +252,18 @@ struct BPMView: View {
                                 }
                             }
                             .scrollBounceBehavior(.basedOnSize) // Smoother scroll behavior
-                            .clipShape(RoundedRectangle(cornerRadius: 15)) // Clip to stay within bounds
-                            
-                            // Left fade overlay
-                            HStack {
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.black.opacity(0.9),
-                                        Color.black.opacity(0.7),
-                                        Color.black.opacity(0.3),
-                                        Color.clear
-                                    ]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                                .frame(width: 30)
-                                .allowsHitTesting(false)
-                                
-                                Spacer()
-                                
-                                // Right fade overlay
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.clear,
-                                        Color.black.opacity(0.3),
-                                        Color.black.opacity(0.7),
-                                        Color.black.opacity(0.9)
-                                    ]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                                .frame(width: 30)
-                                .allowsHitTesting(false)
-                            }
                         }
-                        .frame(height: 45)
-                        .padding(.horizontal, 20) // Constrain the entire tempo selector within the rectangle
+                        .frame(height: 70)
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: 50)) // Clip the content first
+                    
+                    // Black inner outline - 3px wide (drawn on top of clipped content)
+                    RoundedRectangle(cornerRadius: 50)
+                        .stroke(Color.black, lineWidth: 3)
+                        .padding(1.5) // Offset inward by half the stroke width to keep it inside
+                        .allowsHitTesting(false) // Allow touches to pass through the outline
                 }
+              
                 .gesture(
                     DragGesture()
                         .onChanged { value in
@@ -295,11 +281,8 @@ struct BPMView: View {
                             }
                         }
                         .onEnded { _ in
-                            // Reset drag offset
-                            dragOffset = 0
-                            // Store the current tempo for next drag
-                            previousTempo = metronome.tempo
-                            
+                            dragOffset = 0  // Reset drag offset
+                            previousTempo = metronome.tempo   // Store the current tempo for next drag
                             let generator = UIImpactFeedbackGenerator(style: .soft)
                             generator.impactOccurred(intensity: 0.5)
                         }
@@ -310,14 +293,16 @@ struct BPMView: View {
             .padding(.top, 40)
         }
 
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
     }
 }
 
 #Preview {
     ZStack {
-BackgroundView()
+        BackgroundView()
         
-        // Add the BPMView on top
         BPMView(
             metronome: MetronomeEngine(),
             isShowingKeypad: .constant(false),
