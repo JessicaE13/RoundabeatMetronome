@@ -9,6 +9,7 @@ struct ArcSegmentView: View {
     let isActive: Bool
     let isFirstBeat: Bool
     let gapWidth: CGFloat
+   
 
     var body: some View {
         ZStack {
@@ -39,23 +40,29 @@ struct ArcSegmentView: View {
                             style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round))
                     .blur(radius: 10)
             } else {
-                // Outline effect: simulate a ring by layering two strokes
+                // Outline effect using the theme color instead of hardcoded gray
                 let backgroundGradient = LinearGradient(
                     gradient: Gradient(colors: [
-                        Color(red: 44/255, green: 44/255, blue: 44/255),
-                        Color(red: 20/255, green: 20/255, blue: 20/255)
+                        AppTheme.backgroundColor.darker(by: 0.03),
+                        AppTheme.backgroundColor.darker(by: 0.1)
                     ]),
                     startPoint: .top,
                     endPoint: .bottom
-                    )
+                )
+                
+                
                 ZStack {
                     arcPath
-                        .stroke(Color.white.opacity(0.3),
+                        .stroke(Color.white.opacity(0.05),
                                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
 
                     arcPath
                         .stroke(backgroundGradient,
-                                style: StrokeStyle(lineWidth: lineWidth - 0.25, lineCap: .round))
+                                style: StrokeStyle(lineWidth: lineWidth + 1, lineCap: .round))
+                    
+                    arcPath
+                              .stroke(Color.black.opacity(0.1),
+                                      style: StrokeStyle(lineWidth: lineWidth + 1, lineCap: .round))
                 }
                 .compositingGroup() // Helps blend the layers nicely
             }
@@ -66,8 +73,6 @@ struct ArcSegmentView: View {
 
 #Preview {
     ZStack {
-        Color.black.opacity(0.8).ignoresSafeArea()
-
         GeometryReader { geometry in
             ArcSegmentView(
                 center: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2),
@@ -83,4 +88,3 @@ struct ArcSegmentView: View {
     }
     .frame(width: 300, height: 300)
 }
-

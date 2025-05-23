@@ -4,8 +4,8 @@ struct BackgroundView: View {
     var body: some View {
         LinearGradient(
             gradient: Gradient(colors: [
-                Color(red: 52/255, green: 52/255, blue: 55/255),   // halfway between #2c2c2c and #3c3c3c
-                Color(red: 25/255, green: 25/255, blue: 27/255)    // halfway between #141414 and #1e1e1e
+                AppTheme.backgroundColor.darker(by: 0.03),
+                AppTheme.backgroundColor.darker(by: 0.1)
             ]),
             startPoint: .top,
             endPoint: .bottom
@@ -16,6 +16,7 @@ struct BackgroundView: View {
         )
     }
 }
+
 
 #Preview {
     BackgroundView()
