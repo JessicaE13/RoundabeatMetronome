@@ -1,23 +1,8 @@
 import SwiftUI
 
-// MARK: - Tempo Range Data Structure
-struct TempoRange {
-    let name: String
-    let minBPM: Int
-    let maxBPM: Int
-    let midBPM: Int
-    
-    init(name: String, minBPM: Int, maxBPM: Int) {
-        self.name = name
-        self.minBPM = minBPM
-        self.maxBPM = maxBPM
-        self.midBPM = (minBPM + maxBPM) / 2
-    }
-}
-
 // MARK: - BPM Display Component with Gestures
 
-struct BPMView: View {
+struct BPMViewOld: View {
     
     @ObservedObject var metronome: MetronomeEngine
     @Binding var isShowingKeypad: Bool
@@ -25,6 +10,7 @@ struct BPMView: View {
     @State private var dragOffset: CGFloat = 0
     @State private var previousTempo: Double = 120
     @State private var showSettings = false
+    @State private var showDebugOutlines = false // Toggle this to show/hide red debug outlines
     
     let glowAnimation = Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)
     let tempoRanges: [TempoRange] = [
@@ -55,9 +41,9 @@ struct BPMView: View {
     
     var body: some View {
         ZStack {
-            VStack(spacing: 12) {
+            VStack {
                 
-                // MARK: - Middle BPM Section: Rounded Rectangle - Now expanded
+                // MARK: - Middle BPM Section: Rounded Rectangle - Now expanded and taller
                 
                 ZStack {
                     
@@ -78,6 +64,11 @@ struct BPMView: View {
                         // MARK: - Row 1: Time Signature and Settings
                         HStack {
                             // Time Signature
+                            
+                            Text("TIME:")
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundColor(Color.white.opacity(0.6))
+                            
                             Button(action: {
                                 let generator = UIImpactFeedbackGenerator(style: .light)
                                 generator.impactOccurred()
@@ -96,9 +87,16 @@ struct BPMView: View {
                                         .font(.custom("Kanit-SemiBold", size: 16))
                                         .foregroundColor(Color.white.opacity(0.8))
                                 }
-                                .padding(.horizontal, 12)
                             }
                             
+                            Text("   RHYTHM:")
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundColor(Color.white.opacity(0.6))
+                            
+                            Image(systemName: "music.note")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.white.opacity(0.8))
+                  
                             Spacer()
                             
                             // Settings Icon
@@ -107,18 +105,21 @@ struct BPMView: View {
                                 generator.impactOccurred()
                                 showSettings = true
                             }) {
-                                Image(systemName: "slider.vertical.3")
+                                Image(systemName: "chevron.down")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(Color.white.opacity(0.7))
-                                    .frame(width: 32, height: 32)
                             }
                         }
-                        .padding(20)
-                        .frame(height: 60) // Fixed height for row 1
+                        .padding(.top, 15)
+                        .padding(30)
+                        .frame(height: 40) // Fixed height for row 1
+                        .border(showDebugOutlines ? Color.red : Color.clear, width: 2) // DEBUG: Red outline for Row 1
+                        
+                        Spacer()
                         
                         // MARK: - Row 2: BPM Label, Number and +/- Buttons
                         
-                        HStack(spacing: 15) {
+                        HStack(spacing: 25) {
                             ZStack {
                                 Image(systemName: "minus")
                                     .font(.system(size: 18, weight: .bold))
@@ -144,7 +145,7 @@ struct BPMView: View {
                                     .monospacedDigit() // Fixedwidth
                             }
                             
-                            .frame(width: 150, alignment: .center) // Fixed width container with center alignment
+                            .frame(width: 155, alignment: .center) // Fixed width container with center alignment
                             .contentShape(Rectangle()) // Make entire area tappable
                             .onTapGesture {
                                 // Add haptic feedback
@@ -170,7 +171,11 @@ struct BPMView: View {
                                 previousTempo = metronome.tempo
                             }
                         }
-                        .frame(height: 80) // Fixed height for row 2
+                
+                        .frame(height: 100) // Fixed height for row 2
+                        .border(showDebugOutlines ? Color.red : Color.clear, width: 2) // DEBUG: Red outline for Row 2
+                        
+                        Spacer()
                         
                         // MARK: - Row 3: Horizontal Tempo Selector
                         ZStack {
@@ -253,7 +258,8 @@ struct BPMView: View {
                             }
                             .scrollBounceBehavior(.basedOnSize) // Smoother scroll behavior
                         }
-                        .frame(height: 70)
+                        .frame(height: 50) // Increased height for row 3 (was 70)
+                        .border(showDebugOutlines ? Color.red : Color.clear, width: 2) // DEBUG: Red outline for Row 3
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 50)) // Clip the content first
                     
@@ -288,7 +294,7 @@ struct BPMView: View {
                         }
                 )
             }
-            .frame(height: UIScreen.main.bounds.height / 3.8)
+            .frame(height: UIScreen.main.bounds.height / 3.5) // Made taller (was 3.8)
             .padding(.horizontal, 30)
             .padding(.top, 40)
         }
@@ -303,7 +309,7 @@ struct BPMView: View {
     ZStack {
         BackgroundView()
         
-        BPMView(
+        BPMViewOld(
             metronome: MetronomeEngine(),
             isShowingKeypad: .constant(false),
             showTimeSignaturePicker: .constant(false)

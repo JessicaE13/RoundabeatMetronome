@@ -25,33 +25,7 @@ struct ContentView: View {
         
         ZStack {
             
-            ZStack {
-                
-                BackgroundView()
-                
-// //Background
-//                LinearGradient(
-//                    gradient: Gradient(colors: [
-//                        AppTheme.backgroundColor.opacity(0.90),
-//                        AppTheme.backgroundColor.opacity(0.95)
-//                    ]),
-//                    startPoint: .topLeading,
-//                    endPoint: .bottomTrailing
-//                )
-//                .ignoresSafeArea()
-//                
-//                //Subtle gradient overlay
-//                LinearGradient(
-//                    gradient: Gradient(colors: [
-//                        .white.opacity(0.01),
-//                        .white.opacity(0.2)
-//                    ]),
-//                    startPoint: .bottom,
-//                    endPoint: .center
-//                )
-//                .ignoresSafeArea()
-//                
-            }
+BackgroundView()
             
  // Main metronome interface
             VStack {
