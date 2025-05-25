@@ -1,10 +1,23 @@
+//
+//  BPMView3.swift
+//  RoundabeatMetronome
+//
+//  Created by Jessica Estes on 5/24/25.
+//
+
 import SwiftUI
 
-struct BackgroundView: View {
+struct BPMView3: View {
+
+private let gradientColors = [
+    Color.white.opacity(0.8),
+    Color.white.opacity(0.1),
+    Color.white.opacity(0.1),
+    Color.white.opacity(0.4),
+    Color.white.opacity(0.5)
+]
+    
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Top half with mesh gradient
                 ZStack {
                     MeshGradient(
                         width: 3,
@@ -26,23 +39,17 @@ struct BackgroundView: View {
                             Color(red: 187/255, green: 138/255, blue: 144/255)
                         ]
                     )
-                    .overlay(
-                        Color.black.opacity(0.05) // gentle matte layer
-                    )
-                }
-//                .frame(height: geometry.size.height / 2)
-//                
-//                // Bottom half - empty/transparent
-//              
-//                Rectangle()
-//                    .fill(Color.yellow)
-//                    .frame(height: geometry.size.height / 2)
+                    .ignoresSafeArea(.all)
+                    
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(LinearGradient(colors: gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 200, height: 200)
+                    
+                }//end zstack
             }
         }
-        .ignoresSafeArea(.all)
-    }
-}
+  
 
 #Preview {
-    BackgroundView()
+    BPMView3()
 }

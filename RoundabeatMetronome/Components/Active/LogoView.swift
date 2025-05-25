@@ -16,7 +16,7 @@ struct LogoView: View {
             Text("roundabeat")
                 .font(.custom("blippo", size: 36))
                 .kerning(5)
-                .foregroundColor(.black.opacity(0.9))
+                .foregroundColor(.white.opacity(0.9))
 
             // Shimmer text
             Text("roundabeat")
@@ -52,6 +52,10 @@ struct LogoView: View {
 
 
 #Preview {
-    LogoView()
+    ZStack {
+        
+        BackgroundView()
+        LogoView()
+    }
 }
 

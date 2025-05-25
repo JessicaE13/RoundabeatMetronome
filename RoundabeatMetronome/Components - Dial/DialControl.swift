@@ -7,57 +7,13 @@ extension Color {
     }
 }
 
-struct SegmentedCircleView: View {
-    @ObservedObject var metronome: MetronomeEngine
-    let diameter: CGFloat
-    let lineWidth: CGFloat
-
-    private var radius: CGFloat { (diameter - lineWidth) / 2 }
-    private let gapWidthPoints: CGFloat = 37.0
-
-    var body: some View {
-        ZStack {
-            ForEach(0 ..< metronome.beatsPerMeasure, id: \.self) { beatIndex in
-                let (startAngle, endAngle) = angleRangeForBeat(beatIndex)
-                ArcSegmentView(
-                    center: CGPoint(x: diameter / 2, y: diameter / 2),
-                    radius: radius,
-                    startAngle: startAngle,
-                    endAngle: endAngle,
-                    lineWidth: lineWidth,
-                    isActive: beatIndex == metronome.currentBeat && metronome.isPlaying,
-                    isFirstBeat: beatIndex == 0,
-                    gapWidth: gapWidthPoints
-                )
-            }
-        }
-        .frame(width: diameter, height: diameter)
-    }
-
-    private func angleForDivider(_ index: Int) -> Double {
-        let degreesPerBeat = 360.0 / Double(metronome.beatsPerMeasure)
-        let halfSegment = degreesPerBeat / 2
-        let startAngle = 270.0
-        return startAngle - halfSegment + (Double(index) * degreesPerBeat)
-    }
-
-    private func angleRangeForBeat(_ beat: Int) -> (start: Double, end: Double) {
-        let degreesPerBeat = 360.0 / Double(metronome.beatsPerMeasure)
-        let gapDegrees = (gapWidthPoints / (2 * .pi * radius)) * 360.0
-        let dividerAngle = angleForDivider(beat)
-        let startAngle = dividerAngle + (gapDegrees / 2)
-        let endAngle = dividerAngle + degreesPerBeat - (gapDegrees / 2)
-        return (startAngle, endAngle)
-    }
-}
-
 struct DialControl: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var dialRotation: Double = 0.0
     @State private var previousAngle: Double?
     @State private var isDragging = false
     @State private var isKnobTouched = false
-    @State private var numberOfTicks: Int = 120 // NEW: Variable for tick count
+    @State private var numberOfTicks: Int = 50
 
     private let dialSize: CGFloat = 250
     private let knobSize: CGFloat = 90
@@ -65,11 +21,14 @@ struct DialControl: View {
     private let minRotation: Double = -150
     private let maxRotation: Double = 150
     private let ringLineWidth: CGFloat = 27
-    private let tickLength: CGFloat = 68
+    private let tickLength: CGFloat = 50
     
-    // NEW: Tick count constraints
+    // Tick count constraints
     private let minTicks: Int = 12
     private let maxTicks: Int = 120
+    
+    // Slant angle for tick marks (in degrees)
+    private let tickSlantAngle: Double = -60.0
 
     private var innerDonutDiameter: CGFloat { knobSize + 4 }
 
@@ -80,8 +39,6 @@ struct DialControl: View {
 
     var body: some View {
         VStack(spacing: 20) {
-       
-            
             ZStack {
                 dialBackground
                 segmentedRing
@@ -108,7 +65,6 @@ struct DialControl: View {
 
     private var dialTickMarks: some View {
         ZStack {
-            // MODIFIED: Use variable numberOfTicks instead of hardcoded 60
             ForEach(0..<numberOfTicks, id: \.self) { index in
                 tickMark(at: index)
             }
@@ -117,13 +73,17 @@ struct DialControl: View {
     }
 
     private func tickMark(at index: Int) -> some View {
-        Rectangle()
+        let tickAngle = Double(index) * (360.0 / Double(numberOfTicks))
+        
+        return Rectangle()
             .fill(isKnobTouched ? Color.white.opacity(0.5) : Color.white.opacity(0.2))
-            .frame(width: 0.25, height: tickLength)
-            .offset(y: (dialSize / 1.65 - tickLength) * -1)
-            // MODIFIED: Calculate rotation based on numberOfTicks
-            .rotationEffect(.degrees(Double(index) * (360.0 / Double(numberOfTicks))))
-            // NEW: Add glow effect when knob is touched
+            .frame(width: 1.0, height: tickLength)
+            .offset(y: (dialSize / 2.4 - tickLength) * -1)
+            // Apply slant first with bottom anchor (where tick connects to circle)
+            .rotationEffect(.degrees(tickSlantAngle), anchor: .bottom)
+            // Then position around the circle
+            .rotationEffect(.degrees(tickAngle))
+            // Add glow effect when knob is touched
             .shadow(
                 color: isKnobTouched ? Color.white.opacity(0.8) : Color.clear,
                 radius: isKnobTouched ? 3 : 0,
@@ -133,6 +93,7 @@ struct DialControl: View {
     }
 
     private var segmentedRing: some View {
+        // Now using the convenience initializer from the extension
         SegmentedCircleView(metronome: metronome, diameter: dialSize + 80, lineWidth: ringLineWidth)
     }
 
@@ -161,10 +122,10 @@ struct DialControl: View {
             .shadow(color: Color("colorPurpleBackground").opacity(0.7), radius: 0)
     }
     
-    // NEW: Functions to control tick count
+    // Functions to control tick count
     private func increaseTickCount() {
         if numberOfTicks < maxTicks {
-            numberOfTicks += 6 // Increment by 6 for nice divisions
+            numberOfTicks += 6
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
         }
@@ -172,7 +133,7 @@ struct DialControl: View {
     
     private func decreaseTickCount() {
         if numberOfTicks > minTicks {
-            numberOfTicks -= 6 // Decrement by 6 for nice divisions
+            numberOfTicks -= 6
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
         }
@@ -228,5 +189,8 @@ struct DialControl: View {
 }
 
 #Preview {
-    DialControl(metronome: MetronomeEngine())
+    ZStack {
+        BackgroundView()
+        DialControl(metronome: MetronomeEngine())
+    }
 }

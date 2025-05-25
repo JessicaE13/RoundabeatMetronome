@@ -25,36 +25,40 @@ struct ContentView: View {
         
         ZStack {
             
-BackgroundView()
+            BackgroundView()
             
- // Main metronome interface
-            VStack {
-                
-                // Top section with BPM display
-                BPMView(
-                    metronome: metronome,
-                    isShowingKeypad: $showBPMKeypad,
-                    showTimeSignaturePicker: $showTimeSignaturePicker
-                )
-                
-                Spacer()
-                
-                // Title in the middle
-                LogoView()
-                
-                Spacer()
-                
-                
-         
-                
-                // Main Dial Control with Play/Pause Button
-                DialControl(metronome: metronome)
-                //SegmentView(metronome: metronome)
-                
-                
-                Spacer()
-                
-                
+            // Main metronome interface
+            GeometryReader { geometry in
+                VStack(spacing: 0) {
+                    // Top half - BPM display
+                    VStack {
+                        Spacer()
+                        BPMView4(
+//                            metronome: metronome,
+//                            isShowingKeypad: $showBPMKeypad,
+//                            showTimeSignaturePicker: $showTimeSignaturePicker
+                        )
+                        Spacer()
+                    }
+                    .frame(height: geometry.size.height / 2)
+                    
+                    // Bottom half - Logo and controls
+                    VStack {
+                        Spacer()
+                        
+                        // Title
+                        LogoView()
+                        
+                        Spacer()
+                        
+                        // Main Dial Control with Play/Pause Button
+                        DialControl(metronome: metronome)
+                        //SegmentView(metronome: metronome)
+
+                        Spacer()
+                    }
+                    .frame(height: geometry.size.height / 2)
+                }
             }
             .onAppear {
                 // Prepare audio system as soon as view appears

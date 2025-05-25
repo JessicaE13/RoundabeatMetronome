@@ -37,7 +37,7 @@ struct TempoSelectorView: View {
                                                         Color.white.opacity(0.3))
                             }
                             .frame(minWidth: 65)
-                            .padding(.vertical, 10)
+                            .padding(8)
                             .padding(.horizontal, 12)
                             .background(
                                 RoundedRectangle(cornerRadius: 15)

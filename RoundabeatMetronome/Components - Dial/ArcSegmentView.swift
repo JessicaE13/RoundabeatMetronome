@@ -10,7 +10,6 @@ struct ArcSegmentView: View {
     let isFirstBeat: Bool
     let gapWidth: CGFloat
    
-
     var body: some View {
         ZStack {
             // Shared arc path
@@ -22,57 +21,58 @@ struct ArcSegmentView: View {
                             clockwise: false)
             }
 
-            // Always show a faint outer structure
-            arcPath
-                .stroke(Color.white.opacity(0.3),
-                        style: StrokeStyle(lineWidth: lineWidth + 2, lineCap: .round))
-
             if isActive {
-                // Active arc - solid and glowy
+                // LED-style glow effect with multiple layers
+                
+                // Outermost soft glow (largest radius)
+                arcPath
+                    .stroke(Color.cyan.opacity(0.15),
+                            style: StrokeStyle(lineWidth: lineWidth + 20, lineCap: .round))
+                    .blur(radius: 15)
+                
+                // Middle glow layer
+                arcPath
+                    .stroke(Color.cyan.opacity(0.3),
+                            style: StrokeStyle(lineWidth: lineWidth + 12, lineCap: .round))
+                    .blur(radius: 8)
+                
+                // Inner glow
+                arcPath
+                    .stroke(Color.white.opacity(0.6),
+                            style: StrokeStyle(lineWidth: lineWidth + 4, lineCap: .round))
+                    .blur(radius: 3)
+                
+                // Core LED light - bright and crisp
+                arcPath
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.white, Color.cyan.opacity(0.9)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                    )
+                    .shadow(color: Color.cyan.opacity(0.8), radius: 2, x: 0, y: 0)
+                
+                // Inner highlight for extra LED brightness
                 arcPath
                     .stroke(Color.white.opacity(0.9),
-                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .shadow(color: Color.white.opacity(0.2), radius: 4)
-                    .blur(radius: 2)
-
-                arcPath
-                    .stroke(Color.gray.opacity(0.4),
-                            style: StrokeStyle(lineWidth: lineWidth + 6, lineCap: .round))
-                    .blur(radius: 10)
+                            style: StrokeStyle(lineWidth: lineWidth * 0.3, lineCap: .round))
+                
             } else {
-                // Outline effect using the theme color instead of hardcoded gray
-                let backgroundGradient = LinearGradient(
-                    gradient: Gradient(colors: [
-                        AppTheme.backgroundColor.darker(by: 0.03),
-                        AppTheme.backgroundColor.darker(by: 0.1)
-                    ]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                
-                
-                ZStack {
-                    arcPath
-                        .stroke(Color.white.opacity(0.5),
-                                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-
-                    arcPath
-                        .stroke(backgroundGradient,
-                                style: StrokeStyle(lineWidth: lineWidth + 1, lineCap: .round))
-                    
-                    arcPath
-                              .stroke(Color.black.opacity(0.2),
-                                      style: StrokeStyle(lineWidth: lineWidth + 1, lineCap: .round))
-                }
-                .compositingGroup() // Helps blend the layers nicely
+                // Inactive state - subtle outline
+                arcPath
+                    .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .stroke(Color.white.opacity(0.2), lineWidth: 0.8)
             }
         }
-        .animation(.easeInOut(duration: 0.1), value: isActive)
+        .animation(.easeInOut(duration: 0.15), value: isActive)
     }
 }
 
 #Preview {
     ZStack {
+BackgroundView()
         GeometryReader { geometry in
             ArcSegmentView(
                 center: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2),
@@ -80,7 +80,7 @@ struct ArcSegmentView: View {
                 startAngle: 225,
                 endAngle: 315,
                 lineWidth: 12,
-                isActive: false,
+                isActive: false, // Changed to true to show LED effect
                 isFirstBeat: true,
                 gapWidth: 10
             )
