@@ -17,11 +17,11 @@ struct NumberPadView: View {
     var body: some View {
         ZStack {
             // Base shape with black fill matching BPMView
-            RoundedRectangle(cornerRadius: 50)
-                .fill(Color.black.opacity(0.9))
+            RoundedRectangle(cornerRadius: 35)
+                .fill(Color.black.opacity(0.8))
             
             // Outer stroke with gradient matching BPMView
-            RoundedRectangle(cornerRadius: 50)
+            RoundedRectangle(cornerRadius: 35)
                 .inset(by: 0.5)
                 .stroke(LinearGradient(
                     gradient: Gradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0.15)]),
@@ -37,7 +37,7 @@ struct NumberPadView: View {
             }
             .padding(30)
         }
-        .frame(maxWidth: 320)
+        .frame(maxWidth: 320, maxHeight: 500)
         .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
     }
     
@@ -70,7 +70,16 @@ struct NumberPadView: View {
                 .foregroundColor(Color.white.opacity(0.8))
                 .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                 .monospacedDigit()
-                .frame(height: 70)
+                .frame(height: 80)
+                .frame(minWidth: 240) // Ensure consistent width
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.black.opacity(0.4))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                    )
+                            )
         }
     }
     
@@ -239,7 +248,7 @@ struct NumberPadView: View {
 
 #Preview {
     ZStack {
-        Color.black.ignoresSafeArea()
+       BackgroundView()
         
         NumberPadView(
             isShowingKeypad: .constant(true),

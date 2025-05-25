@@ -41,19 +41,7 @@ struct TimeSignatureView: View {
                 Image(systemName: "music.note")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color.white.opacity(0.8))
-                
-                Spacer()
-                
-                // Settings Icon
-                Button(action: {
-                    let generator = UIImpactFeedbackGenerator(style: .light)
-                    generator.impactOccurred()
-                    showSettings = true
-                }) {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color.white.opacity(0.7))
-                }
+
             }
         }
     }

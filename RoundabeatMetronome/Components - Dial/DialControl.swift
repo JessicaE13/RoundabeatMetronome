@@ -1,12 +1,95 @@
 import SwiftUI
-import AVFoundation
 
-extension Color {
-    func darker(by percentage: CGFloat = 0.1) -> Color {
-        return self.opacity(1.0 - percentage)
-    }
+struct DialGradientMesh: View {
+    @State private var animateGradient = false
+    
+    var body: some View {
+        ZStack {
+            // Base radial gradient
+//            RadialGradient(
+//                gradient: Gradient(colors: [
+//                    Color.black.opacity(0.95),
+//                    Color("colorPurpleBackground").opacity(0.3),
+//                    Color.black.opacity(0.98)
+//                ]),
+//                center: .center,
+//                startRadius: 50,
+//                endRadius: 200
+//            )
+//            
+            // Animated mesh overlay
+            MeshGradient(
+                width: 3,
+                height: 3,
+                points: [
+                    // Top row
+                    [0.0, 0.0], [0.5, 0.0], [1.0, 0.0],
+                    // Middle row
+                    [0.0, 0.5], [0.5, 0.5], [1.0, 0.5],
+                    // Bottom row
+                    [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]
+                ],
+                colors: [
+                        //Top Row
+                        Color(red: 82/255, green: 78/255, blue: 113/255),
+                        Color(red: 149/255, green: 119/255, blue: 154/255),
+                        Color(red: 197/255, green: 147/255, blue: 173/255),
+                        //Middle Row
+                        Color(red: 27/255, green: 24/255, blue: 57/255),
+                        Color(red: 26/255, green: 18/255, blue: 37/255),
+                        Color(red: 152/255, green: 83/255, blue: 104/255),
+                        // Bottom Row
+                        Color(red: 116/255, green: 95/255, blue: 128/255),
+                        Color(red: 130/255, green: 101/255, blue: 132/255),
+                        Color(red: 130/255, green: 90/255, blue: 115/255)
+                    
+                ]
+            )
+            .opacity(0.8)
+//            .animation(
+//                Animation.easeInOut(duration: 3.0)
+//                    .repeatForever(autoreverses: true),
+//                value: animateGradient
+//            )
+            
+            // Additional radial highlights
+//            RadialGradient(
+//                gradient: Gradient(colors: [
+//                    Color.white.opacity(animateGradient ? 0.05 : 0.02),
+//                    Color.clear
+//                ]),
+//                center: UnitPoint(x: 0.3, y: 0.3),
+//                startRadius: 0,
+//                endRadius: 120
+//            )
+//            .animation(
+//                Animation.easeInOut(duration: 4.0)
+//                    .repeatForever(autoreverses: true),
+//                value: animateGradient
+//            )
+//            
+//            RadialGradient(
+//                gradient: Gradient(colors: [
+//                    Color("colorPurpleBackground").opacity(animateGradient ? 0.15 : 0.08),
+//                    Color.clear
+//                ]),
+//                center: UnitPoint(x: 0.7, y: 0.8),
+//                startRadius: 0,
+//                endRadius: 100
+//            )
+//            .animation(
+//                Animation.easeInOut(duration: 5.0)
+//                    .repeatForever(autoreverses: true),
+//                value: animateGradient
+//            )
+//        }
+//        .onAppear {
+//            animateGradient = true
+       }
+  }
 }
 
+// Updated DialControl with gradient mesh background
 struct DialControl: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var dialRotation: Double = 0.0
@@ -15,13 +98,13 @@ struct DialControl: View {
     @State private var isKnobTouched = false
     @State private var numberOfTicks: Int = 50
 
-    private let dialSize: CGFloat = 250
+    private let dialSize: CGFloat = 225
     private let knobSize: CGFloat = 90
     private let innerDonutRatio: CGFloat = 0.35
     private let minRotation: Double = -150
     private let maxRotation: Double = 150
     private let ringLineWidth: CGFloat = 27
-    private let tickLength: CGFloat = 50
+    private let tickLength: CGFloat = 40
     
     // Tick count constraints
     private let minTicks: Int = 12
@@ -56,11 +139,20 @@ struct DialControl: View {
     }
 
     private var dialBackground: some View {
-        Circle()
-            .fill(Color.black.opacity(0.9))
-            .frame(width: dialSize, height: dialSize)
-            .shadow(color: Color.black.opacity(0.3), radius: 6, x: 0, y: 4)
-            .overlay(dialTickMarks)
+        ZStack {
+            // Gradient mesh as the dial face - rotates with dial
+            DialGradientMesh()
+                .frame(width: dialSize, height: dialSize)
+                .clipShape(Circle())
+                .rotationEffect(Angle(degrees: dialRotation))
+            
+            // Subtle overlay to maintain depth
+            Circle()
+                .fill(Color.black.opacity(0.2))
+                .frame(width: dialSize, height: dialSize)
+        }
+        .shadow(color: Color.black.opacity(0.3), radius: 8, x: 0, y: 4)
+        .overlay(dialTickMarks)
     }
 
     private var dialTickMarks: some View {
@@ -76,36 +168,48 @@ struct DialControl: View {
         let tickAngle = Double(index) * (360.0 / Double(numberOfTicks))
         
         return Rectangle()
-            .fill(isKnobTouched ? Color.white.opacity(0.5) : Color.white.opacity(0.2))
+            .fill(isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.3))
             .frame(width: 1.0, height: tickLength)
             .offset(y: (dialSize / 2.4 - tickLength) * -1)
             // Apply slant first with bottom anchor (where tick connects to circle)
             .rotationEffect(.degrees(tickSlantAngle), anchor: .bottom)
             // Then position around the circle
             .rotationEffect(.degrees(tickAngle))
-            // Add glow effect when knob is touched
+            // Enhanced glow effect
             .shadow(
-                color: isKnobTouched ? Color.white.opacity(0.8) : Color.clear,
-                radius: isKnobTouched ? 3 : 0,
+                color: isKnobTouched ? Color.white.opacity(0.9) : Color.white.opacity(0.1),
+                radius: isKnobTouched ? 4 : 1,
                 x: 0,
                 y: 0
             )
     }
 
     private var segmentedRing: some View {
-        // Now using the convenience initializer from the extension
         SegmentedCircleView(metronome: metronome, diameter: dialSize + 80, lineWidth: ringLineWidth)
     }
 
     private var centerKnob: some View {
         ZStack {
+            // Enhanced knob with gradient
             Circle()
-                .fill(Color("colorDial"))
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color("colorDial").opacity(0.9),
+                            Color("colorDial").opacity(0.6)
+                        ]),
+                        center: UnitPoint(x: 0.3, y: 0.3),
+                        startRadius: 5,
+                        endRadius: knobSize/2
+                    )
+                )
                 .frame(width: knobSize, height: knobSize)
                 .overlay(
                     Circle()
-                        .stroke(Color.white.opacity(0.6), lineWidth: 0.2)
+                        .stroke(Color.white.opacity(0.7), lineWidth: 0.3)
                 )
+                .shadow(color: Color.black.opacity(0.3), radius: 4, x: 2, y: 2)
+            
             playPauseIcon
         }
         .onTapGesture {
@@ -118,11 +222,11 @@ struct DialControl: View {
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
             .font(.system(size: 30))
-            .foregroundColor(Color.white.opacity(metronome.isPlaying ? 0.9 : 0.8))
-            .shadow(color: Color("colorPurpleBackground").opacity(0.7), radius: 0)
+            .foregroundColor(Color.white.opacity(metronome.isPlaying ? 0.95 : 0.85))
+            .shadow(color: Color("colorPurpleBackground").opacity(0.8), radius: 1)
     }
     
-    // Functions to control tick count
+    // Rest of the methods remain the same...
     private func increaseTickCount() {
         if numberOfTicks < maxTicks {
             numberOfTicks += 6

@@ -30,34 +30,28 @@ struct ContentView: View {
             // Main metronome interface
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // Top half - BPM display
+                    // Top portion - BPM display
                     VStack {
-                        Spacer()
-                        BPMView4(
-//                            metronome: metronome,
-//                            isShowingKeypad: $showBPMKeypad,
-//                            showTimeSignaturePicker: $showTimeSignaturePicker
+                        BPMView(
+                            metronome: metronome,
+                            isShowingKeypad: $showBPMKeypad,
+                            showTimeSignaturePicker: $showTimeSignaturePicker
                         )
                         Spacer()
                     }
-                    .frame(height: geometry.size.height / 2)
+                    .frame(height: geometry.size.height - (geometry.size.height / 1.5))
+                    .clipped() // Prevent overflow
                     
-                    // Bottom half - Logo and controls
+                    // Bottom portion - Logo and controls
                     VStack {
-                        Spacer()
-                        
                         // Title
                         LogoView()
-                        
-                        Spacer()
                         
                         // Main Dial Control with Play/Pause Button
                         DialControl(metronome: metronome)
                         //SegmentView(metronome: metronome)
-
-                        Spacer()
                     }
-                    .frame(height: geometry.size.height / 2)
+                    .frame(height: geometry.size.height / 1.5)
                 }
             }
             .onAppear {

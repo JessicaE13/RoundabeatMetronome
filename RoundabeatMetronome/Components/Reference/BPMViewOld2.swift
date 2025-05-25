@@ -1,7 +1,14 @@
+//
+//  BPMViewOld2.swift
+//  RoundabeatMetronome
+//
+//  Created by Jessica Estes on 5/25/25.
+//
+
 import SwiftUI
 
 // MARK: - Main BPM Display Component
-struct BPMView: View {
+struct BPMViewOld2: View {
     @ObservedObject var metronome: MetronomeEngine
     @Binding var isShowingKeypad: Bool
     @Binding var showTimeSignaturePicker: Bool
@@ -19,6 +26,16 @@ struct BPMView: View {
                 // MARK: - Main Rounded Rectangle Container
                 ZStack {
                     
+                    RoundedRectangle(cornerRadius: 50)
+                        .fill(Color.black.opacity(0.9))
+                    
+                    RoundedRectangle(cornerRadius: 50)
+                        .offset(y: 0.5)
+                        .stroke(LinearGradient(
+                            gradient: Gradient(colors: [Color.clear, Color.white.opacity(0.7)]),
+                            startPoint: .top,
+                            endPoint: .bottom)
+                        )
                     
                     
                     // MARK: - 3 Distinct Horizontal Rows
@@ -53,11 +70,14 @@ struct BPMView: View {
                         )
                         .border(showDebugOutlines ? Color.red : Color.clear, width: 2)
                     }
+                 
+                    .clipShape(RoundedRectangle(cornerRadius: 50))
                     
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    
-                    
-                    
+                    // Black inner outline - 3px wide (drawn on top of clipped content)
+                    RoundedRectangle(cornerRadius: 50)
+                        .stroke(Color.black, lineWidth: 3)
+                        .padding(1.5)
+                        .allowsHitTesting(false)
                 }
                 
                 .gesture(
@@ -98,10 +118,11 @@ struct BPMView: View {
     ZStack {
         BackgroundView()
         
-        BPMView(
+        BPMViewOld2(
             metronome: MetronomeEngine(),
             isShowingKeypad: .constant(false),
             showTimeSignaturePicker: .constant(false)
         )
     }
 }
+

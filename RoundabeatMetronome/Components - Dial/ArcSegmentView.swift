@@ -26,13 +26,13 @@ struct ArcSegmentView: View {
                 
                 // Outermost soft glow (largest radius)
                 arcPath
-                    .stroke(Color.cyan.opacity(0.15),
+                    .stroke(Color.white.opacity(0.15),
                             style: StrokeStyle(lineWidth: lineWidth + 20, lineCap: .round))
                     .blur(radius: 15)
                 
                 // Middle glow layer
                 arcPath
-                    .stroke(Color.cyan.opacity(0.3),
+                    .stroke(Color.white.opacity(0.3),
                             style: StrokeStyle(lineWidth: lineWidth + 12, lineCap: .round))
                     .blur(radius: 8)
                 
@@ -79,7 +79,7 @@ BackgroundView()
                 radius: 80,
                 startAngle: 225,
                 endAngle: 315,
-                lineWidth: 12,
+                lineWidth: 8,
                 isActive: false, // Changed to true to show LED effect
                 isFirstBeat: true,
                 gapWidth: 10
