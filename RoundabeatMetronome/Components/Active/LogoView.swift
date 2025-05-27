@@ -17,18 +17,18 @@ struct LogoView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 25)
-                .foregroundStyle(Color(red: 44/255, green: 44/255, blue: 44/255))
+                .foregroundStyle(Color(red: 43/255, green: 44/255, blue: 44/255))
 
             Image("roundabeatlogo")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 25)
-                .foregroundStyle(Color(red: 44/255, green: 44/255, blue: 44/255))
+                .foregroundStyle(Color(red: 43/255, green: 44/255, blue: 44/255))
                 .overlay(
                     LinearGradient(
                         gradient: Gradient(colors: [
                             .clear,
-                            Color(red: 200/255, green: 241/255, blue: 241/255),
+                            Color(red: 240/255, green: 241/255, blue: 241/255),
                             .clear
                         ]),
                         startPoint: .leading,

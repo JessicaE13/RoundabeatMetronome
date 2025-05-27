@@ -61,7 +61,7 @@ struct ContentView: View {
                     
                     // Dial control section
                     VStack {
-                        DialView(metronome: metronome)
+                        DialControl(metronome: metronome)
                     }
                     .padding(.horizontal, 24)
                     

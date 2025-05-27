@@ -79,6 +79,6 @@ extension SegmentedCircleView {
         currentBeat: 1,
         isPlaying: true,
         diameter: 200,
-        lineWidth: 20
+        lineWidth: 10
     )
 }

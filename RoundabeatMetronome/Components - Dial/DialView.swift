@@ -15,7 +15,7 @@ struct DialView: View {
     private let innerDonutRatio: CGFloat = 0.35
     private let minRotation: Double = -150
     private let maxRotation: Double = 150
-    private let ringLineWidth: CGFloat = 27
+    private let ringLineWidth: CGFloat = 17
     private let tickLength: CGFloat = 40
     private let minTicks: Int = 12
     private let maxTicks: Int = 120
@@ -65,9 +65,9 @@ struct DialView: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.5
+                    lineWidth: 0.25
                 )
-                .frame(width: dialSize + 3)
+                .frame(width: dialSize+3)  //here
 
             // Main Circle Inner Highlight (matching knob style)
             Circle()

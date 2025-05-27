@@ -1,62 +1,15 @@
 import SwiftUI
 
-struct DialGradientMesh: View {
-    @State private var animateGradient = false
-    
-    var body: some View {
-        ZStack {
-            // Base radial gradient - reduced contrast
-            RadialGradient(
-                gradient: Gradient(colors: [
-                    Color.black.opacity(0.6),
-                    Color.white.opacity(0.08),
-                    Color.black.opacity(0.7)
-                ]),
-                center: .center,
-                startRadius: 50,
-                endRadius: 200
-            )
+// Remove the DialGradientMesh struct entirely
 
-            // Animated mesh overlay - reduced contrast monochromatic
-            MeshGradient(
-                width: 3,
-                height: 3,
-                points: [
-                    // Top row
-                    [0.0, 0.0], [0.5, 0.0], [1.0, 0.0],
-                    // Middle row
-                    [0.0, 0.5], [0.5, 0.5], [1.0, 0.5],
-                    // Bottom row
-                    [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]
-                ],
-                colors: [
-                    // Top Row - reduced contrast grayscale variations
-                    Color.white.opacity(0.06),
-                    Color.white.opacity(0.08),
-                    Color.white.opacity(0.05),
-                    // Middle Row
-                    Color.black.opacity(0.65),
-                    Color.black.opacity(0.7),
-                    Color.white.opacity(0.04),
-                    // Bottom Row
-                    Color.white.opacity(0.05),
-                    Color.white.opacity(0.07),
-                    Color.white.opacity(0.04)
-                ]
-            )
-            .opacity(0.6)
-        }
-    }
-}
-
-// Updated DialControl with reduced contrast and flat play button
+// Updated DialControl with flat appearance matching DialView
 struct DialControl: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var dialRotation: Double = 0.0
     @State private var previousAngle: Double?
     @State private var isDragging = false
     @State private var isKnobTouched = false
-    @State private var numberOfTicks: Int = 50
+    @State private var currentTouchAngle: Double = 0.0
 
     private let dialSize: CGFloat = 225
     private let knobSize: CGFloat = 90
@@ -64,19 +17,10 @@ struct DialControl: View {
     private let minRotation: Double = -150
     private let maxRotation: Double = 150
     private let ringLineWidth: CGFloat = 27
-    private let tickLength: CGFloat = 40
-    
-    // Tick count constraints
-    private let minTicks: Int = 12
-    private let maxTicks: Int = 120
-    
-    // Slant angle for tick marks (in degrees)
-    private let tickSlantAngle: Double = -60.0
-
     private var innerDonutDiameter: CGFloat { knobSize + 4 }
     
     // Additional circle size (10px smaller than dial)
-    private var additionalCircleSize: CGFloat { dialSize - 43 }
+   // private var additionalCircleSize: CGFloat { dialSize - 43 }
 
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
@@ -86,9 +30,9 @@ struct DialControl: View {
     var body: some View {
         VStack(spacing: 20) {
             ZStack {
-                dialBackground
                 segmentedRing
-                additionalCircle
+                dialBackground
+            
                 centerKnob
             }
             .frame(width: dialSize + 55, height: dialSize + 55)
@@ -104,145 +48,62 @@ struct DialControl: View {
 
     private var dialBackground: some View {
         ZStack {
-            // Subtle outer shadow - reduced contrast
+            // Main Circle Background - darker color
             Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            Color.clear,
-                            Color.clear,
-                            Color.black.opacity(0.08),
-                            Color.black.opacity(0.2)
-                        ]),
-                        center: .center,
-                        startRadius: dialSize * 0.45,
-                        endRadius: dialSize * 0.6
-                    )
-                )
-                .frame(width: dialSize + 20, height: dialSize + 20)
-                .blur(radius: 2)
-            
-            // Main dial body with reduced contrast 3D beveled edge
-            Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            Color.gray.opacity(0.25),
-                            Color.black.opacity(0.45),
-                            Color.black.opacity(0.65)
-                        ]),
-                        center: UnitPoint(x: 0.3, y: 0.3), // Light source from top-left
-                        startRadius: 20,
-                        endRadius: dialSize * 0.7
-                    )
-                )
+                .fill(Color(red: 7/255, green: 7/255, blue: 8/255))
                 .frame(width: dialSize, height: dialSize)
-                .overlay(
-                    // Reduced highlight ring on the edge
-                    Circle()
-                        .stroke(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.white.opacity(0.15),
-                                    Color.clear,
-                                    Color.black.opacity(0.2)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1.5
-                        )
-                )
-            
-            // Recessed inner surface - reduced contrast
+                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+
+            // Main Circle Dark Outline - subtle inner shadow effect
             Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            Color.black.opacity(0.6),
-                            Color.gray.opacity(0.08),
-                            Color.black.opacity(0.7)
-                        ]),
-                        center: UnitPoint(x: 0.7, y: 0.7), // Inverted lighting for recess
-                        startRadius: 30,
-                        endRadius: dialSize * 0.4
-                    )
-                )
-                .frame(width: dialSize - 30, height: dialSize - 30)
-                .shadow(color: Color.black.opacity(0.4), radius: 6, x: 0, y: 0)
-            
-            // Gradient mesh as the dial face texture - rotates with dial
-            DialGradientMesh()
-                .frame(width: dialSize - 40, height: dialSize - 40)
-                .clipShape(Circle())
-                .rotationEffect(Angle(degrees: dialRotation))
-                .opacity(0.5)
-            
-            // Inner shadow for depth - reduced
+                .stroke(Color(red: 2/255, green: 2/255, blue: 3/255), lineWidth: 2.0)
+                .frame(width: dialSize, height: dialSize)
+
+            // Outer highlight ring - simulates light hitting the raised edge
             Circle()
-                .fill(
-                    RadialGradient(
+                .stroke(
+                    LinearGradient(
                         gradient: Gradient(colors: [
-                            Color.clear,
-                            Color.clear,
-                            Color.black.opacity(0.2)
+                            Color(red: 85/255, green: 85/255, blue: 86/255).opacity(0.4),
+                            Color(red: 65/255, green: 65/255, blue: 66/255).opacity(0.2),
+                            Color(red: 45/255, green: 45/255, blue: 46/255).opacity(0.1),
+                            Color(red: 25/255, green: 25/255, blue: 26/255).opacity(0.05)
                         ]),
-                        center: .center,
-                        startRadius: dialSize * 0.25,
-                        endRadius: dialSize * 0.45
-                    )
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.0
                 )
-                .frame(width: dialSize - 30, height: dialSize - 30)
+                .frame(width: dialSize + 2, height: dialSize + 2)
+
+            // Inner shadow ring - creates depth
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 25/255, green: 25/255, blue: 26/255).opacity(0.1),
+                            Color(red: 15/255, green: 15/255, blue: 16/255).opacity(0.2),
+                            Color(red: 5/255, green: 5/255, blue: 6/255).opacity(0.3),
+                            Color(red: 1/255, green: 1/255, blue: 2/255).opacity(0.4)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.8
+                )
+                .frame(width: dialSize - 2, height: dialSize - 2)
             
-
+            // Small rotating indicator circle - always visible
+            Circle()
+                .fill(Color.white)
+                .frame(width: 8, height: 8)
+                .shadow(color: Color.black.opacity(0.5), radius: 2, x: 0, y: 0)
+                .offset(y: -(dialSize / 2 - 16))
+                .rotationEffect(Angle(degrees: isDragging ? currentTouchAngle : dialRotation))
         }
-        .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 8)
-        .overlay(dialTickMarks)
-    }
-
-    private var dialTickMarks: some View {
-        ZStack {
-            ForEach(0..<numberOfTicks, id: \.self) { index in
-                tickMark(at: index)
-            }
-        }
-        .rotationEffect(Angle(degrees: dialRotation))
-    }
-
-    private func tickMark(at index: Int) -> some View {
-        let tickAngle = Double(index) * (360.0 / Double(numberOfTicks))
-        
-        return Rectangle()
-            .fill(isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.15))
-            .frame(width: 1.0, height: tickLength)
-            .offset(y: (dialSize / 2.4 - tickLength) * -1)
-            // Apply slant first with bottom anchor (where tick connects to circle)
-            .rotationEffect(.degrees(tickSlantAngle), anchor: .bottom)
-            // Then position around the circle
-            .rotationEffect(.degrees(tickAngle))
-            // Reduced glow effect
-            .shadow(
-                color: isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.08),
-                radius: isKnobTouched ? 3 : 0.5,
-                x: 0,
-                y: 0
-            )
     }
     
-    private var additionalCircle: some View {
-        Circle()
-            .stroke(
-                isKnobTouched ? Color.white.opacity(0.4) : Color.white.opacity(0.12),
-                lineWidth: 0.75
-            )
-            .frame(width: additionalCircleSize, height: additionalCircleSize)
-            .shadow(
-                color: isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.08),
-                radius: isKnobTouched ? 3 : 0.5,
-                x: 0,
-                y: 0
-            )
-    }
+
 
     private var segmentedRing: some View {
         SegmentedCircleView(metronome: metronome, diameter: dialSize + 80, lineWidth: ringLineWidth)
@@ -250,14 +111,58 @@ struct DialControl: View {
 
     private var centerKnob: some View {
         ZStack {
-            // Flat knob with minimal depth
+            
+            // Center Knob Fill matching DarkGrayBackground view
             Circle()
-                .fill(Color.black.opacity(0.8))
-                .frame(width: knobSize, height: knobSize)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                .fill(                         LinearGradient(
+                    colors: [
+                       Color(red: 28/255, green: 28/255, blue: 29/255),
+                       Color(red: 24/255, green: 24/255, blue: 25/255)
+                         ],
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
+                                               )
+                .frame(width: knobSize, height: knobSize)
+            
+            // Center Knob Dark Outline (matching DialView)
+            Circle()
+                .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 3.0)
+                .frame(width: knobSize, height: knobSize)
+            
+            // Center Knob outer highlight (matching DialView)
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.1),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.1),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.2),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.5
+                )
+                .frame(width: knobSize + 3.5, height: knobSize + 3.5)
+            
+            // Center Knob inner highlight (matching DialView)
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.6),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.5
+                )
+                .frame(width: knobSize - 3, height: knobSize - 3)
             
             playPauseIcon
         }
@@ -271,24 +176,17 @@ struct DialControl: View {
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
             .font(.system(size: 30))
-            .foregroundColor(Color.white.opacity(0.7))
-    }
-    
-    // Rest of the methods remain the same...
-    private func increaseTickCount() {
-        if numberOfTicks < maxTicks {
-            numberOfTicks += 6
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
-    }
-    
-    private func decreaseTickCount() {
-        if numberOfTicks > minTicks {
-            numberOfTicks -= 6
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
+            .foregroundStyle(
+                RadialGradient(
+                    colors: [
+                        Color(red: 249/255, green: 250/255, blue: 252/255),
+                        Color(red: 187/255, green: 189/255, blue: 192/255)
+                    ],
+                    center: UnitPoint(x: 0.35, y: 0.5),
+                    startRadius: 6,
+                    endRadius: 20
+                )
+            )
     }
 
     private func createDragGesture() -> some Gesture {
@@ -308,15 +206,27 @@ struct DialControl: View {
         isDragging = true
         let center = CGPoint(x: dialSize / 2, y: dialSize / 2)
         let angle = calculateAngle(center: center, point: value.location)
+        
+        // Update the touch angle to position the indicator
+        currentTouchAngle = angle - 90 // Adjust by -90 to align with offset
+        
         guard let prevAngle = previousAngle else { previousAngle = angle; return }
         let angleDelta = calculateAngleDelta(from: prevAngle, to: angle)
+        
         let tempoChange = angleDelta * 0.4
         let oldTempo = metronome.tempo
         let newTempo = metronome.tempo + tempoChange
-        metronome.updateTempo(to: newTempo)
-        if Int(oldTempo) != Int(newTempo) {
-            let generator = UIImpactFeedbackGenerator(style: .soft)
-            generator.impactOccurred(intensity: 0.5)
+        
+        // Clamp the new tempo to the valid range
+        let clampedTempo = max(metronome.minTempo, min(metronome.maxTempo, newTempo))
+        
+        // Only update if the clamped tempo is different from current tempo
+        if clampedTempo != metronome.tempo {
+            metronome.updateTempo(to: clampedTempo)
+            if Int(oldTempo) != Int(clampedTempo) {
+                let generator = UIImpactFeedbackGenerator(style: .soft)
+                generator.impactOccurred(intensity: 0.5)
+            }
         }
         previousAngle = angle
     }
@@ -342,7 +252,7 @@ struct DialControl: View {
 
 #Preview {
     ZStack {
-        BackgroundView()
+        DarkGrayBackgroundView()
         DialControl(metronome: MetronomeEngine())
     }
 }

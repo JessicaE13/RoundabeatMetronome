@@ -61,10 +61,16 @@ struct ArcSegmentView: View {
                 
             } else {
                 // Inactive state - subtle outline
+              
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 2.0)
+                    .fill(Color(red: 15/255, green: 15/255, blue: 16/255))
                     .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
+                arcPath
+                    .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 1.5)
+                    .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
+                
             }
         }
         .animation(.easeInOut(duration: 0.15), value: isActive)

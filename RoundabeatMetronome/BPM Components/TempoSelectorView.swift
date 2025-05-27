@@ -22,7 +22,7 @@ struct TempoSelectorView: View {
                             VStack(spacing: 4) {
                                 Text(range.name.uppercased())
                                     .font(.system(size: 9, weight: .medium))
-                                    .kerning(1.0)
+                                    .kerning(1.5)
                                     .foregroundColor(isSelected ?
                                                      Color.white.opacity(0.9) :
                                                         Color.white.opacity(0.4))
@@ -31,7 +31,8 @@ struct TempoSelectorView: View {
                                     .minimumScaleFactor(0.8)
                                 
                                 Text("\(range.minBPM)-\(range.maxBPM)")
-                                    .font(.custom("Kanit-Regular",size: 8))
+                                    .font(.custom("Kanit-Regular",size: 10))
+                                    .kerning(1.0)
                                     .foregroundColor(isSelected ?
                                                      Color.white.opacity(0.7) :
                                                         Color.white.opacity(0.3))
