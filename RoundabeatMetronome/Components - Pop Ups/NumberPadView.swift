@@ -18,7 +18,7 @@ struct NumberPadView: View {
         ZStack {
             // Base shape with black fill matching BPMView
             RoundedRectangle(cornerRadius: 35)
-                .fill(Color.black.opacity(0.8))
+                .fill(Color.black.opacity(0.95))
             
             // Outer stroke with gradient matching BPMView
             RoundedRectangle(cornerRadius: 35)

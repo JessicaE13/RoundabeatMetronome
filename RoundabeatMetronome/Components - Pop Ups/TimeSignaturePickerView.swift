@@ -20,7 +20,7 @@ struct TimeSignaturePickerView: View {
         ZStack {
             // Base shape with black fill matching NumberPadView
             RoundedRectangle(cornerRadius: 35)
-                .fill(Color.black.opacity(0.8))
+                .fill(Color.black.opacity(0.95))
             
             // Outer stroke with gradient matching NumberPadView
             RoundedRectangle(cornerRadius: 35)

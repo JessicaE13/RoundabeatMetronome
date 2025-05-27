@@ -95,7 +95,7 @@ struct DialControl: View {
             
             // Small rotating indicator circle - always visible
             Circle()
-                .fill(Color.white)
+                .fill(Color.white.opacity(0.5))
                 .frame(width: 8, height: 8)
                 .shadow(color: Color.black.opacity(0.5), radius: 2, x: 0, y: 0)
                 .offset(y: -(dialSize / 2 - 16))

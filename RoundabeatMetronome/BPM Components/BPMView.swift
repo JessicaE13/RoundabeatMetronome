@@ -88,12 +88,12 @@ struct BPMView: View {
             )
             .scaleEffect(containerScale)
             // Minimal shadow to maintain some separation from background
-            .shadow(
-                color: Color.black.opacity(0.2),
-                radius: 8,
-                x: 0,
-                y: 4
-            )
+//            .shadow(
+//                color: Color.black.opacity(0.2),
+//                radius: 8,
+//                x: 0,
+//                y: 4
+//            )
         }
         .frame(height: UIScreen.main.bounds.height / 3.5)
         .padding(.horizontal, 20)
