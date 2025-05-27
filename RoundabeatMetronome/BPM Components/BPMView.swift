@@ -13,35 +13,16 @@ struct BPMView: View {
     
     var body: some View {
         VStack {
-            // MARK: - 3 Distinct Horizontal Rows
+            // MARK: - Combined Tempo and BPM Controls
             VStack(spacing: 0) {
                 // MARK: - Row 1: Time Signature and Settings
-                TimeSignatureView(
+                TempoSelectorView(
                     metronome: metronome,
-                    showTimeSignaturePicker: $showTimeSignaturePicker,
-                    showSettings: $showSettings
+                    previousTempo: $previousTempo
                 )
-                .padding(.top, 20)
-                .padding(.bottom, 15)
-                .frame(width: 300)
-                
-                // Subtle divider with dark theme
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.clear,
-                                Color(red: 0.4, green: 0.4, blue: 0.4).opacity(0.3),
-                                Color.clear
-                            ]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(height: 1)
-                    .padding(.horizontal, 30)
-                
-                Spacer()
+                .padding(.horizontal, 8)
+                .padding(.top, 8)
+                .padding(.bottom, -10)
                 
                 // MARK: - Row 2: BPM Controls
                 BPMControlsView(
@@ -49,51 +30,36 @@ struct BPMView: View {
                     isShowingKeypad: $isShowingKeypad,
                     previousTempo: $previousTempo
                 )
-                .clipped()
-                .frame(height: 80) // Artificially constrain height
-                .clipShape(Rectangle()) // Clip excess font padding
+                .padding(.horizontal, 8)
+                .padding(.top, -10)
+                .padding(.bottom, 8)
                 .scaleEffect(pulseAnimation ? 1.02 : 1.0)
                 .animation(.easeInOut(duration: 0.1), value: pulseAnimation)
-                
-                Spacer()
-                
-                // Subtle divider with dark theme
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.clear,
-                                Color(red: 0.4, green: 0.4, blue: 0.4).opacity(0.3),
-                                Color.clear
-                            ]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(height: 1)
-                    .padding(.horizontal, 30)
-                
-                // MARK: - Row 3: Horizontal Tempo Selector
-                TempoSelectorView(
-                    metronome: metronome,
-                    previousTempo: $previousTempo
-                )
-                .padding(.top, 4)
-                .padding(.bottom, 8)
             }
             .background(
-                // Completely flat, matte black display - matching the reference image
+                // Shared background for both components
                 RoundedRectangle(cornerRadius: 24)
                     .fill(Color(red: 10/255, green: 10/255, blue: 11/255))
             )
             .scaleEffect(containerScale)
-            // Minimal shadow to maintain some separation from background
-//            .shadow(
-//                color: Color.black.opacity(0.2),
-//                radius: 8,
-//                x: 0,
-//                y: 4
+                
+            Spacer()
+            
+            // MARK: - Row 3: Time Signature View with Matching Style
+            TimeSignatureView(
+                metronome: metronome,
+                showTimeSignaturePicker: $showTimeSignaturePicker,
+                showSettings: $showSettings
+            )
+            .padding(.vertical, 8)
+//            .background(
+//                RoundedRectangle(cornerRadius: 24)
+//                    .fill(Color(red: 10/255, green: 10/255, blue: 11/255))
+//                    .frame(width: 355)
 //            )
+            //.padding(.top, 8)
+            .padding(.bottom, 15)
+            .padding(.horizontal, 16)
         }
         .frame(height: UIScreen.main.bounds.height / 3.5)
         .padding(.horizontal, 20)
@@ -161,10 +127,7 @@ struct BPMView: View {
 
 #Preview {
     ZStack {
-        // Updated background to match the dark aesthetic
-        Color(red: 18/255, green: 18/255, blue: 18/255)
-            .ignoresSafeArea()
-        
+DarkGrayBackgroundView()
         BPMView(
             metronome: MetronomeEngine(),
             isShowingKeypad: .constant(false),

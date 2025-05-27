@@ -34,6 +34,11 @@ struct BPMControlsView: View {
                     .foregroundColor(Color.white.opacity(0.8))
                     .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                     .monospacedDigit()
+                
+                Text("BEATS PER MINUTE (BPM)")
+                                   .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                   .foregroundColor(Color.white.opacity(0.6))
+                                   .tracking(1)
             }
             .frame(width: 200, alignment: .center)
             .contentShape(Rectangle())
