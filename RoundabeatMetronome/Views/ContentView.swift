@@ -19,7 +19,7 @@ struct ContentView: View {
     
     var body: some View {
         
-        ZStack {
+        ZStack(alignment: .center) { // Explicitly set alignment
             
             DarkGrayBackgroundView()
             
@@ -32,22 +32,29 @@ struct ContentView: View {
                         .frame(height: geometry.safeAreaInsets.top + 32)
                     
                     // BPM display section
-                    VStack(spacing: 16) {
-                        BPMView(
-                            metronome: metronome,
-                            isShowingKeypad: $showBPMKeypad,
-                            showTimeSignaturePicker: $showTimeSignaturePicker
-                        )
+                    HStack { // Wrap in HStack to ensure proper centering
+                        Spacer()
+                        VStack(spacing: 16) {
+                            BPMView(
+                                metronome: metronome,
+                                isShowingKeypad: $showBPMKeypad,
+                                showTimeSignaturePicker: $showTimeSignaturePicker
+                            )
+                        }
+                        Spacer()
                     }
-             
                     
                     // Spacer between BPM and logo
                     Spacer()
                         .frame(height: 32)
                     
                     // Logo section
-                    VStack {
-                        LogoView()
+                    HStack { // Wrap in HStack to ensure proper centering
+                        Spacer()
+                        VStack {
+                            LogoView()
+                        }
+                        Spacer()
                     }
                     .padding(.horizontal, 24)
                     
@@ -56,8 +63,12 @@ struct ContentView: View {
                         .frame(height: 40)
                     
                     // Dial control section
-                    VStack {
-                        DialControl(metronome: metronome)
+                    HStack { // Wrap in HStack to ensure proper centering
+                        Spacer()
+                        VStack {
+                            DialControl(metronome: metronome)
+                        }
+                        Spacer()
                     }
                     .padding(.horizontal, 24)
                     
@@ -65,7 +76,13 @@ struct ContentView: View {
                     Spacer()
                         .frame(height: max(60, geometry.safeAreaInsets.bottom + 40))
                 }
+                .frame(
+                    width: geometry.size.width,
+                    height: geometry.size.height,
+                    alignment: .center
+                ) // Explicitly set frame and alignment
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // Additional centering
             .onAppear {
                 // Prepare audio system as soon as view appears
                 prepareAudioSystem()
@@ -98,8 +115,8 @@ struct ContentView: View {
             }
         }
         .ignoresSafeArea(.all, edges: .all)
-        .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
-        .animation(.spring(response: 0.3), value: showBPMKeypad)
+       // .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
+        //.animation(.spring(response: 0.3), value: showBPMKeypad)
     }
     
     // Function to prepare the audio system for low latency

@@ -65,7 +65,7 @@ struct TimeSignatureView: View {
                             Text("RHYTHM")
                                 .font(.system(size: 9, weight: .medium))
                                 .kerning(1.5)
-                                .foregroundColor(Color.white.opacity(0.4))
+                               .foregroundColor(Color.white.opacity(0.4))
                             
                             Image(systemName: "music.note")
                                 .font(.system(size: 16, weight: .medium))
