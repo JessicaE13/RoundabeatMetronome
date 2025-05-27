@@ -8,44 +8,58 @@
 import SwiftUI
 
 struct LogoView: View {
-    @State private var shimmerOffset: CGFloat = -1.0
+    @State private var shimmerOffset: CGFloat = 0.0
+    private let logoWidth: CGFloat = 700 // adjust this as needed
 
     var body: some View {
         ZStack {
-            // Base text
-            Text("roundabeat")
-                .font(.custom("blippo", size: 36))
-                .kerning(5)
-                .foregroundColor(.white.opacity(0.9))
+            Image("roundabeatlogo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 25)
+                .foregroundStyle(Color(red: 44/255, green: 44/255, blue: 44/255))
 
-            // Shimmer text
-            Text("roundabeat")
-                .font(.custom("blippo", size: 36))
-                .kerning(5)
+            Image("roundabeatlogo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 25)
+                .foregroundStyle(Color(red: 44/255, green: 44/255, blue: 44/255))
                 .overlay(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color.clear,
-                            Color.white.opacity(0.8),
-                            Color.clear
+                            .clear,
+                            Color(red: 200/255, green: 241/255, blue: 241/255),
+                            .clear
                         ]),
                         startPoint: .leading,
                         endPoint: .trailing
                     )
-                    .frame(width: 300) // ensure this is wider than the text
-                    .offset(x: shimmerOffset * 300 - 150) // center-start to center-end
+                    
+                    .offset(x: shimmerOffset * logoWidth)
                     .mask(
-                        Text("roundabeat")
-                            .font(.custom("blippo", size: 36))
-                            .kerning(5)
+                        Image("roundabeatlogo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 25)
                     )
                 )
                 .onAppear {
-                    withAnimation(.easeInOut(duration: 5)) {
-                        shimmerOffset = 1.0
-                    }
+                    startShimmerAnimation()
                 }
-                .opacity(shimmerOffset == 1.0 ? 0 : 1)
+                .opacity(shimmerOffset >= 1.0 ? 0 : 1)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            startShimmerAnimation()
+        }
+    }
+
+    private func startShimmerAnimation() {
+        shimmerOffset = 0.0
+        DispatchQueue.main.async {
+            withAnimation(.easeInOut(duration: 3.0)) {
+                shimmerOffset = 1.0
+            }
         }
     }
 }
@@ -53,9 +67,7 @@ struct LogoView: View {
 
 #Preview {
     ZStack {
-        
-        BackgroundView()
+        DarkGrayBackgroundView()
         LogoView()
     }
 }
-

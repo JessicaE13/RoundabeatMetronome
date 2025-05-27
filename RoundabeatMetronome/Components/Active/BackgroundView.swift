@@ -34,11 +34,11 @@ struct BackgroundView: View {
             
             // Bottom half - empty/transparent
             VStack{
-                Spacer()
+            //    Spacer()
                 
                 Rectangle()
-                    .fill(Color.white.opacity(0.2))
-                    .frame(height: geometry.size.height / 1.5)
+                    .fill(Color.black.opacity(0.6))
+                  //  .frame(height: geometry.size.height / 1.5)
             }
         }
         .ignoresSafeArea(.all)

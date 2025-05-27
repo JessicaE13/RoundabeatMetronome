@@ -25,33 +25,49 @@ struct ContentView: View {
         
         ZStack {
             
-            BackgroundView()
+            DarkGrayBackgroundView()
             
             // Main metronome interface
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // Top portion - BPM display
-                    VStack {
+                    
+                    // Top spacing from safe area
+                    Spacer()
+                        .frame(height: geometry.safeAreaInsets.top + 32)
+                    
+                    // BPM display section
+                    VStack(spacing: 16) {
                         BPMView(
                             metronome: metronome,
                             isShowingKeypad: $showBPMKeypad,
                             showTimeSignaturePicker: $showTimeSignaturePicker
                         )
-                        Spacer()
                     }
-                    .frame(height: geometry.size.height - (geometry.size.height / 1.5))
-                    .clipped() // Prevent overflow
+             
                     
-                    // Bottom portion - Logo and controls
+                    // Spacer between BPM and logo
+                    Spacer()
+                        .frame(height: 32)
+                    
+                    // Logo section
                     VStack {
-                        // Title
                         LogoView()
-                        
-                        // Main Dial Control with Play/Pause Button
-                        DialControl(metronome: metronome)
-                        //SegmentView(metronome: metronome)
                     }
-                    .frame(height: geometry.size.height / 1.5)
+                    .padding(.horizontal, 24)
+                    
+                    // Spacer between logo and dial
+                    Spacer()
+                        .frame(height: 40)
+                    
+                    // Dial control section
+                    VStack {
+                        DialView(metronome: metronome)
+                    }
+                    .padding(.horizontal, 24)
+                    
+                    // Bottom spacer to push content up and provide breathing room
+                    Spacer()
+                        .frame(height: max(60, geometry.safeAreaInsets.bottom + 40))
                 }
             }
             .onAppear {
@@ -85,6 +101,7 @@ struct ContentView: View {
                 .zIndex(1)
             }
         }
+        .ignoresSafeArea(.all, edges: .all)
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
     }
@@ -145,6 +162,20 @@ struct ContentView: View {
         
         // Update last tap time
         lastTapTime = now
+    }
+}
+
+struct ShimmerCurveModifier: ViewModifier {
+    let progress: CGFloat
+    let amplitude: CGFloat
+    let width: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .offset(
+                x: progress * width,
+                y: sin(progress * .pi * 2) * amplitude
+            )
     }
 }
 

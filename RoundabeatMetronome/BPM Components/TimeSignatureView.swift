@@ -8,7 +8,8 @@ struct TimeSignatureView: View {
     
     var body: some View {
             
-            HStack {
+        HStack (spacing: 24) {
+            HStack{
                 // Time Signature
                 Text("TIME:")
                     .font(.system(size: 12, weight: .regular))
@@ -33,7 +34,8 @@ struct TimeSignatureView: View {
                             .foregroundColor(Color.white.opacity(0.8))
                     }
                 }
-                
+            }
+            HStack {
                 Text("   RHYTHM:")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(Color.white.opacity(0.6))
@@ -41,8 +43,9 @@ struct TimeSignatureView: View {
                 Image(systemName: "music.note")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color.white.opacity(0.8))
-
+                
             }
+        }
         }
     }
 

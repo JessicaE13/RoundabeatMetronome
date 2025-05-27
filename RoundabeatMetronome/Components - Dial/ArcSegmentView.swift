@@ -46,13 +46,13 @@ struct ArcSegmentView: View {
                 arcPath
                     .stroke(
                         LinearGradient(
-                            colors: [Color.white, Color.cyan.opacity(0.9)],
+                            colors: [Color.white, Color.white.opacity(0.9)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                     )
-                    .shadow(color: Color.cyan.opacity(0.8), radius: 2, x: 0, y: 0)
+                    .shadow(color: Color.white.opacity(0.8), radius: 2, x: 0, y: 0)
                 
                 // Inner highlight for extra LED brightness
                 arcPath
@@ -63,7 +63,8 @@ struct ArcSegmentView: View {
                 // Inactive state - subtle outline
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .stroke(Color.white.opacity(0.2), lineWidth: 0.8)
+                    .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 2.0)
+                    .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
             }
         }
         .animation(.easeInOut(duration: 0.15), value: isActive)
@@ -72,7 +73,8 @@ struct ArcSegmentView: View {
 
 #Preview {
     ZStack {
-BackgroundView()
+Rectangle()
+            .fill(Color.gray)
         GeometryReader { geometry in
             ArcSegmentView(
                 center: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2),

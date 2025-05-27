@@ -5,19 +5,19 @@ struct DialGradientMesh: View {
     
     var body: some View {
         ZStack {
-            // Base radial gradient
-//            RadialGradient(
-//                gradient: Gradient(colors: [
-//                    Color.black.opacity(0.95),
-//                    Color("colorPurpleBackground").opacity(0.3),
-//                    Color.black.opacity(0.98)
-//                ]),
-//                center: .center,
-//                startRadius: 50,
-//                endRadius: 200
-//            )
-//            
-            // Animated mesh overlay
+            // Base radial gradient - reduced contrast
+            RadialGradient(
+                gradient: Gradient(colors: [
+                    Color.black.opacity(0.6),
+                    Color.white.opacity(0.08),
+                    Color.black.opacity(0.7)
+                ]),
+                center: .center,
+                startRadius: 50,
+                endRadius: 200
+            )
+
+            // Animated mesh overlay - reduced contrast monochromatic
             MeshGradient(
                 width: 3,
                 height: 3,
@@ -30,66 +30,26 @@ struct DialGradientMesh: View {
                     [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]
                 ],
                 colors: [
-                        //Top Row
-                        Color(red: 82/255, green: 78/255, blue: 113/255),
-                        Color(red: 149/255, green: 119/255, blue: 154/255),
-                        Color(red: 197/255, green: 147/255, blue: 173/255),
-                        //Middle Row
-                        Color(red: 27/255, green: 24/255, blue: 57/255),
-                        Color(red: 26/255, green: 18/255, blue: 37/255),
-                        Color(red: 152/255, green: 83/255, blue: 104/255),
-                        // Bottom Row
-                        Color(red: 116/255, green: 95/255, blue: 128/255),
-                        Color(red: 130/255, green: 101/255, blue: 132/255),
-                        Color(red: 130/255, green: 90/255, blue: 115/255)
-                    
+                    // Top Row - reduced contrast grayscale variations
+                    Color.white.opacity(0.06),
+                    Color.white.opacity(0.08),
+                    Color.white.opacity(0.05),
+                    // Middle Row
+                    Color.black.opacity(0.65),
+                    Color.black.opacity(0.7),
+                    Color.white.opacity(0.04),
+                    // Bottom Row
+                    Color.white.opacity(0.05),
+                    Color.white.opacity(0.07),
+                    Color.white.opacity(0.04)
                 ]
             )
-            .opacity(0.8)
-//            .animation(
-//                Animation.easeInOut(duration: 3.0)
-//                    .repeatForever(autoreverses: true),
-//                value: animateGradient
-//            )
-            
-            // Additional radial highlights
-//            RadialGradient(
-//                gradient: Gradient(colors: [
-//                    Color.white.opacity(animateGradient ? 0.05 : 0.02),
-//                    Color.clear
-//                ]),
-//                center: UnitPoint(x: 0.3, y: 0.3),
-//                startRadius: 0,
-//                endRadius: 120
-//            )
-//            .animation(
-//                Animation.easeInOut(duration: 4.0)
-//                    .repeatForever(autoreverses: true),
-//                value: animateGradient
-//            )
-//            
-//            RadialGradient(
-//                gradient: Gradient(colors: [
-//                    Color("colorPurpleBackground").opacity(animateGradient ? 0.15 : 0.08),
-//                    Color.clear
-//                ]),
-//                center: UnitPoint(x: 0.7, y: 0.8),
-//                startRadius: 0,
-//                endRadius: 100
-//            )
-//            .animation(
-//                Animation.easeInOut(duration: 5.0)
-//                    .repeatForever(autoreverses: true),
-//                value: animateGradient
-//            )
-//        }
-//        .onAppear {
-//            animateGradient = true
-       }
-  }
+            .opacity(0.6)
+        }
+    }
 }
 
-// Updated DialControl with gradient mesh background
+// Updated DialControl with reduced contrast and flat play button
 struct DialControl: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var dialRotation: Double = 0.0
@@ -114,6 +74,9 @@ struct DialControl: View {
     private let tickSlantAngle: Double = -60.0
 
     private var innerDonutDiameter: CGFloat { knobSize + 4 }
+    
+    // Additional circle size (10px smaller than dial)
+    private var additionalCircleSize: CGFloat { dialSize - 43 }
 
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
@@ -125,6 +88,7 @@ struct DialControl: View {
             ZStack {
                 dialBackground
                 segmentedRing
+                additionalCircle
                 centerKnob
             }
             .frame(width: dialSize + 55, height: dialSize + 55)
@@ -140,18 +104,99 @@ struct DialControl: View {
 
     private var dialBackground: some View {
         ZStack {
-            // Gradient mesh as the dial face - rotates with dial
-            DialGradientMesh()
+            // Subtle outer shadow - reduced contrast
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.clear,
+                            Color.clear,
+                            Color.black.opacity(0.08),
+                            Color.black.opacity(0.2)
+                        ]),
+                        center: .center,
+                        startRadius: dialSize * 0.45,
+                        endRadius: dialSize * 0.6
+                    )
+                )
+                .frame(width: dialSize + 20, height: dialSize + 20)
+                .blur(radius: 2)
+            
+            // Main dial body with reduced contrast 3D beveled edge
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.gray.opacity(0.25),
+                            Color.black.opacity(0.45),
+                            Color.black.opacity(0.65)
+                        ]),
+                        center: UnitPoint(x: 0.3, y: 0.3), // Light source from top-left
+                        startRadius: 20,
+                        endRadius: dialSize * 0.7
+                    )
+                )
                 .frame(width: dialSize, height: dialSize)
+                .overlay(
+                    // Reduced highlight ring on the edge
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white.opacity(0.15),
+                                    Color.clear,
+                                    Color.black.opacity(0.2)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                )
+            
+            // Recessed inner surface - reduced contrast
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.black.opacity(0.6),
+                            Color.gray.opacity(0.08),
+                            Color.black.opacity(0.7)
+                        ]),
+                        center: UnitPoint(x: 0.7, y: 0.7), // Inverted lighting for recess
+                        startRadius: 30,
+                        endRadius: dialSize * 0.4
+                    )
+                )
+                .frame(width: dialSize - 30, height: dialSize - 30)
+                .shadow(color: Color.black.opacity(0.4), radius: 6, x: 0, y: 0)
+            
+            // Gradient mesh as the dial face texture - rotates with dial
+            DialGradientMesh()
+                .frame(width: dialSize - 40, height: dialSize - 40)
                 .clipShape(Circle())
                 .rotationEffect(Angle(degrees: dialRotation))
+                .opacity(0.5)
             
-            // Subtle overlay to maintain depth
+            // Inner shadow for depth - reduced
             Circle()
-                .fill(Color.black.opacity(0.2))
-                .frame(width: dialSize, height: dialSize)
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.clear,
+                            Color.clear,
+                            Color.black.opacity(0.2)
+                        ]),
+                        center: .center,
+                        startRadius: dialSize * 0.25,
+                        endRadius: dialSize * 0.45
+                    )
+                )
+                .frame(width: dialSize - 30, height: dialSize - 30)
+            
+
         }
-        .shadow(color: Color.black.opacity(0.3), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 8)
         .overlay(dialTickMarks)
     }
 
@@ -168,17 +213,32 @@ struct DialControl: View {
         let tickAngle = Double(index) * (360.0 / Double(numberOfTicks))
         
         return Rectangle()
-            .fill(isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.3))
+            .fill(isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.15))
             .frame(width: 1.0, height: tickLength)
             .offset(y: (dialSize / 2.4 - tickLength) * -1)
             // Apply slant first with bottom anchor (where tick connects to circle)
             .rotationEffect(.degrees(tickSlantAngle), anchor: .bottom)
             // Then position around the circle
             .rotationEffect(.degrees(tickAngle))
-            // Enhanced glow effect
+            // Reduced glow effect
             .shadow(
-                color: isKnobTouched ? Color.white.opacity(0.9) : Color.white.opacity(0.1),
-                radius: isKnobTouched ? 4 : 1,
+                color: isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.08),
+                radius: isKnobTouched ? 3 : 0.5,
+                x: 0,
+                y: 0
+            )
+    }
+    
+    private var additionalCircle: some View {
+        Circle()
+            .stroke(
+                isKnobTouched ? Color.white.opacity(0.4) : Color.white.opacity(0.12),
+                lineWidth: 0.75
+            )
+            .frame(width: additionalCircleSize, height: additionalCircleSize)
+            .shadow(
+                color: isKnobTouched ? Color.white.opacity(0.6) : Color.white.opacity(0.08),
+                radius: isKnobTouched ? 3 : 0.5,
                 x: 0,
                 y: 0
             )
@@ -190,25 +250,14 @@ struct DialControl: View {
 
     private var centerKnob: some View {
         ZStack {
-            // Enhanced knob with gradient
+            // Flat knob with minimal depth
             Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            Color("colorDial").opacity(0.9),
-                            Color("colorDial").opacity(0.6)
-                        ]),
-                        center: UnitPoint(x: 0.3, y: 0.3),
-                        startRadius: 5,
-                        endRadius: knobSize/2
-                    )
-                )
+                .fill(Color.black.opacity(0.8))
                 .frame(width: knobSize, height: knobSize)
                 .overlay(
                     Circle()
-                        .stroke(Color.white.opacity(0.7), lineWidth: 0.3)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
                 )
-                .shadow(color: Color.black.opacity(0.3), radius: 4, x: 2, y: 2)
             
             playPauseIcon
         }
@@ -222,8 +271,7 @@ struct DialControl: View {
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
             .font(.system(size: 30))
-            .foregroundColor(Color.white.opacity(metronome.isPlaying ? 0.95 : 0.85))
-            .shadow(color: Color("colorPurpleBackground").opacity(0.8), radius: 1)
+            .foregroundColor(Color.white.opacity(0.7))
     }
     
     // Rest of the methods remain the same...
