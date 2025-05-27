@@ -64,7 +64,7 @@ struct ArcSegmentView: View {
               
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color(red: 15/255, green: 15/255, blue: 16/255))
+                    .fill(Color(red: 15/255, green: 15/255, blue: 16/255).opacity(0.8))
                     .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
