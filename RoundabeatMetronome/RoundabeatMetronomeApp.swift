@@ -14,7 +14,7 @@ struct RoundabeatMetronomeApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView(metronome: metronome)
+            MainTabView()
         }
     }
 }

@@ -10,10 +10,6 @@ struct ContentView: View {
     @State private var isEditingTempo = false
     @State private var showTimeSignaturePicker = false
     @State private var showBPMKeypad = false
-    
-    // State for tap tempo feature
-    @State private var lastTapTime: Date?
-    @State private var tapTempoBuffer: [TimeInterval] = []
     @State private var previousTempo: Double = 120
     
     init(metronome: MetronomeEngine) {
@@ -112,57 +108,6 @@ struct ContentView: View {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred(intensity: 0.1)
     }
-    
-    // Tap tempo calculation
-    private func calculateTapTempo() {
-        let now = Date()
-        
-        // Add haptic feedback for tap
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
-        
-        if let lastTap = lastTapTime {
-            // Calculate time difference
-            let timeDiff = now.timeIntervalSince(lastTap)
-            
-            // Only use reasonable tap intervals (between 40 and 240 BPM)
-            if timeDiff > 0.25 && timeDiff < 1.5 {
-                // Add to buffer
-                tapTempoBuffer.append(timeDiff)
-                
-                // Keep only the last 4 taps for accuracy
-                if tapTempoBuffer.count > 4 {
-                    tapTempoBuffer.removeFirst()
-                }
-                
-                // Calculate average from buffer
-                let averageInterval = tapTempoBuffer.reduce(0, +) / Double(tapTempoBuffer.count)
-                let calculatedTempo = min(240, max(40, 60.0 / averageInterval))
-                
-                // Round to nearest integer
-                let roundedTempo = round(calculatedTempo)
-                
-                // Update metronome tempo
-                metronome.updateTempo(to: roundedTempo)
-                
-                // Also update the previous tempo state for gestures
-                previousTempo = roundedTempo
-            }
-            
-            // If tap is too fast or too slow, reset buffer
-            if timeDiff < 0.25 || timeDiff > 2.0 {
-                tapTempoBuffer.removeAll()
-            }
-        }
-        
-        // Reset if more than 2 seconds since last tap
-        if let lastTap = lastTapTime, now.timeIntervalSince(lastTap) > 2.0 {
-            tapTempoBuffer.removeAll()
-        }
-        
-        // Update last tap time
-        lastTapTime = now
-    }
 }
 
 struct ShimmerCurveModifier: ViewModifier {
@@ -178,7 +123,6 @@ struct ShimmerCurveModifier: ViewModifier {
             )
     }
 }
-
 
 #Preview {
     ContentView(

@@ -24,7 +24,7 @@ struct LogoView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 25)
-             
+                .padding(8)
                 .foregroundStyle(Color(red: 43/255, green: 44/255, blue: 44/255))
                 .overlay(
                     LinearGradient(
