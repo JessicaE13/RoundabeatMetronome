@@ -57,6 +57,7 @@ struct ContentView: View {
                         Spacer()
                     }
                     .padding(.horizontal, 24)
+                    .padding(.vertical, 32)
                     
                     // Spacer between logo and dial
                     Spacer()

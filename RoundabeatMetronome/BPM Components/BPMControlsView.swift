@@ -38,7 +38,7 @@ struct BPMControlsView: View {
                 
                 Text("BEATS PER MINUTE (BPM)")
                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                   .foregroundColor(Color.white.opacity(0.6))
+                                   .foregroundColor(Color.white.opacity(0.4))
                                   // .padding(.top, -80)
                                    .padding(.bottom, 16)
                                    .tracking(1)
