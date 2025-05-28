@@ -12,119 +12,113 @@ struct TimeSignatureView: View {
     
     var body: some View {
         ZStack {
-            HStack(spacing: 20) {
+            // Single horizontal row containing all three buttons
+            HStack(spacing: 16) {
                 // Time Signature Section
-                VStack(spacing: 4) {
-                    Button(action: {
-                        let generator = UIImpactFeedbackGenerator(style: .medium)
-                        generator.impactOccurred()
-                        showTimeSignaturePicker = true
-                    }) {
-                        HStack(spacing: 2) {
-                            Text("TIME")
-                                .font(.system(size: 9, weight: .medium))
-                                .kerning(1.5)
-                                .foregroundColor(Color.white.opacity(0.4))
-                            
-                            Text("\(metronome.beatsPerMeasure)")
-                                .font(.custom("Kanit-Regular", size: 16))
-                                .kerning(1.0)
-                                .foregroundColor(Color.white.opacity(0.9))
-                            
-                            Text("/")
-                                .font(.custom("Kanit-Regular", size: 16))
-                                .kerning(1.0)
-                                .foregroundColor(Color.white.opacity(0.7))
-                            
-                            Text("\(metronome.beatUnit)")
-                                .font(.custom("Kanit-Regular", size: 16))
-                                .kerning(1.0)
-                                .foregroundColor(Color.white.opacity(0.9))
-                        }
-                        .frame(width: 100, height: 44)
-                        .background(
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(Color.black.opacity(0.4))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                                )
-                        )
+                Button(action: {
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                    showTimeSignaturePicker = true
+                }) {
+                    HStack(spacing: 2) {
+                        Text("TIME")
+                            .font(.system(size: 8, weight: .medium))
+                            .kerning(1.2)
+                            .foregroundColor(Color.white.opacity(0.4))
+                        
+                        Text("\(metronome.beatsPerMeasure)")
+                            .font(.custom("Kanit-Regular", size: 14))
+                            .kerning(0.8)
+                            .foregroundColor(Color.white.opacity(0.9))
+                        
+                        Text("/")
+                            .font(.custom("Kanit-Regular", size: 14))
+                            .kerning(0.8)
+                            .foregroundColor(Color.white.opacity(0.7))
+                        
+                        Text("\(metronome.beatUnit)")
+                            .font(.custom("Kanit-Regular", size: 14))
+                            .kerning(0.8)
+                            .foregroundColor(Color.white.opacity(0.9))
                     }
-                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black.opacity(0.4))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                    )
                 }
+                .contentShape(Rectangle())
                 
                 // Rhythm Section
-                VStack(spacing: 4) {
-                    Button(action: {
-                        let generator = UIImpactFeedbackGenerator(style: .medium)
-                        generator.impactOccurred()
-                        // Add rhythm selection logic here
-                    }) {
-                        HStack(spacing: 8) {
-                            Text("RHYTHM")
-                                .font(.system(size: 9, weight: .medium))
-                                .kerning(1.5)
-                               .foregroundColor(Color.white.opacity(0.4))
-                            
-                            Image(systemName: "music.note")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color.white.opacity(0.9))
-                        }
-                        .frame(width: 100, height: 44)
-                        .background(
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(Color.black.opacity(0.4))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                                )
-                        )
+                Button(action: {
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+                    // Add rhythm selection logic here
+                }) {
+                    HStack(spacing: 6) {
+                        Text("RHYTHM")
+                            .font(.system(size: 8, weight: .medium))
+                            .kerning(1.2)
+                            .foregroundColor(Color.white.opacity(0.4))
+                        
+                        Image(systemName: "music.note")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color.white.opacity(0.9))
                     }
-                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black.opacity(0.4))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                    )
                 }
+                .contentShape(Rectangle())
                 
                 // Tap Tempo Section
-                VStack(spacing: 4) {
-                    Button(action: {
-                        calculateTapTempo()
-                    }) {
-                        HStack(spacing: 8) {
-                            Text("TAP")
-                                .font(.system(size: 9, weight: .medium))
-                                .kerning(1.5)
-                                .foregroundColor(Color.white.opacity(0.4))
-                            
-                            // Show tap count or tempo icon
-                            if tapCount > 0 {
-                                Text("\(tapCount)")
-                                    .font(.custom("Kanit-Regular", size: 16))
-                                    .kerning(1.0)
-                                    .foregroundColor(Color.white.opacity(0.9))
-                                    .transition(.scale.combined(with: .opacity))
-                            } else {
-                                Image(systemName: "hand.tap")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(Color.white.opacity(0.9))
-                            }
+                Button(action: {
+                    calculateTapTempo()
+                }) {
+                    HStack(spacing: 6) {
+                        Text("TAP")
+                            .font(.system(size: 8, weight: .medium))
+                            .kerning(1.2)
+                            .foregroundColor(Color.white.opacity(0.4))
+                        
+                        // Show tap count or tempo icon
+                        if tapCount > 0 {
+                            Text("\(tapCount)")
+                                .font(.custom("Kanit-Regular", size: 14))
+                                .kerning(0.8)
+                                .foregroundColor(Color.white.opacity(0.9))
+                                .transition(.scale.combined(with: .opacity))
+                        } else {
+                            Image(systemName: "hand.tap")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color.white.opacity(0.9))
                         }
-                        .frame(width: 100, height: 44)
-                        .background(
-                            RoundedRectangle(cornerRadius: 15)
-                                .fill(tapCount > 0 ? Color.white.opacity(0.15) : Color.black.opacity(0.4))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 15)
-                                        .stroke(tapCount > 0 ? Color.white.opacity(0.25) : Color.white.opacity(0.15), lineWidth: 1)
-                                )
-                        )
-                        .scaleEffect(tapCount > 0 ? 1.02 : 1.0)
-                        .animation(.easeInOut(duration: 0.1), value: tapCount)
                     }
-                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(tapCount > 0 ? Color.white.opacity(0.15) : Color.black.opacity(0.4))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(tapCount > 0 ? Color.white.opacity(0.25) : Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                    )
+                    .scaleEffect(tapCount > 0 ? 1.02 : 1.0)
+                    .animation(.easeInOut(duration: 0.1), value: tapCount)
                 }
-                
-
+                .contentShape(Rectangle())
             }
+            .padding(.horizontal, 8) // Match the padding from BPMView
         }
         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
             // Reset tap count after 3 seconds of inactivity

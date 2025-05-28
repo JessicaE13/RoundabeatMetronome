@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Main Tab View
 struct MainTabView: View {
     @StateObject private var metronome = MetronomeEngine()
-    @State private var selectedTab = 0
+    @State private var selectedTab = 1 // Changed from 0 to 1 to default to ContentView
     
     var body: some View {
         ZStack {
@@ -22,7 +22,7 @@ struct MainTabView: View {
                         SettingsView()
                         
                     default:
-                        ContentView(metronome: metronome)
+                        ContentView(metronome: metronome) // Also ensure default case shows ContentView
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -32,6 +32,10 @@ struct MainTabView: View {
             }
         }
         .ignoresSafeArea(.all, edges: .all)
+        .onAppear {
+            // Ensure we always start with the metronome tab when the app launches
+            selectedTab = 1
+        }
     }
     
     private var bottomTabBar: some View {

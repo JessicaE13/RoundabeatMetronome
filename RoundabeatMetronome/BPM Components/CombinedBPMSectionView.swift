@@ -24,7 +24,13 @@ struct CombinedBPMSectionView: View {
             )
             .padding(.horizontal, 8)
             .padding(.top, 8)
-            .padding(.bottom, -10)
+       
+            
+            // MARK: - First Divider Line
+            Rectangle()
+                .fill(Color.white.opacity(0.15))
+                .frame(height: 1)
+              
             
             // MARK: - Row 2: Main BPM Display with Controls
             HStack(spacing: 0) {
@@ -85,9 +91,16 @@ struct CombinedBPMSectionView: View {
                 }
             }
             .padding(.horizontal, 8)
-            .padding(.top, -10)
+           // .padding(.top, 16)
+            .padding(.bottom, 16)
             .scaleEffect(pulseAnimation ? 1.02 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: pulseAnimation)
+            
+            // MARK: - Second Divider Line
+            Rectangle()
+                .fill(Color.white.opacity(0.15))
+                .frame(height: 1)
+              
             
             // MARK: - Row 3: Time Signature, Rhythm, and Tap Controls
             HStack(spacing: 16) {
@@ -196,7 +209,7 @@ struct CombinedBPMSectionView: View {
                 .contentShape(Rectangle())
             }
             .padding(.horizontal, 8)
-            .padding(.top, 8)
+            .padding(.top, 16)
             .padding(.bottom, 8)
         }
         .background(
