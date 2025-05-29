@@ -10,13 +10,18 @@ struct BPMView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // MARK: - Combined BPM and Controls Section
-            CombinedBPMSectionView(
+            // MARK: - Main BPM Section (without TimeSignatureView)
+            SimplifiedBPMSectionView(
                 metronome: metronome,
                 isShowingKeypad: $isShowingKeypad,
-                showTimeSignaturePicker: $showTimeSignaturePicker,
-                showSettings: $showSettings,
                 previousTempo: $previousTempo
+            )
+            
+            // MARK: - Time Signature Section (below the rounded rectangle)
+            TimeSignatureView(
+                metronome: metronome,
+                showTimeSignaturePicker: $showTimeSignaturePicker,
+                showSettings: $showSettings
             )
         }
         .frame(height: UIScreen.main.bounds.height / 3.5)

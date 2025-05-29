@@ -10,8 +10,11 @@ struct DialControl: View {
     private let dialSize: CGFloat = 225
     private let knobSize: CGFloat = 90
     private let innerDonutRatio: CGFloat = 0.35
-    private let minRotation: Double = -150
-    private let maxRotation: Double = 150
+    
+    // Changed: Now uses 5 full rotations (1800 degrees total)
+    private let minRotation: Double = -900  // -5 * 180 = -900 degrees
+    private let maxRotation: Double = 900   // +5 * 180 = +900 degrees
+    
     private let ringLineWidth: CGFloat = 24
     private var innerDonutDiameter: CGFloat { knobSize + 4 }
 
@@ -30,7 +33,11 @@ struct DialControl: View {
             .frame(width: dialSize + 55, height: dialSize + 55)
             .gesture(createDragGesture())
             .onChange(of: metronome.tempo) { _, newTempo in
-                dialRotation = tempoToRotation(newTempo)
+                // Only update dial rotation if we're not currently dragging
+                // This prevents conflicts between user input and programmatic updates
+                if !isDragging {
+                    dialRotation = tempoToRotation(newTempo)
+                }
             }
             .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
                 isKnobTouched = pressing
@@ -85,12 +92,12 @@ struct DialControl: View {
                 )
                 .frame(width: dialSize - 2, height: dialSize - 2)
             
-            // Small rotating indicator circle - now uses consistent dialRotation
-            Circle()
-                .fill(Color.white.opacity(0.5))
-                .frame(width: 8, height: 8)
-                .shadow(color: Color.black.opacity(0.5), radius: 2, x: 0, y: 0)
-                .offset(y: -(dialSize / 2 - 16))
+            // Rotating indicator line - shows current position
+            Rectangle()
+                .fill(Color.white.opacity(0.8))
+                .frame(width: 3, height: 20)
+                .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 0)
+                .offset(y: -(dialSize / 2 - 14))
                 .rotationEffect(Angle(degrees: dialRotation))
         }
     }
@@ -113,12 +120,12 @@ struct DialControl: View {
                 ))
                 .frame(width: knobSize, height: knobSize)
             
-            // Center Knob Dark Outline (matching DialView)
+            // Center Knob Dark Outline
             Circle()
                 .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 3.0)
                 .frame(width: knobSize, height: knobSize)
             
-            // Center Knob outer highlight (matching DialView)
+            // Center Knob outer highlight
             Circle()
                 .stroke(
                     LinearGradient(
@@ -135,7 +142,7 @@ struct DialControl: View {
                 )
                 .frame(width: knobSize + 3.5, height: knobSize + 3.5)
             
-            // Center Knob inner highlight (matching DialView)
+            // Center Knob inner highlight
             Circle()
                 .stroke(
                     LinearGradient(
@@ -180,19 +187,27 @@ struct DialControl: View {
     private func createDragGesture() -> some Gesture {
         DragGesture(minimumDistance: 1)
             .onChanged { value in
-                if !isKnobTouched { isKnobTouched = true }
+                if !isKnobTouched {
+                    isKnobTouched = true
+                    // Strong haptic feedback when starting to drag
+                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred(intensity: 0.8)
+                }
+                isDragging = true
                 handleDragChange(value)
             }
             .onEnded { _ in
                 isDragging = false
                 isKnobTouched = false
                 previousAngle = nil
+                
+                // Heavy haptic feedback when ending drag
+                let generator = UIImpactFeedbackGenerator(style: .heavy)
+                generator.impactOccurred(intensity: 1.0)
             }
     }
 
     private func handleDragChange(_ value: DragGesture.Value) {
-        isDragging = true
-        
         // Calculate center relative to the gesture's coordinate space
         let frameSize = dialSize + 55
         let center = CGPoint(x: frameSize / 2, y: frameSize / 2)
@@ -205,23 +220,25 @@ struct DialControl: View {
         
         let angleDelta = calculateAngleDelta(from: prevAngle, to: angle)
         
-        // Map the angle delta more directly to the dial's rotation range
-        // Since dial range is 300° (-150 to +150), we want full sensitivity
-        let tempoChange = angleDelta * 1.2  // Increased from 0.4 to 1.2 for better sensitivity
-        let newTempo = metronome.tempo + tempoChange
+        // Update the dial rotation first
+        let newDialRotation = dialRotation + angleDelta
         
-        // Clamp the new tempo to the valid range
-        let clampedTempo = max(metronome.minTempo, min(metronome.maxTempo, newTempo))
+        // Clamp the dial rotation to our 5-rotation range
+        let clampedDialRotation = max(minRotation, min(maxRotation, newDialRotation))
         
-        // Only update if the clamped tempo is different from current tempo
-        if clampedTempo != metronome.tempo {
+        // Convert the clamped dial rotation to tempo
+        let newTempo = rotationToTempo(clampedDialRotation)
+        
+        // Update both the dial rotation and tempo
+        dialRotation = clampedDialRotation
+        
+        // Only update metronome tempo if it actually changed
+        if newTempo != metronome.tempo {
             let oldTempo = metronome.tempo
-            metronome.updateTempo(to: clampedTempo)
+            metronome.updateTempo(to: newTempo)
             
-            // Update dialRotation immediately to keep indicator in sync
-            dialRotation = tempoToRotation(clampedTempo)
-            
-            if Int(oldTempo) != Int(clampedTempo) {
+            // Haptic feedback when tempo changes by a whole number
+            if Int(oldTempo) != Int(newTempo) {
                 let generator = UIImpactFeedbackGenerator(style: .soft)
                 generator.impactOccurred(intensity: 0.5)
             }
@@ -236,10 +253,20 @@ struct DialControl: View {
         return delta
     }
 
+    // Convert tempo to dial rotation (now spanning 1800 degrees total)
     private func tempoToRotation(_ tempo: Double) -> Double {
         let tempoRange = metronome.maxTempo - metronome.minTempo
-        let rotationRange = maxRotation - minRotation
-        return minRotation + (tempo - metronome.minTempo) / tempoRange * rotationRange
+        let rotationRange = maxRotation - minRotation  // 1800 degrees total
+        let normalizedTempo = (tempo - metronome.minTempo) / tempoRange
+        return minRotation + (normalizedTempo * rotationRange)
+    }
+    
+    // Convert dial rotation back to tempo
+    private func rotationToTempo(_ rotation: Double) -> Double {
+        let rotationRange = maxRotation - minRotation  // 1800 degrees total
+        let tempoRange = metronome.maxTempo - metronome.minTempo
+        let normalizedRotation = (rotation - minRotation) / rotationRange
+        return metronome.minTempo + (normalizedRotation * tempoRange)
     }
 
     private func calculateAngle(center: CGPoint, point: CGPoint) -> Double {

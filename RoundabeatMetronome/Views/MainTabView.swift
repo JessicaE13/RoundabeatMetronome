@@ -1,9 +1,9 @@
 import SwiftUI
 
-// MARK: - Main Tab View
+// MARK: - Main Tab View with Persistence
 struct MainTabView: View {
     @StateObject private var metronome = MetronomeEngine()
-    @State private var selectedTab = 1 // Changed from 0 to 1 to default to ContentView
+    @State private var selectedTab = 1 // Always start on metronome tab
     
     var body: some View {
         ZStack {
@@ -33,8 +33,9 @@ struct MainTabView: View {
         }
         .ignoresSafeArea(.all, edges: .all)
         .onAppear {
-            // Ensure we always start with the metronome tab when the app launches
+            // Always start on the metronome tab
             selectedTab = 1
+            print("📱 App launched - always starting on Metronome tab")
         }
     }
     
@@ -76,12 +77,14 @@ struct MainTabView: View {
     // Helper function to create tab buttons
     private func tabButton(imageName: String, title: String, tab: Int) -> some View {
         Button(action: {
-            selectedTab = tab
+            selectedTab = tab // Switch tabs but don't persist
             
             // Add haptic feedback
             if #available(iOS 10.0, *) {
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.5)
             }
+            
+            print("📱 Switched to tab \(tab) (\(title))")
         }) {
             VStack(spacing: 4) {
                 Image(systemName: imageName)

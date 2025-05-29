@@ -26,10 +26,7 @@ struct CombinedBPMSectionView: View {
             .padding(.top, 8)
        
             
-            // MARK: - First Divider Line
-            Rectangle()
-                .fill(Color.white.opacity(0.15))
-                .frame(height: 1)
+
               
             
             // MARK: - Row 2: Main BPM Display with Controls
@@ -97,10 +94,7 @@ struct CombinedBPMSectionView: View {
             .scaleEffect(pulseAnimation ? 1.02 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: pulseAnimation)
             
-            // MARK: - Second Divider Line
-            Rectangle()
-                .fill(Color.white.opacity(0.15))
-                .frame(height: 1)
+
               
             
             // MARK: - Row 3: Time Signature, Rhythm, and Tap Controls

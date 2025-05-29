@@ -1,15 +1,41 @@
 import Foundation
 import AVFoundation
+import SwiftUI
 
-// MARK: - MetronomeEngine
+// MARK: - MetronomeEngine with Persistence
 
 class MetronomeEngine: ObservableObject {
     @Published var isPlaying = false
-    @Published var tempo: Double = 120
-    @Published var beatsPerMeasure: Int = 4 // Numerator of time signature
-    @Published var beatUnit: Int = 4        // Denominator of time signature (note value)
+    @Published var tempo: Double = 120 {
+        didSet {
+            // Save tempo whenever it changes
+            UserDefaults.standard.set(tempo, forKey: "SavedTempo")
+        }
+    }
+    @Published var beatsPerMeasure: Int = 4 { // Numerator of time signature
+        didSet {
+            // Save beats per measure whenever it changes
+            UserDefaults.standard.set(beatsPerMeasure, forKey: "SavedBeatsPerMeasure")
+        }
+    }
+    @Published var beatUnit: Int = 4 {        // Denominator of time signature (note value)
+        didSet {
+            // Save beat unit whenever it changes
+            UserDefaults.standard.set(beatUnit, forKey: "SavedBeatUnit")
+        }
+    }
     @Published var currentBeat: Int = 0
     @Published var showTimeSignatureMenu: Bool = false
+    
+    // Sound selection with persistence
+    @Published var selectedSoundName: String = "Snap" {
+        didSet {
+            // Save selected sound whenever it changes
+            UserDefaults.standard.set(selectedSoundName, forKey: "SavedSoundName")
+            // Reload audio players with new sound
+            setupAudioPlayers()
+        }
+    }
     
     // Constants for tempo range
     let minTempo: Double = 20
@@ -29,9 +55,44 @@ class MetronomeEngine: ObservableObject {
     private var audioSession: AVAudioSession?
     
     init() {
+        // Load saved settings before setting up audio
+        loadSavedSettings()
         setupAudioSession()
         setupAudioPlayers()
         calculateBeatInterval()
+    }
+    
+    // MARK: - Persistence Methods
+    
+    private func loadSavedSettings() {
+        // Load tempo (default to 120 if not saved)
+        let savedTempo = UserDefaults.standard.object(forKey: "SavedTempo") as? Double ?? 120.0
+        tempo = max(minTempo, min(maxTempo, savedTempo))
+        
+        // Load beats per measure (default to 4 if not saved)
+        let savedBeatsPerMeasure = UserDefaults.standard.object(forKey: "SavedBeatsPerMeasure") as? Int ?? 4
+        beatsPerMeasure = max(1, min(32, savedBeatsPerMeasure))
+        
+        // Load beat unit (default to 4 if not saved)
+        let savedBeatUnit = UserDefaults.standard.object(forKey: "SavedBeatUnit") as? Int ?? 4
+        let validBeatUnits = [1, 2, 4, 8, 16, 32]
+        beatUnit = validBeatUnits.contains(savedBeatUnit) ? savedBeatUnit : 4
+        
+        // Load selected sound (default to "Snap" if not saved)
+        let savedSoundName = UserDefaults.standard.string(forKey: "SavedSoundName") ?? "Snap"
+        selectedSoundName = savedSoundName
+        
+        print("📱 Loaded saved settings: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit) time signature, \(selectedSoundName) sound")
+    }
+    
+    func saveCurrentSettings() {
+        // Explicitly save all current settings
+        UserDefaults.standard.set(tempo, forKey: "SavedTempo")
+        UserDefaults.standard.set(beatsPerMeasure, forKey: "SavedBeatsPerMeasure")
+        UserDefaults.standard.set(beatUnit, forKey: "SavedBeatUnit")
+        UserDefaults.standard.set(selectedSoundName, forKey: "SavedSoundName")
+        
+        print("💾 Settings saved: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit), \(selectedSoundName) sound")
     }
     
     private func setupAudioSession() {
@@ -46,9 +107,12 @@ class MetronomeEngine: ObservableObject {
     }
     
     private func setupAudioPlayers() {
-        // Find the sound file
+        // Clear existing players
+        audioPlayers.removeAll()
+        
+        // Find the sound file based on selected sound
         let possibleExtensions = ["wav", "mp3", "aiff", "m4a"]
-        let possibleNames = ["Snap"]
+        let possibleNames = [selectedSoundName, selectedSoundName.lowercased(), selectedSoundName.uppercased()]
         
         var soundURL: URL? = nil
         
@@ -63,17 +127,31 @@ class MetronomeEngine: ObservableObject {
             if soundURL != nil { break }
         }
         
-        // If still nil, try locating the sound in the asset catalog
+        // If still nil, try common fallback sounds
+        if soundURL == nil {
+            let fallbackSounds = ["Snap", "bongo", "click", "tick"]
+            for fallback in fallbackSounds {
+                for ext in possibleExtensions {
+                    if let url = Bundle.main.url(forResource: fallback, withExtension: ext) {
+                        soundURL = url
+                        print("⚠️ Using fallback sound: \(fallback)")
+                        break
+                    }
+                }
+                if soundURL != nil { break }
+            }
+        }
+        
+        // If still nil, try locating any sound files in the bundle
         if soundURL == nil {
             print("Could not find sound file directly, trying alternative methods...")
             
-            // Try one more approach - look for any sound files in the bundle
             if let resourcePath = Bundle.main.resourcePath {
                 let fileManager = FileManager.default
                 do {
                     let files = try fileManager.contentsOfDirectory(atPath: resourcePath)
                     for file in files {
-                        if file.lowercased().contains("bongo") &&
+                        if (file.lowercased().contains("bongo") || file.lowercased().contains("snap") || file.lowercased().contains("click")) &&
                             (file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a")) {
                             soundURL = URL(fileURLWithPath: resourcePath).appendingPathComponent(file)
                             print("Found potential sound file: \(file)")
@@ -84,12 +162,6 @@ class MetronomeEngine: ObservableObject {
                     print("Error scanning bundle directory: \(error)")
                 }
             }
-        }
-        
-        // Final fallback - use system sound if possible
-        if soundURL == nil {
-            print("Still could not find sound file, attempting to use system sound...")
-            soundURL = Bundle.main.url(forResource: "click", withExtension: "wav")
         }
         
         // Create multiple audio players from the same sound for better performance
@@ -122,7 +194,7 @@ class MetronomeEngine: ObservableObject {
             }
             
             if !audioPlayers.isEmpty {
-                print("✅ Successfully created \(audioPlayers.count) audio players")
+                print("✅ Successfully created \(audioPlayers.count) audio players for \(selectedSoundName)")
             } else {
                 print("❌ No audio players were created successfully")
             }
@@ -235,6 +307,9 @@ class MetronomeEngine: ObservableObject {
         lastUpdateTime = 0
         currentBeat = 0
         
+        // Save settings when stopping (good time to persist state)
+        saveCurrentSettings()
+        
         // Deactivate audio session to save resources, but handle the error gracefully
         do {
             // Use a less strict deactivation option to avoid the error
@@ -335,5 +410,25 @@ class MetronomeEngine: ObservableObject {
         }
         
         print("🎼 Time signature updated to \(beatsPerMeasure)/\(beatUnit)")
+    }
+    
+    // Function to update sound selection
+    func updateSoundSelection(to soundName: String) {
+        selectedSoundName = soundName
+        print("🔊 Sound updated to: \(soundName)")
+    }
+    
+    // MARK: - App Lifecycle Methods
+    
+    func handleAppWillTerminate() {
+        // Save settings when app is about to terminate
+        saveCurrentSettings()
+        print("📱 App terminating - settings saved")
+    }
+    
+    func handleAppDidEnterBackground() {
+        // Save settings when app goes to background
+        saveCurrentSettings()
+        print("📱 App backgrounded - settings saved")
     }
 }
