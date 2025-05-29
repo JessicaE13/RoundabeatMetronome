@@ -19,7 +19,7 @@ struct MainTabView: View {
                         ContentView(metronome: metronome)
                         
                     case 2:
-                        SettingsView()
+                        SettingsView(metronome: metronome)
                         
                     default:
                         ContentView(metronome: metronome) // Also ensure default case shows ContentView
@@ -43,7 +43,7 @@ struct MainTabView: View {
         VStack(spacing: 0) {
             // Subtle top border
             Rectangle()
-                .fill(Color.white.opacity(0.8))
+                .fill(Color.white.opacity(0.25))
                 .frame(height: 0.5)
             
             HStack(spacing: 0) {

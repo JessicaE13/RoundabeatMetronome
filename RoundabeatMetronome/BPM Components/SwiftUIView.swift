@@ -11,19 +11,15 @@ struct SwiftUIView: View {
     var body: some View {
         ZStack {
             
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.blue)
-                .frame(width: 200, height: 100)
+            DarkGrayBackgroundView()
             
-            Rectangle()
-                .fill(Color.blue)
-                .frame(width: 200, height: 1)
-                .offset(y: 30)
-        
-            Rectangle()
-                .fill(Color.blue)
-                .frame(width: 200, height: 1)
-                .offset(y: -30)
+            Circle()
+                .fill(Color.black)
+                .frame(width: 200, height: 200)
+            
+            Circle()
+                .stroke(Color.gray)
+                .frame(width: 190, height: 190)
             
         }
     }

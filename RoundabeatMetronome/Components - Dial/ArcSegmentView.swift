@@ -26,7 +26,7 @@ struct ArcSegmentView: View {
                 
                 // Outermost soft glow (largest radius)
                 arcPath
-                    .stroke(Color.white.opacity(0.15),
+                    .stroke(Color.white.opacity(0.5),
                             style: StrokeStyle(lineWidth: lineWidth + 20, lineCap: .round))
                     .blur(radius: 15)
                 
@@ -64,12 +64,12 @@ struct ArcSegmentView: View {
               
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color(red: 15/255, green: 15/255, blue: 16/255).opacity(0.8))
+                    .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
                     .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 1.5)
-                    .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
+                    .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.75), radius: 0.5, x: 0, y: 0)
                 
             }
         }
@@ -79,20 +79,20 @@ struct ArcSegmentView: View {
 
 #Preview {
     ZStack {
-Rectangle()
-            .fill(Color.gray)
+DarkGrayBackgroundView()
+        
         GeometryReader { geometry in
             ArcSegmentView(
                 center: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2),
-                radius: 80,
+                radius: 120,
                 startAngle: 225,
                 endAngle: 315,
-                lineWidth: 8,
+                lineWidth: 25,
                 isActive: false, // Changed to true to show LED effect
                 isFirstBeat: true,
                 gapWidth: 10
             )
         }
     }
-    .frame(width: 300, height: 300)
+
 }

@@ -49,14 +49,36 @@ struct DialControl: View {
         ZStack {
             // Main Circle Background - darker color
             Circle()
+                .fill(      LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0/255, green: 0/255, blue: 1/255).opacity(0.85),
+                        Color(red: 0/255, green: 0/255, blue: 1/255).opacity(0.95)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                            )
+                .frame(width: dialSize+13, height: dialSize+13)
+
+            Circle()
                 .fill(Color(red: 7/255, green: 7/255, blue: 8/255))
                 .frame(width: dialSize, height: dialSize)
                 .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
 
-            // Main Circle Dark Outline - subtle inner shadow effect
+ 
             Circle()
-                .stroke(Color(red: 2/255, green: 2/255, blue: 3/255), lineWidth: 2.0)
-                .frame(width: dialSize, height: dialSize)
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 65/255, green: 65/255, blue: 66/255).opacity(0.4),
+                            Color(red: 65/255, green: 65/255, blue: 66/255).opacity(0.35)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.0
+                )
+                .frame(width: dialSize + 2, height: dialSize + 2)
 
             // Outer highlight ring - simulates light hitting the raised edge
             Circle()
@@ -71,7 +93,7 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1.0
+                    lineWidth: 0.5
                 )
                 .frame(width: dialSize + 2, height: dialSize + 2)
 
@@ -88,7 +110,7 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.8
+                    lineWidth: 2.8
                 )
                 .frame(width: dialSize - 2, height: dialSize - 2)
             
@@ -138,7 +160,7 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.5
+                    lineWidth: 0.75
                 )
                 .frame(width: knobSize + 3.5, height: knobSize + 3.5)
             
@@ -155,7 +177,7 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.5
+                    lineWidth: 0.75
                 )
                 .frame(width: knobSize - 3, height: knobSize - 3)
             

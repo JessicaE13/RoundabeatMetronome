@@ -109,7 +109,7 @@ struct BPMViewOld2: View {
             .padding(.top, 40)
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView()
+            SettingsView(metronome: metronome)
         }
     }
 }

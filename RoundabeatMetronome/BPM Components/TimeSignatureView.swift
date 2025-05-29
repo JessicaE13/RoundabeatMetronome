@@ -8,7 +8,6 @@ struct TimeSignatureView: View {
     // Tap tempo state
     @State private var lastTapTime: Date?
     @State private var tapTempoBuffer: [TimeInterval] = []
-    @State private var tapCount: Int = 0
     
     var body: some View {
         ZStack {
@@ -21,8 +20,8 @@ struct TimeSignatureView: View {
                     showTimeSignaturePicker = true
                 }) {
                     HStack(spacing: 2) {
-                        Text("TIME")
-                            .font(.system(size: 8, weight: .medium))
+                        Text("TIME  ")
+                            .font(.system(size: 12, weight: .medium))
                             .kerning(1.2)
                             .foregroundColor(Color.white.opacity(0.4))
                         
@@ -47,7 +46,14 @@ struct TimeSignatureView: View {
                             .fill(Color.black.opacity(0.4))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                    .stroke(LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white.opacity(0.25),
+                                            Color.white.opacity(0.1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ), lineWidth: 1)
                             )
                     )
                 }
@@ -60,8 +66,8 @@ struct TimeSignatureView: View {
                     // Add rhythm selection logic here
                 }) {
                     HStack(spacing: 6) {
-                        Text("RHYTHM")
-                            .font(.system(size: 8, weight: .medium))
+                        Text("SUB DIV.")
+                            .font(.system(size: 12, weight: .medium))
                             .kerning(1.2)
                             .foregroundColor(Color.white.opacity(0.4))
                         
@@ -75,7 +81,14 @@ struct TimeSignatureView: View {
                             .fill(Color.black.opacity(0.4))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                    .stroke(LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white.opacity(0.25),
+                                            Color.white.opacity(0.1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ), lineWidth: 1)
                             )
                     )
                 }
@@ -87,48 +100,34 @@ struct TimeSignatureView: View {
                 }) {
                     HStack(spacing: 6) {
                         Text("TAP")
-                            .font(.system(size: 8, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .kerning(1.2)
                             .foregroundColor(Color.white.opacity(0.4))
                         
-                        // Show tap count or tempo icon
-                        if tapCount > 0 {
-                            Text("\(tapCount)")
-                                .font(.custom("Kanit-Regular", size: 14))
-                                .kerning(0.8)
-                                .foregroundColor(Color.white.opacity(0.9))
-                                .transition(.scale.combined(with: .opacity))
-                        } else {
-                            Image(systemName: "hand.tap")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color.white.opacity(0.9))
-                        }
+                        Image(systemName: "hand.tap")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color.white.opacity(0.9))
                     }
                     .frame(maxWidth: .infinity, minHeight: 38)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(tapCount > 0 ? Color.white.opacity(0.15) : Color.black.opacity(0.4))
+                            .fill(Color.black.opacity(0.4))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(tapCount > 0 ? Color.white.opacity(0.25) : Color.white.opacity(0.15), lineWidth: 1)
+                                    .stroke(LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white.opacity(0.25),
+                                            Color.white.opacity(0.1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    ), lineWidth: 1)
                             )
                     )
-                    .scaleEffect(tapCount > 0 ? 1.02 : 1.0)
-                    .animation(.easeInOut(duration: 0.1), value: tapCount)
                 }
                 .contentShape(Rectangle())
             }
             .padding(.horizontal, 8) // Match the padding from BPMView
-        }
-        .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
-            // Reset tap count after 3 seconds of inactivity
-            if let lastTap = lastTapTime, Date().timeIntervalSince(lastTap) > 3.0 {
-                withAnimation(.easeOut(duration: 0.3)) {
-                    tapCount = 0
-                }
-                tapTempoBuffer.removeAll()
-                lastTapTime = nil
-            }
         }
     }
     
@@ -149,11 +148,6 @@ struct TimeSignatureView: View {
                 // Add to buffer
                 tapTempoBuffer.append(timeDiff)
                 
-                // Increment tap count with animation
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    tapCount += 1
-                }
-                
                 // Keep only the last 4 taps for accuracy
                 if tapTempoBuffer.count > 4 {
                     tapTempoBuffer.removeFirst()
@@ -171,24 +165,13 @@ struct TimeSignatureView: View {
                     metronome.updateTempo(to: roundedTempo)
                 }
             } else {
-                // If tap is too fast or too slow, reset buffer but keep visual feedback
+                // If tap is too fast or too slow, reset buffer
                 tapTempoBuffer.removeAll()
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    tapCount = 1 // Reset to 1 since this is the first valid tap
-                }
             }
             
             // If tap is way too fast, reset everything
             if timeDiff < 0.25 {
                 tapTempoBuffer.removeAll()
-                withAnimation(.easeOut(duration: 0.3)) {
-                    tapCount = 0
-                }
-            }
-        } else {
-            // First tap
-            withAnimation(.easeInOut(duration: 0.15)) {
-                tapCount = 1
             }
         }
         
@@ -199,7 +182,7 @@ struct TimeSignatureView: View {
 
 #Preview {
     ZStack {
-        BackgroundView()
+        DarkGrayBackgroundView()
         TimeSignatureView(
             metronome: MetronomeEngine(),
             showTimeSignaturePicker: .constant(false),

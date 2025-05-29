@@ -28,7 +28,7 @@ struct BPMView: View {
         .padding(.horizontal, 20)
         .padding(.top, 40)
         .sheet(isPresented: $showSettings) {
-            SettingsView()
+            SettingsView(metronome: metronome)
         }
         .onAppear {
             previousTempo = metronome.tempo

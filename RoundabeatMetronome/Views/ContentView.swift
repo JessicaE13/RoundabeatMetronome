@@ -29,7 +29,7 @@ struct ContentView: View {
                     
                     // Top spacing from safe area
                     Spacer()
-                        .frame(height: geometry.safeAreaInsets.top + 32)
+                        .frame(height: geometry.safeAreaInsets.top + 40)
                     
                     // BPM display section
                     HStack { // Wrap in HStack to ensure proper centering
@@ -57,7 +57,9 @@ struct ContentView: View {
                         Spacer()
                     }
                     .padding(.horizontal, 24)
-                    .padding(.vertical, 32)
+                    .padding(.top, 8)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
                     
                     // Spacer between logo and dial
                     Spacer()
