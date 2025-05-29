@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var isEditingTempo = false
     @State private var showTimeSignaturePicker = false
     @State private var showBPMKeypad = false
+    @State private var showSubdivisionPicker = false // Added for subdivision picker
     @State private var previousTempo: Double = 120
     
     init(metronome: MetronomeEngine) {
@@ -92,8 +93,8 @@ struct ContentView: View {
                 // Initialize the previous tempo state with current tempo
                 previousTempo = metronome.tempo
             }
-            .blur(radius: showTimeSignaturePicker || showBPMKeypad ? 3 : 0)
-            .disabled(showTimeSignaturePicker || showBPMKeypad)
+            .blur(radius: showTimeSignaturePicker || showBPMKeypad || showSubdivisionPicker ? 3 : 0)
+            .disabled(showTimeSignaturePicker || showBPMKeypad || showSubdivisionPicker)
             
             // Time signature picker overlay
             if showTimeSignaturePicker {
@@ -116,10 +117,21 @@ struct ContentView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
             }
+            
+            // Subdivision picker overlay
+            if showSubdivisionPicker {
+                SubdivisionPickerView(
+                    isShowingPicker: $showSubdivisionPicker,
+                    selectedSubdivision: .constant(.quarter)
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .zIndex(1)
+            }
         }
         .ignoresSafeArea(.all, edges: .all)
-       // .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
-        //.animation(.spring(response: 0.3), value: showBPMKeypad)
+        .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
+        .animation(.spring(response: 0.3), value: showBPMKeypad)
+        .animation(.spring(response: 0.3), value: showSubdivisionPicker)
     }
     
     // Function to prepare the audio system for low latency
