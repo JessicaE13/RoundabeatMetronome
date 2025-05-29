@@ -39,7 +39,7 @@ class MetronomeEngine: ObservableObject {
     
     // Constants for tempo range
     let minTempo: Double = 20
-    let maxTempo: Double = 300
+    let maxTempo: Double = 400
     
     // Audio player pool for more responsive sound
     private var audioPlayers: [AVAudioPlayer] = []

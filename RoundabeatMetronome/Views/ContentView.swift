@@ -117,16 +117,7 @@ struct ContentView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
             }
-            
-            // Subdivision picker overlay
-            if showSubdivisionPicker {
-                SubdivisionPickerView(
-                    isShowingPicker: $showSubdivisionPicker,
-                    selectedSubdivision: .constant(.quarter)
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .zIndex(1)
-            }
+    
         }
         .ignoresSafeArea(.all, edges: .all)
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
