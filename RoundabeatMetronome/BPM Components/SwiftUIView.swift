@@ -11,15 +11,17 @@ struct SwiftUIView: View {
     var body: some View {
         ZStack {
             
-            DarkGrayBackgroundView()
             
             Circle()
-                .fill(Color.black)
+                .fill(Color.gray)
                 .frame(width: 200, height: 200)
             
-            Circle()
-                .stroke(Color.gray)
-                .frame(width: 190, height: 190)
+            
+            Image("EighthNote")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 25)
+                .foregroundStyle(Color.white)
             
         }
     }

@@ -70,8 +70,8 @@ struct DialControl: View {
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color(red: 65/255, green: 65/255, blue: 66/255).opacity(0.4),
-                            Color(red: 65/255, green: 65/255, blue: 66/255).opacity(0.35)
+                            Color(red: 105/255, green: 105/255, blue: 106/255).opacity(0.4),
+                            Color(red: 105/255, green: 105/255, blue: 106/255).opacity(0.35)
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -116,8 +116,8 @@ struct DialControl: View {
             
             // Rotating indicator line - shows current position
             Rectangle()
-                .fill(Color.white.opacity(0.8))
-                .frame(width: 3, height: 20)
+                .fill(Color.white.opacity(0.5))
+                .frame(width: 3, height: 16)
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 0)
                 .offset(y: -(dialSize / 2 - 14))
                 .rotationEffect(Angle(degrees: dialRotation))

@@ -43,7 +43,7 @@ struct MainTabView: View {
         VStack(spacing: 0) {
             // Subtle top border
             Rectangle()
-                .fill(Color.white.opacity(0.25))
+                .fill(Color.white.opacity(0.1))
                 .frame(height: 0.5)
             
             HStack(spacing: 0) {

@@ -71,6 +71,8 @@ struct TimeSignatureView: View {
                             .kerning(1.2)
                             .foregroundColor(Color.white.opacity(0.4))
                         
+           
+                        
                         Image(systemName: "music.note")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color.white.opacity(0.9))
