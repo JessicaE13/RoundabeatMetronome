@@ -82,6 +82,7 @@ struct SoundsView: View {
             VStack(spacing: 0) {
                 // Header
                 headerView
+                    .padding(.top, 24)
                 
                 // Category Filter
                 categoryFilterView
@@ -111,7 +112,7 @@ struct SoundsView: View {
                 .padding(.top, 20)
             
             Text("Choose Your Beat")
-                .font(.custom("Kanit-SemiBold", size: 24))
+                .font(.system(size: 24))
                 .kerning(1)
                 .foregroundColor(Color.white.opacity(0.9))
                 .padding(.bottom, 16)
@@ -153,7 +154,7 @@ struct SoundsView: View {
                 }
                 
                 Text(title)
-                    .font(.custom("Kanit-Medium", size: 12))
+                    .font(.system(size: 12))
                     .kerning(0.5)
             }
             .foregroundColor(isSelected ? Color.white.opacity(0.9) : Color.white.opacity(0.6))
@@ -215,7 +216,7 @@ struct SoundsView: View {
                 // Sound info
                 VStack(alignment: .leading, spacing: 4) {
                     Text(sound.displayName)
-                        .font(.custom("Kanit-Medium", size: 16))
+                        .font(.system(size: 16))
                         .kerning(0.5)
                         .foregroundColor(isSelected ? Color.white.opacity(0.9) : Color.white.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -311,7 +312,7 @@ struct SoundsView: View {
                         .foregroundColor(Color.white.opacity(0.4))
                     
                     Text(metronome.selectedSoundName)
-                        .font(.custom("Kanit-Medium", size: 16))
+                        .font(.system(size: 16))
                         .kerning(0.5)
                         .foregroundColor(Color.white.opacity(0.9))
                 }
@@ -336,7 +337,7 @@ struct SoundsView: View {
                             .font(.system(size: 14, weight: .medium))
                         
                         Text(metronome.isPlaying ? "PLAYING" : "PREVIEW")
-                            .font(.custom("Kanit-Medium", size: 12))
+                            .font(.system(size: 12))
                             .kerning(0.5)
                     }
                     .foregroundColor(metronome.isPlaying ? Color.green.opacity(0.9) : Color.white.opacity(0.9))

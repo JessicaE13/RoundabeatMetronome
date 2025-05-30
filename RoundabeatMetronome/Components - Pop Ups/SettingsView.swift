@@ -28,7 +28,7 @@ struct SettingsView: View {
                 }
                 
                 Section(header: Text("Visual Options")) {
-                    Toggle("Highlight First Beat", isOn: .constant(true))
+                    Toggle("Highlight First Beat", isOn: $metronome.highlightFirstBeat)
                 }
                 
                 Section(header: Text("About")) {

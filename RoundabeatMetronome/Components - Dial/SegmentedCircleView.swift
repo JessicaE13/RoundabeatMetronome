@@ -6,6 +6,7 @@ struct SegmentedCircleView: View {
     let isPlaying: Bool
     let diameter: CGFloat
     let lineWidth: CGFloat
+    let highlightFirstBeat: Bool // New parameter
     
     private var radius: CGFloat { (diameter - lineWidth) / 2 }
     private let gapWidthPoints: CGFloat = 37.0
@@ -15,13 +16,15 @@ struct SegmentedCircleView: View {
         currentBeat: Int,
         isPlaying: Bool,
         diameter: CGFloat,
-        lineWidth: CGFloat
+        lineWidth: CGFloat,
+        highlightFirstBeat: Bool = true
     ) {
         self.beatsPerMeasure = beatsPerMeasure
         self.currentBeat = currentBeat
         self.isPlaying = isPlaying
         self.diameter = diameter
         self.lineWidth = lineWidth
+        self.highlightFirstBeat = highlightFirstBeat
     }
     
     var body: some View {
@@ -36,7 +39,8 @@ struct SegmentedCircleView: View {
                     lineWidth: lineWidth,
                     isActive: beatIndex == currentBeat && isPlaying,
                     isFirstBeat: beatIndex == 0,
-                    gapWidth: gapWidthPoints
+                    gapWidth: gapWidthPoints,
+                    highlightFirstBeat: highlightFirstBeat
                 )
             }
         }
@@ -68,7 +72,8 @@ extension SegmentedCircleView {
             currentBeat: metronome.currentBeat,
             isPlaying: metronome.isPlaying,
             diameter: diameter,
-            lineWidth: lineWidth
+            lineWidth: lineWidth,
+            highlightFirstBeat: metronome.highlightFirstBeat
         )
     }
 }
@@ -76,9 +81,10 @@ extension SegmentedCircleView {
 #Preview {
     SegmentedCircleView(
         beatsPerMeasure: 4,
-        currentBeat: 1,
+        currentBeat: 0, // Set to 0 to show first beat
         isPlaying: true,
         diameter: 200,
-        lineWidth: 10
+        lineWidth: 10,
+        highlightFirstBeat: true
     )
 }

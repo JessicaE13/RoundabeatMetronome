@@ -9,6 +9,7 @@ struct ArcSegmentView: View {
     let isActive: Bool
     let isFirstBeat: Bool
     let gapWidth: CGFloat
+    let highlightFirstBeat: Bool // New parameter
    
     var body: some View {
         ZStack {
@@ -22,42 +23,58 @@ struct ArcSegmentView: View {
             }
 
             if isActive {
+                // Determine colors based on first beat highlighting
+                let shouldUseNeonMagenta = isFirstBeat && highlightFirstBeat
+                let primaryColor = shouldUseNeonMagenta ? Color(red: 0.7, green: 0.6, blue: 0.8) : Color.white // Pale subdued purple-magenta
+                
                 // LED-style glow effect with multiple layers
                 
-                // Outermost soft glow (largest radius)
+                // Outermost soft glow (largest radius) - enhanced for neon magenta
                 arcPath
-                    .stroke(Color.white.opacity(0.5),
-                            style: StrokeStyle(lineWidth: lineWidth + 20, lineCap: .round))
-                    .blur(radius: 15)
+                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.6 : 0.5),
+                            style: StrokeStyle(lineWidth: lineWidth + (shouldUseNeonMagenta ? 25 : 20), lineCap: .round))
+                    .blur(radius: shouldUseNeonMagenta ? 18 : 15)
                 
-                // Middle glow layer
+                // Middle glow layer - more intense for neon magenta
                 arcPath
-                    .stroke(Color.white.opacity(0.3),
-                            style: StrokeStyle(lineWidth: lineWidth + 12, lineCap: .round))
-                    .blur(radius: 8)
+                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.4 : 0.3),
+                            style: StrokeStyle(lineWidth: lineWidth + (shouldUseNeonMagenta ? 15 : 12), lineCap: .round))
+                    .blur(radius: shouldUseNeonMagenta ? 10 : 8)
                 
-                // Inner glow
+                // Inner glow - vibrant for neon magenta
                 arcPath
-                    .stroke(Color.white.opacity(0.6),
-                            style: StrokeStyle(lineWidth: lineWidth + 4, lineCap: .round))
-                    .blur(radius: 3)
+                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.8 : 0.6),
+                            style: StrokeStyle(lineWidth: lineWidth + (shouldUseNeonMagenta ? 6 : 4), lineCap: .round))
+                    .blur(radius: shouldUseNeonMagenta ? 4 : 3)
                 
-                // Core LED light - bright and crisp
+                // Core LED light - bright and crisp with enhanced magenta gradient
                 arcPath
                     .stroke(
                         LinearGradient(
-                            colors: [Color.white, Color.white.opacity(0.9)],
+                            colors: shouldUseNeonMagenta ?
+                                [Color(red: 0.75, green: 0.65, blue: 0.85), Color(red: 0.65, green: 0.55, blue: 0.75)] :
+                                [Color.white, Color.white.opacity(0.9)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                     )
-                    .shadow(color: Color.white.opacity(0.8), radius: 2, x: 0, y: 0)
+                    .shadow(color: primaryColor.opacity(shouldUseNeonMagenta ? 0.6 : 0.8),
+                           radius: shouldUseNeonMagenta ? 3 : 2, x: 0, y: 0)
                 
-                // Inner highlight for extra LED brightness
+                // Inner highlight for extra LED brightness - more pronounced for magenta
                 arcPath
-                    .stroke(Color.white.opacity(0.9),
-                            style: StrokeStyle(lineWidth: lineWidth * 0.3, lineCap: .round))
+                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.7 : 0.9),
+                            style: StrokeStyle(lineWidth: lineWidth * (shouldUseNeonMagenta ? 0.4 : 0.3), lineCap: .round))
+                
+                // Additional subtle glow effect for pale magenta first beat
+                if shouldUseNeonMagenta {
+                    // Extra outer glow for subtle neon effect - using the pale purple color
+                    arcPath
+                        .stroke(Color(red: 0.68, green: 0.58, blue: 0.78).opacity(0.2),
+                                style: StrokeStyle(lineWidth: lineWidth + 25, lineCap: .round))
+                        .blur(radius: 15)
+                }
                 
             } else {
                 // Inactive state - subtle outline
@@ -79,7 +96,7 @@ struct ArcSegmentView: View {
 
 #Preview {
     ZStack {
-DarkGrayBackgroundView()
+        DarkGrayBackgroundView()
         
         GeometryReader { geometry in
             ArcSegmentView(
@@ -88,11 +105,11 @@ DarkGrayBackgroundView()
                 startAngle: 225,
                 endAngle: 315,
                 lineWidth: 25,
-                isActive: false, // Changed to true to show LED effect
+                isActive: true, // Changed to true to show LED effect
                 isFirstBeat: true,
-                gapWidth: 10
+                gapWidth: 10,
+                highlightFirstBeat: true // Added to show neon magenta effect
             )
         }
     }
-
 }

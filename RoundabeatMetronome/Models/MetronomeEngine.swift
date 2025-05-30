@@ -38,6 +38,15 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
+    // Highlight first beat setting with persistence
+    @Published var highlightFirstBeat: Bool = true {
+        didSet {
+            // Save highlight first beat setting whenever it changes
+            UserDefaults.standard.set(highlightFirstBeat, forKey: "SavedHighlightFirstBeat")
+            print("🎨 Highlight first beat: \(highlightFirstBeat ? "enabled" : "disabled")")
+        }
+    }
+    
     // Constants for tempo range
     let minTempo: Double = 20
     let maxTempo: Double = 400
@@ -85,7 +94,11 @@ class MetronomeEngine: ObservableObject {
         let savedSoundName = UserDefaults.standard.string(forKey: "SavedSoundName") ?? "Snap"
         selectedSoundName = savedSoundName
         
-        print("📱 Loaded saved settings: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit) time signature, \(selectedSoundName) sound")
+        // Load highlight first beat setting (default to true if not saved)
+        let savedHighlightFirstBeat = UserDefaults.standard.object(forKey: "SavedHighlightFirstBeat") as? Bool ?? true
+        highlightFirstBeat = savedHighlightFirstBeat
+        
+        print("📱 Loaded saved settings: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit) time signature, \(selectedSoundName) sound, highlight first beat: \(highlightFirstBeat)")
     }
     
     func saveCurrentSettings() {
@@ -94,8 +107,9 @@ class MetronomeEngine: ObservableObject {
         UserDefaults.standard.set(beatsPerMeasure, forKey: "SavedBeatsPerMeasure")
         UserDefaults.standard.set(beatUnit, forKey: "SavedBeatUnit")
         UserDefaults.standard.set(selectedSoundName, forKey: "SavedSoundName")
+        UserDefaults.standard.set(highlightFirstBeat, forKey: "SavedHighlightFirstBeat")
         
-        print("💾 Settings saved: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit), \(selectedSoundName) sound")
+        print("💾 Settings saved: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit), \(selectedSoundName) sound, highlight first beat: \(highlightFirstBeat)")
     }
     
     private func setupAudioSession() {
