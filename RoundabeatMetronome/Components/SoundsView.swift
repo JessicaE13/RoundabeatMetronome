@@ -193,7 +193,17 @@ struct SoundsView: View {
             // Update the metronome's sound selection
             metronome.updateSoundSelection(to: sound.name)
             selectedSound = sound
-            playSound(sound)
+            
+            // Only play preview if metronome is NOT currently playing
+            if !metronome.isPlaying {
+                playSound(sound)
+            } else {
+                // If metronome is playing, just provide haptic feedback
+                if #available(iOS 10.0, *) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                }
+                print("🔊 Sound updated to '\(sound.name)' - preview skipped (metronome playing)")
+            }
         }) {
             HStack(spacing: 16) {
                 // Sound category icon
@@ -218,10 +228,27 @@ struct SoundsView: View {
                 
                 Spacer()
                 
-                // Play/Playing indicator
+                // Play/Playing indicator - show different states based on metronome
                 HStack(spacing: 8) {
-                    if isCurrentlyPlaying {
-                        // Animated playing indicator
+                    if metronome.isPlaying && isSelected {
+                        // Show that this sound is actively being used by the metronome
+                        HStack(spacing: 2) {
+                            ForEach(0..<3) { index in
+                                Rectangle()
+                                    .fill(Color.green.opacity(0.8))
+                                    .frame(width: 3, height: 12)
+                                    .scaleEffect(y: 1.0)
+                                    .animation(
+                                        Animation.easeInOut(duration: 0.5)
+                                            .repeatForever()
+                                            .delay(Double(index) * 0.1),
+                                        value: true
+                                    )
+                            }
+                        }
+                        .frame(width: 20, height: 20)
+                    } else if isCurrentlyPlaying && !metronome.isPlaying {
+                        // Show preview playing indicator (only when metronome is not playing)
                         HStack(spacing: 2) {
                             ForEach(0..<3) { index in
                                 Rectangle()
@@ -238,15 +265,16 @@ struct SoundsView: View {
                         }
                         .frame(width: 20, height: 20)
                     } else {
-                        Image(systemName: "play.circle")
+                        // Show play button
+                        Image(systemName: metronome.isPlaying ? "waveform" : "play.circle")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.6))
+                            .foregroundColor(metronome.isPlaying && isSelected ? Color.green.opacity(0.8) : Color.white.opacity(0.6))
                     }
                     
                     if isSelected {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.8))
+                            .foregroundColor(metronome.isPlaying ? Color.green.opacity(0.8) : Color.white.opacity(0.8))
                     }
                 }
             }
@@ -291,29 +319,39 @@ struct SoundsView: View {
                 Spacer()
                 
                 Button(action: {
-                    if let currentSound = SoundsView.defaultSounds.first(where: { $0.name == metronome.selectedSoundName }) {
-                        playSound(currentSound)
+                    // Only preview if metronome is not playing
+                    if !metronome.isPlaying {
+                        if let currentSound = SoundsView.defaultSounds.first(where: { $0.name == metronome.selectedSoundName }) {
+                            playSound(currentSound)
+                        }
+                    } else {
+                        // Provide feedback that preview is disabled during playback
+                        if #available(iOS 10.0, *) {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }
                     }
                 }) {
                     HStack(spacing: 8) {
-                        Image(systemName: "play.fill")
+                        Image(systemName: metronome.isPlaying ? "waveform" : "play.fill")
                             .font(.system(size: 14, weight: .medium))
-                        Text("PREVIEW")
+                        
+                        Text(metronome.isPlaying ? "PLAYING" : "PREVIEW")
                             .font(.custom("Kanit-Medium", size: 12))
                             .kerning(0.5)
                     }
-                    .foregroundColor(Color.white.opacity(0.9))
+                    .foregroundColor(metronome.isPlaying ? Color.green.opacity(0.9) : Color.white.opacity(0.9))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.white.opacity(0.15))
+                            .fill(metronome.isPlaying ? Color.green.opacity(0.15) : Color.white.opacity(0.15))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                                    .stroke(metronome.isPlaying ? Color.green.opacity(0.25) : Color.white.opacity(0.25), lineWidth: 1)
                             )
                     )
                 }
+                .disabled(metronome.isPlaying) // Disable the button when metronome is playing
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
@@ -366,8 +404,8 @@ struct SoundsView: View {
             
             // Auto-stop playing indicator after a reasonable time if no delegate callback
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                if isPlaying {
-                    isPlaying = false
+                if self.isPlaying {
+                    self.isPlaying = false
                 }
             }
             

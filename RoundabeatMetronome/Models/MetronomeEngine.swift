@@ -141,40 +141,122 @@ class MetronomeEngine: ObservableObject {
     }
     
     private func swapAudioPlayersOnNextBeat() {
-        // Use a timer to check for the next beat and swap players then
-        Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] timer in
+        // Use a timer to check for the optimal swap timing
+        Timer.scheduledTimer(withTimeInterval: 0.001, repeats: true) { [weak self] timer in
             guard let self = self else {
                 timer.invalidate()
                 return
             }
             
-            // Check if we're close to a beat boundary (within 10ms)
             let currentTime = CACurrentMediaTime()
             let timeTillNextBeat = self.nextBeatTime - currentTime
             
-            if timeTillNextBeat <= 0.01 || timeTillNextBeat > self.beatInterval {
-                // We're at or very close to a beat, safe to swap
+            // Swap right after a beat has been triggered but before the next one
+            // This gives us a full beat interval to settle the new players
+            if timeTillNextBeat <= -0.002 && timeTillNextBeat >= -0.020 {
                 if !self.pendingAudioPlayers.isEmpty {
+                    // Ensure all new players are fully prepared and synchronized
+                    for (index, player) in self.pendingAudioPlayers.enumerated() {
+                        player.prepareToPlay()
+                        player.currentTime = 0
+                        
+                        // Set the correct rate for current tempo
+                        let minTempoForRateAdjustment: Double = 80
+                        let maxTempoForRateAdjustment: Double = 200
+                        
+                        if self.tempo >= minTempoForRateAdjustment && self.tempo <= maxTempoForRateAdjustment {
+                            player.rate = Float(self.tempo / 120.0)
+                        } else {
+                            player.rate = 1.0
+                        }
+                    }
+                    
+                    // Stop any currently playing sounds from old players
+                    for player in self.audioPlayers {
+                        if player.isPlaying {
+                            player.stop()
+                        }
+                    }
+                    
+                    // Swap to new players
+                    self.audioPlayers = self.pendingAudioPlayers
+                    self.pendingAudioPlayers.removeAll()
+                    
+                    // Reset player index to start fresh with new players
+                    self.currentPlayerIndex = 0
+                    self.isReloadingAudioPlayers = false
+                    
+                    print("🔄 Audio players swapped and synchronized at beat boundary")
+                }
+                timer.invalidate()
+                return
+            }
+            
+            // Safety fallback if we miss the optimal timing window
+            if timeTillNextBeat < -self.beatInterval * 0.5 {
+                if !self.pendingAudioPlayers.isEmpty {
+                    // Prepare new players
+                    for player in self.pendingAudioPlayers {
+                        player.prepareToPlay()
+                        player.currentTime = 0
+                        
+                        let minTempoForRateAdjustment: Double = 80
+                        let maxTempoForRateAdjustment: Double = 200
+                        
+                        if self.tempo >= minTempoForRateAdjustment && self.tempo <= maxTempoForRateAdjustment {
+                            player.rate = Float(self.tempo / 120.0)
+                        } else {
+                            player.rate = 1.0
+                        }
+                    }
+                    
+                    // Stop old players
+                    for player in self.audioPlayers {
+                        if player.isPlaying {
+                            player.stop()
+                        }
+                    }
+                    
                     self.audioPlayers = self.pendingAudioPlayers
                     self.pendingAudioPlayers.removeAll()
                     self.currentPlayerIndex = 0
                     self.isReloadingAudioPlayers = false
-                    print("🔄 Audio players swapped smoothly during beat")
+                    
+                    print("🔄 Audio players swapped (safety fallback with sync)")
                 }
                 timer.invalidate()
             }
         }
         
-        // Failsafe: if we can't swap within 2 seconds, force the swap
+        // Ultimate failsafe
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
             guard let self = self else { return }
             
             if self.isReloadingAudioPlayers && !self.pendingAudioPlayers.isEmpty {
+                // Final preparation
+                for player in self.pendingAudioPlayers {
+                    player.prepareToPlay()
+                    player.currentTime = 0
+                    
+                    if self.tempo >= 80 && self.tempo <= 200 {
+                        player.rate = Float(self.tempo / 120.0)
+                    } else {
+                        player.rate = 1.0
+                    }
+                }
+                
+                for player in self.audioPlayers {
+                    if player.isPlaying {
+                        player.stop()
+                    }
+                }
+                
                 self.audioPlayers = self.pendingAudioPlayers
                 self.pendingAudioPlayers.removeAll()
                 self.currentPlayerIndex = 0
                 self.isReloadingAudioPlayers = false
-                print("🔄 Audio players swapped (failsafe)")
+                
+                print("🔄 Audio players swapped (emergency failsafe with full sync)")
             }
         }
     }
@@ -257,12 +339,55 @@ class MetronomeEngine: ObservableObject {
                     // Crucial: configure for low latency playback
                     player.volume = 1.0
                     player.enableRate = true  // Allow tempo adjustment
-                    player.prepareToPlay()    // Pre-buffer the audio
                     player.numberOfLoops = 0  // Single shot playback
                     
+                    // CRITICAL: Properly prepare and prime the player for immediate playback
+                    player.prepareToPlay()    // Pre-buffer the audio
+                    
+                    // Set the correct playback rate to match current tempo
+                    let minTempoForRateAdjustment: Double = 80
+                    let maxTempoForRateAdjustment: Double = 200
+                    
+                    if tempo >= minTempoForRateAdjustment && tempo <= maxTempoForRateAdjustment {
+                        player.rate = Float(tempo / 120.0)
+                    } else {
+                        player.rate = 1.0
+                    }
+                    
+                    // IMPORTANT: Prime the audio engine by playing a silent/zero-length sound
+                    // This ensures the audio subsystem is ready for precise timing
+                    let originalVolume = player.volume
+                    player.volume = 0.0  // Make it silent
+                    player.play()        // Start and immediately stop to prime the engine
+                    player.stop()
+                    player.currentTime = 0
+                    player.volume = originalVolume  // Restore volume
+                    
+                    // Prepare again after priming
+                    player.prepareToPlay()
+                    
                     newPlayers.append(player)
+                    
                 } catch {
                     print("❌ Failed to initialize audio player \(i + 1): \(error)")
+                }
+            }
+            
+            // Additional warming: If metronome is currently playing, synchronize with beat timing
+            if isPlaying && !newPlayers.isEmpty {
+                // Calculate when the next beat should occur
+                let currentTime = CACurrentMediaTime()
+                let timeToNextBeat = nextBeatTime - currentTime
+                
+                // Pre-warm the first player to be ready at exactly the right time
+                if timeToNextBeat > 0.01 { // If we have enough time
+                    DispatchQueue.main.asyncAfter(deadline: .now() + max(0, timeToNextBeat - 0.005)) {
+                        // Pre-position the first player to be ready
+                        if let firstPlayer = newPlayers.first {
+                            firstPlayer.prepareToPlay()
+                            firstPlayer.currentTime = 0
+                        }
+                    }
                 }
             }
         }
@@ -405,22 +530,33 @@ class MetronomeEngine: ObservableObject {
     }
     
     private func playClick() {
-        // Use pending players if they're ready, otherwise use current players
-        let playersToUse = pendingAudioPlayers.isEmpty ? audioPlayers : pendingAudioPlayers
+        // Always use current players, never pending players during playback
+        // This prevents double-playing during transitions
+        let playersToUse = audioPlayers
         
         guard !playersToUse.isEmpty else {
             print("❌ No audio players available")
             return
         }
         
+        // Ensure we don't exceed the player pool bounds
+        guard currentPlayerIndex < playersToUse.count else {
+            currentPlayerIndex = 0
+            print("⚠️ Player index reset due to pool size mismatch")
+            return
+        }
+        
         // Use a player from the pool to prevent audio latency
-        let player = playersToUse[currentPlayerIndex % playersToUse.count]
+        let player = playersToUse[currentPlayerIndex]
         
-        // Reset the player's timing position
-        player.currentTime = 0
-        
-        // Play immediately
-        player.play()
+        // Only play if the player isn't already playing (prevents overlapping)
+        if !player.isPlaying {
+            // Reset the player's timing position
+            player.currentTime = 0
+            
+            // Play immediately
+            player.play()
+        }
         
         // Move to the next player in the pool for the next click
         currentPlayerIndex = (currentPlayerIndex + 1) % playersToUse.count

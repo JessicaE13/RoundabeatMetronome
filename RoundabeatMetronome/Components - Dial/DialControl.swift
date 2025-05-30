@@ -58,7 +58,7 @@ struct DialControl: View {
                     endPoint: .bottomTrailing
                 )
                             )
-                .frame(width: dialSize+13, height: dialSize+13)
+                .frame(width: dialSize+15, height: dialSize+15)
 
             Circle()
                 .fill(Color(red: 7/255, green: 7/255, blue: 8/255))
@@ -125,7 +125,7 @@ struct DialControl: View {
     }
 
     private var segmentedRing: some View {
-        SegmentedCircleView(metronome: metronome, diameter: dialSize + 80, lineWidth: ringLineWidth)
+        SegmentedCircleView(metronome: metronome, diameter: dialSize + 85, lineWidth: ringLineWidth)
     }
 
     private var centerKnob: some View {
