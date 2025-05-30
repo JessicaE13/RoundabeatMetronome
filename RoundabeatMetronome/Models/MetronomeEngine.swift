@@ -34,6 +34,7 @@ class MetronomeEngine: ObservableObject {
             UserDefaults.standard.set(selectedSoundName, forKey: "SavedSoundName")
             // Reload audio players with new sound
             setupAudioPlayers()
+            print("🔊 Sound changed to: \(selectedSoundName)")
         }
     }
     
@@ -112,7 +113,19 @@ class MetronomeEngine: ObservableObject {
         
         // Find the sound file based on selected sound
         let possibleExtensions = ["wav", "mp3", "aiff", "m4a"]
-        let possibleNames = [selectedSoundName, selectedSoundName.lowercased(), selectedSoundName.uppercased()]
+        
+        // Create variations of the selected sound name to try
+        let possibleNames = [
+            selectedSoundName,
+            selectedSoundName.lowercased(),
+            selectedSoundName.uppercased(),
+            selectedSoundName.replacingOccurrences(of: " ", with: "_"),
+            selectedSoundName.replacingOccurrences(of: " ", with: "_").lowercased(),
+            selectedSoundName.replacingOccurrences(of: " ", with: "-"),
+            selectedSoundName.replacingOccurrences(of: " ", with: "-").lowercased(),
+            selectedSoundName.replacingOccurrences(of: " ", with: ""),
+            selectedSoundName.replacingOccurrences(of: " ", with: "").lowercased()
+        ]
         
         var soundURL: URL? = nil
         
@@ -121,20 +134,47 @@ class MetronomeEngine: ObservableObject {
             for ext in possibleExtensions {
                 if let url = Bundle.main.url(forResource: name, withExtension: ext) {
                     soundURL = url
+                    print("✅ Found sound file: \(name).\(ext)")
                     break
                 }
             }
             if soundURL != nil { break }
         }
         
+        // If still nil, try to find sound files that contain the selected sound name
+        if soundURL == nil {
+            print("⚠️ Exact match not found, searching for partial matches...")
+            
+            if let resourcePath = Bundle.main.resourcePath {
+                let fileManager = FileManager.default
+                do {
+                    let files = try fileManager.contentsOfDirectory(atPath: resourcePath)
+                    let searchTerm = selectedSoundName.lowercased().replacingOccurrences(of: " ", with: "")
+                    
+                    for file in files {
+                        let fileName = file.lowercased().replacingOccurrences(of: " ", with: "")
+                        if fileName.contains(searchTerm) &&
+                           (file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a")) {
+                            soundURL = URL(fileURLWithPath: resourcePath).appendingPathComponent(file)
+                            print("✅ Found partial match: \(file)")
+                            break
+                        }
+                    }
+                } catch {
+                    print("Error scanning bundle directory: \(error)")
+                }
+            }
+        }
+        
         // If still nil, try common fallback sounds
         if soundURL == nil {
-            let fallbackSounds = ["Snap", "bongo", "click", "tick"]
+            print("⚠️ Selected sound '\(selectedSoundName)' not found, trying fallback sounds...")
+            let fallbackSounds = ["Snap", "snap", "bongo", "click", "tick", "beep"]
             for fallback in fallbackSounds {
                 for ext in possibleExtensions {
                     if let url = Bundle.main.url(forResource: fallback, withExtension: ext) {
                         soundURL = url
-                        print("⚠️ Using fallback sound: \(fallback)")
+                        print("⚠️ Using fallback sound: \(fallback).\(ext)")
                         break
                     }
                 }
@@ -144,17 +184,16 @@ class MetronomeEngine: ObservableObject {
         
         // If still nil, try locating any sound files in the bundle
         if soundURL == nil {
-            print("Could not find sound file directly, trying alternative methods...")
+            print("❌ No fallback sounds found, searching for any audio files...")
             
             if let resourcePath = Bundle.main.resourcePath {
                 let fileManager = FileManager.default
                 do {
                     let files = try fileManager.contentsOfDirectory(atPath: resourcePath)
                     for file in files {
-                        if (file.lowercased().contains("bongo") || file.lowercased().contains("snap") || file.lowercased().contains("click")) &&
-                            (file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a")) {
+                        if file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a") {
                             soundURL = URL(fileURLWithPath: resourcePath).appendingPathComponent(file)
-                            print("Found potential sound file: \(file)")
+                            print("⚠️ Using any available sound file: \(file)")
                             break
                         }
                     }
@@ -166,10 +205,10 @@ class MetronomeEngine: ObservableObject {
         
         // Create multiple audio players from the same sound for better performance
         if let finalURL = soundURL {
-            print("Attempting to load sound from: \(finalURL.path)")
+            print("🎵 Loading sound from: \(finalURL.lastPathComponent)")
             
             // Create a pool of audio players to avoid latency
-            for _ in 0..<numberOfPlayers {
+            for i in 0..<numberOfPlayers {
                 do {
                     let player = try AVAudioPlayer(contentsOf: finalURL)
                     
@@ -188,13 +227,14 @@ class MetronomeEngine: ObservableObject {
                     }
                     
                     audioPlayers.append(player)
+                    print("✅ Created audio player \(i + 1)/\(numberOfPlayers)")
                 } catch {
-                    print("Failed to initialize audio player: \(error)")
+                    print("❌ Failed to initialize audio player \(i + 1): \(error)")
                 }
             }
             
             if !audioPlayers.isEmpty {
-                print("✅ Successfully created \(audioPlayers.count) audio players for \(selectedSoundName)")
+                print("✅ Successfully created \(audioPlayers.count) audio players for '\(selectedSoundName)'")
             } else {
                 print("❌ No audio players were created successfully")
             }
@@ -347,7 +387,7 @@ class MetronomeEngine: ObservableObject {
         
         // Add visual feedback in the console for debugging
         let beatSymbol = currentBeat == 0 ? "🔵" : "🔴"
-        print("\(beatSymbol) Beat \(currentBeat + 1)/\(beatsPerMeasure) at \(String(format: "%.3f", currentTime)) (deviation: \(String(format: "%.1f", deviationMs))ms)")
+        print("\(beatSymbol) Beat \(currentBeat + 1)/\(beatsPerMeasure) [\(selectedSoundName)] at \(String(format: "%.3f", currentTime)) (deviation: \(String(format: "%.1f", deviationMs))ms)")
     }
     
     func updateTempo(to newTempo: Double) {
@@ -416,6 +456,14 @@ class MetronomeEngine: ObservableObject {
     func updateSoundSelection(to soundName: String) {
         selectedSoundName = soundName
         print("🔊 Sound updated to: \(soundName)")
+        
+        // If metronome is currently playing, restart it to immediately use the new sound
+        if isPlaying {
+            stopMetronome()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.startMetronome()
+            }
+        }
     }
     
     // MARK: - App Lifecycle Methods
