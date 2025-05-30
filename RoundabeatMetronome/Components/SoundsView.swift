@@ -48,24 +48,24 @@ struct SoundsView: View {
     // Available sound options (you can expand this based on your actual sound files)
     static let defaultSounds: [SoundOption] = [
         // Percussion
-        SoundOption(name: "Wood Block", fileName: "wood_block", fileExtension: "wav", category: .percussion, description: "Classic wooden metronome sound"),
+        SoundOption(name: "Wood Block", fileName: "Wood Block", fileExtension: "wav", category: .percussion, description: "Classic wooden metronome sound"),
         SoundOption(name: "Bongo", fileName: "bongo", fileExtension: "wav", category: .percussion, description: "Warm bongo drum hit"),
         SoundOption(name: "Snap", fileName: "Snap", fileExtension: "wav", category: .percussion, description: "Crisp finger snap"),
         SoundOption(name: "Clap", fileName: "clap", fileExtension: "wav", category: .percussion, description: "Hand clap sound"),
         SoundOption(name: "Cowbell", fileName: "cowbell", fileExtension: "wav", category: .percussion, description: "Classic cowbell ring"),
         
         // Electronic
-        SoundOption(name: "Digital Beep", fileName: "beep", fileExtension: "wav", category: .electronic, description: "Clean digital beep"),
-        SoundOption(name: "Synth Click", fileName: "synth_click", fileExtension: "wav", category: .electronic, description: "Electronic click sound"),
-        SoundOption(name: "Blip", fileName: "blip", fileExtension: "wav", category: .electronic, description: "Short electronic blip"),
+        SoundOption(name: "Digital Beep", fileName: "Digital Beep", fileExtension: "wav", category: .electronic, description: "Clean digital beep"),
+        SoundOption(name: "Synth Click", fileName: "Synth Click", fileExtension: "wav", category: .electronic, description: "Electronic click sound"),
+        SoundOption(name: "Blip", fileName: "Blip", fileExtension: "wav", category: .electronic, description: "Short electronic blip"),
         
         // Acoustic
-        SoundOption(name: "Piano Note", fileName: "piano", fileExtension: "wav", category: .acoustic, description: "Single piano note"),
-        SoundOption(name: "Guitar Pick", fileName: "guitar_pick", fileExtension: "wav", category: .acoustic, description: "Guitar string pick"),
+        SoundOption(name: "Piano Note", fileName: "Piano Note", fileExtension: "wav", category: .acoustic, description: "Single piano note"),
+        SoundOption(name: "Guitar Pick", fileName: "Guitar Pick", fileExtension: "wav", category: .acoustic, description: "Guitar string pick"),
         
         // Classic
-        SoundOption(name: "Classic Tick", fileName: "tick", fileExtension: "wav", category: .classic, description: "Traditional metronome tick"),
-        SoundOption(name: "Mechanical Click", fileName: "click", fileExtension: "wav", category: .classic, description: "Mechanical metronome click")
+        SoundOption(name: "Classic Tick", fileName: "Classic Tick", fileExtension: "wav", category: .classic, description: "Traditional metronome tick"),
+        SoundOption(name: "Mechanical Click", fileName: "Mechanical Click", fileExtension: "wav", category: .classic, description: "Mechanical metronome click")
     ]
     
     var filteredSounds: [SoundOption] {

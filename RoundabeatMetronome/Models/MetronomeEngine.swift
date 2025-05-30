@@ -156,7 +156,7 @@ class MetronomeEngine: ObservableObject {
             if timeTillNextBeat <= -0.002 && timeTillNextBeat >= -0.020 {
                 if !self.pendingAudioPlayers.isEmpty {
                     // Ensure all new players are fully prepared and synchronized
-                    for (index, player) in self.pendingAudioPlayers.enumerated() {
+                    for (_, player) in self.pendingAudioPlayers.enumerated() {
                         player.prepareToPlay()
                         player.currentTime = 0
                         
