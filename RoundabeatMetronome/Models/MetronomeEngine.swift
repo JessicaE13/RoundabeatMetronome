@@ -2,7 +2,7 @@ import Foundation
 import AVFoundation
 import SwiftUI
 
-// MARK: - MetronomeEngine with Persistence
+// MARK: - MetronomeEngine with Persistence and Smooth Sound Switching
 
 class MetronomeEngine: ObservableObject {
     @Published var isPlaying = false
@@ -32,8 +32,8 @@ class MetronomeEngine: ObservableObject {
         didSet {
             // Save selected sound whenever it changes
             UserDefaults.standard.set(selectedSoundName, forKey: "SavedSoundName")
-            // Reload audio players with new sound
-            setupAudioPlayers()
+            // Schedule audio players reload without stopping metronome
+            scheduleAudioPlayersReload()
             print("🔊 Sound changed to: \(selectedSoundName)")
         }
     }
@@ -44,8 +44,10 @@ class MetronomeEngine: ObservableObject {
     
     // Audio player pool for more responsive sound
     private var audioPlayers: [AVAudioPlayer] = []
+    private var pendingAudioPlayers: [AVAudioPlayer] = [] // New players being prepared
     private var currentPlayerIndex = 0
     private var numberOfPlayers = 3 // Use multiple players to avoid latency
+    private var isReloadingAudioPlayers = false
     
     // Use a more precise timing mechanism
     private var displayLink: CADisplayLink?
@@ -107,9 +109,78 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    private func setupAudioPlayers() {
-        // Clear existing players
-        audioPlayers.removeAll()
+    // MARK: - Improved Audio Players Management
+    
+    private func scheduleAudioPlayersReload() {
+        // Don't reload if already in progress
+        guard !isReloadingAudioPlayers else { return }
+        
+        // If metronome is not playing, reload immediately
+        guard isPlaying else {
+            setupAudioPlayers()
+            return
+        }
+        
+        // If metronome is playing, prepare new players in background
+        isReloadingAudioPlayers = true
+        
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create new audio players on background thread
+            let newPlayers = self.createAudioPlayers()
+            
+            DispatchQueue.main.async {
+                // Swap the players quickly on the main thread
+                self.pendingAudioPlayers = newPlayers
+                
+                // Wait for the next beat boundary to swap players for smoother transition
+                self.swapAudioPlayersOnNextBeat()
+            }
+        }
+    }
+    
+    private func swapAudioPlayersOnNextBeat() {
+        // Use a timer to check for the next beat and swap players then
+        Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            // Check if we're close to a beat boundary (within 10ms)
+            let currentTime = CACurrentMediaTime()
+            let timeTillNextBeat = self.nextBeatTime - currentTime
+            
+            if timeTillNextBeat <= 0.01 || timeTillNextBeat > self.beatInterval {
+                // We're at or very close to a beat, safe to swap
+                if !self.pendingAudioPlayers.isEmpty {
+                    self.audioPlayers = self.pendingAudioPlayers
+                    self.pendingAudioPlayers.removeAll()
+                    self.currentPlayerIndex = 0
+                    self.isReloadingAudioPlayers = false
+                    print("🔄 Audio players swapped smoothly during beat")
+                }
+                timer.invalidate()
+            }
+        }
+        
+        // Failsafe: if we can't swap within 2 seconds, force the swap
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            guard let self = self else { return }
+            
+            if self.isReloadingAudioPlayers && !self.pendingAudioPlayers.isEmpty {
+                self.audioPlayers = self.pendingAudioPlayers
+                self.pendingAudioPlayers.removeAll()
+                self.currentPlayerIndex = 0
+                self.isReloadingAudioPlayers = false
+                print("🔄 Audio players swapped (failsafe)")
+            }
+        }
+    }
+    
+    private func createAudioPlayers() -> [AVAudioPlayer] {
+        var newPlayers: [AVAudioPlayer] = []
         
         // Find the sound file based on selected sound
         let possibleExtensions = ["wav", "mp3", "aiff", "m4a"]
@@ -134,7 +205,6 @@ class MetronomeEngine: ObservableObject {
             for ext in possibleExtensions {
                 if let url = Bundle.main.url(forResource: name, withExtension: ext) {
                     soundURL = url
-                    print("✅ Found sound file: \(name).\(ext)")
                     break
                 }
             }
@@ -143,8 +213,6 @@ class MetronomeEngine: ObservableObject {
         
         // If still nil, try to find sound files that contain the selected sound name
         if soundURL == nil {
-            print("⚠️ Exact match not found, searching for partial matches...")
-            
             if let resourcePath = Bundle.main.resourcePath {
                 let fileManager = FileManager.default
                 do {
@@ -156,7 +224,6 @@ class MetronomeEngine: ObservableObject {
                         if fileName.contains(searchTerm) &&
                            (file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a")) {
                             soundURL = URL(fileURLWithPath: resourcePath).appendingPathComponent(file)
-                            print("✅ Found partial match: \(file)")
                             break
                         }
                     }
@@ -168,13 +235,11 @@ class MetronomeEngine: ObservableObject {
         
         // If still nil, try common fallback sounds
         if soundURL == nil {
-            print("⚠️ Selected sound '\(selectedSoundName)' not found, trying fallback sounds...")
             let fallbackSounds = ["Snap", "snap", "bongo", "click", "tick", "beep"]
             for fallback in fallbackSounds {
                 for ext in possibleExtensions {
                     if let url = Bundle.main.url(forResource: fallback, withExtension: ext) {
                         soundURL = url
-                        print("⚠️ Using fallback sound: \(fallback).\(ext)")
                         break
                     }
                 }
@@ -182,31 +247,8 @@ class MetronomeEngine: ObservableObject {
             }
         }
         
-        // If still nil, try locating any sound files in the bundle
-        if soundURL == nil {
-            print("❌ No fallback sounds found, searching for any audio files...")
-            
-            if let resourcePath = Bundle.main.resourcePath {
-                let fileManager = FileManager.default
-                do {
-                    let files = try fileManager.contentsOfDirectory(atPath: resourcePath)
-                    for file in files {
-                        if file.hasSuffix(".wav") || file.hasSuffix(".mp3") || file.hasSuffix(".aiff") || file.hasSuffix(".m4a") {
-                            soundURL = URL(fileURLWithPath: resourcePath).appendingPathComponent(file)
-                            print("⚠️ Using any available sound file: \(file)")
-                            break
-                        }
-                    }
-                } catch {
-                    print("Error scanning bundle directory: \(error)")
-                }
-            }
-        }
-        
         // Create multiple audio players from the same sound for better performance
         if let finalURL = soundURL {
-            print("🎵 Loading sound from: \(finalURL.lastPathComponent)")
-            
             // Create a pool of audio players to avoid latency
             for i in 0..<numberOfPlayers {
                 do {
@@ -218,28 +260,24 @@ class MetronomeEngine: ObservableObject {
                     player.prepareToPlay()    // Pre-buffer the audio
                     player.numberOfLoops = 0  // Single shot playback
                     
-                    // Extremely important for precision metronome:
-                    // Set a very short duration sample for minimal latency
-                    if player.duration > 0.1 {
-                        // If sample is longer than 100ms, we can improve timing by
-                        // adjusting parameters - ideally the original sound should be short
-                        print("⚠️ Sound sample duration (\(String(format: "%.1f", player.duration * 1000))ms) is longer than ideal for precise timing")
-                    }
-                    
-                    audioPlayers.append(player)
-                    print("✅ Created audio player \(i + 1)/\(numberOfPlayers)")
+                    newPlayers.append(player)
                 } catch {
                     print("❌ Failed to initialize audio player \(i + 1): \(error)")
                 }
             }
-            
-            if !audioPlayers.isEmpty {
-                print("✅ Successfully created \(audioPlayers.count) audio players for '\(selectedSoundName)'")
-            } else {
-                print("❌ No audio players were created successfully")
-            }
+        }
+        
+        return newPlayers
+    }
+    
+    private func setupAudioPlayers() {
+        audioPlayers = createAudioPlayers()
+        currentPlayerIndex = 0
+        
+        if !audioPlayers.isEmpty {
+            print("✅ Successfully created \(audioPlayers.count) audio players for '\(selectedSoundName)'")
         } else {
-            print("❌ No suitable sound file found in the app bundle")
+            print("❌ No audio players were created successfully")
         }
     }
     
@@ -347,6 +385,10 @@ class MetronomeEngine: ObservableObject {
         lastUpdateTime = 0
         currentBeat = 0
         
+        // Reset any pending audio player reload
+        isReloadingAudioPlayers = false
+        pendingAudioPlayers.removeAll()
+        
         // Save settings when stopping (good time to persist state)
         saveCurrentSettings()
         
@@ -363,13 +405,16 @@ class MetronomeEngine: ObservableObject {
     }
     
     private func playClick() {
-        guard !audioPlayers.isEmpty else {
+        // Use pending players if they're ready, otherwise use current players
+        let playersToUse = pendingAudioPlayers.isEmpty ? audioPlayers : pendingAudioPlayers
+        
+        guard !playersToUse.isEmpty else {
             print("❌ No audio players available")
             return
         }
         
         // Use a player from the pool to prevent audio latency
-        let player = audioPlayers[currentPlayerIndex]
+        let player = playersToUse[currentPlayerIndex % playersToUse.count]
         
         // Reset the player's timing position
         player.currentTime = 0
@@ -378,7 +423,7 @@ class MetronomeEngine: ObservableObject {
         player.play()
         
         // Move to the next player in the pool for the next click
-        currentPlayerIndex = (currentPlayerIndex + 1) % audioPlayers.count
+        currentPlayerIndex = (currentPlayerIndex + 1) % playersToUse.count
         
         // Calculate deviation from perfect timing - measure actual time vs scheduled time
         let currentTime = CACurrentMediaTime()
@@ -405,7 +450,8 @@ class MetronomeEngine: ObservableObject {
             calculateBeatInterval()
             
             // Update playback rate of all players for more accurate timing of loaded sounds
-            for player in audioPlayers {
+            let allPlayers = audioPlayers + pendingAudioPlayers
+            for player in allPlayers {
                 // Adjust playback rate while maintaining pitch
                 // This helps with subtle tempo changes without restarting
                 let minTempoForRateAdjustment: Double = 80
@@ -452,18 +498,12 @@ class MetronomeEngine: ObservableObject {
         print("🎼 Time signature updated to \(beatsPerMeasure)/\(beatUnit)")
     }
     
-    // Function to update sound selection
+    // MARK: - Improved Sound Selection Method
+    
     func updateSoundSelection(to soundName: String) {
         selectedSoundName = soundName
-        print("🔊 Sound updated to: \(soundName)")
-        
-        // If metronome is currently playing, restart it to immediately use the new sound
-        if isPlaying {
-            stopMetronome()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                self.startMetronome()
-            }
-        }
+        print("🔊 Sound selection updated to: \(soundName)")
+        // The scheduleAudioPlayersReload() will be called automatically via the didSet observer
     }
     
     // MARK: - App Lifecycle Methods

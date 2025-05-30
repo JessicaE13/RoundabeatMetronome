@@ -95,6 +95,10 @@ struct SoundsView: View {
         }
         .onAppear {
             setupAudioSession()
+            // Initialize selectedSound based on metronome's current sound
+            if let currentSound = SoundsView.defaultSounds.first(where: { $0.name == metronome.selectedSoundName }) {
+                selectedSound = currentSound
+            }
         }
     }
     
@@ -181,10 +185,13 @@ struct SoundsView: View {
     }
     
     private func soundRowView(sound: SoundOption) -> some View {
-        let isSelected = selectedSound == sound
+        // Check if this sound is the currently selected metronome sound
+        let isSelected = sound.name == metronome.selectedSoundName
         let isCurrentlyPlaying = isPlaying && selectedSound == sound
         
         return Button(action: {
+            // Update the metronome's sound selection
+            metronome.updateSoundSelection(to: sound.name)
             selectedSound = sound
             playSound(sound)
         }) {
@@ -275,7 +282,7 @@ struct SoundsView: View {
                         .kerning(1)
                         .foregroundColor(Color.white.opacity(0.4))
                     
-                    Text(selectedSound.displayName)
+                    Text(metronome.selectedSoundName)
                         .font(.custom("Kanit-Medium", size: 16))
                         .kerning(0.5)
                         .foregroundColor(Color.white.opacity(0.9))
@@ -284,7 +291,9 @@ struct SoundsView: View {
                 Spacer()
                 
                 Button(action: {
-                    playSound(selectedSound)
+                    if let currentSound = SoundsView.defaultSounds.first(where: { $0.name == metronome.selectedSoundName }) {
+                        playSound(currentSound)
+                    }
                 }) {
                     HStack(spacing: 8) {
                         Image(systemName: "play.fill")
