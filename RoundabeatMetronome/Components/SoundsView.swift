@@ -82,7 +82,7 @@ struct SoundsView: View {
             VStack(spacing: 0) {
                 // Header
                 headerView
-                    .padding(.top, 24)
+                    .padding(.top, 36)
                 
                 // Category Filter
                 categoryFilterView

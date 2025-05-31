@@ -545,7 +545,6 @@ class MetronomeEngine: ObservableObject {
     
     private func playClick() {
         // Always use current players, never pending players during playback
-        // This prevents double-playing during transitions
         let playersToUse = audioPlayers
         
         guard !playersToUse.isEmpty else {
@@ -560,27 +559,36 @@ class MetronomeEngine: ObservableObject {
             return
         }
         
-        // Use a player from the pool to prevent audio latency
+        // Get the current player
         let player = playersToUse[currentPlayerIndex]
         
-        // Only play if the player isn't already playing (prevents overlapping)
-        if !player.isPlaying {
-            // Reset the player's timing position
-            player.currentTime = 0
-            
-            // Play immediately
-            player.play()
+        // Reset the current player's timing position
+        player.currentTime = 0
+        
+        // Play the current beat immediately
+        player.play()
+        
+        // Calculate the previous player index
+        let previousPlayerIndex = (currentPlayerIndex - 1 + playersToUse.count) % playersToUse.count
+        
+        // Stop the previous player now that the current one is playing
+        if previousPlayerIndex != currentPlayerIndex { // Safety check for single player scenarios
+            let previousPlayer = playersToUse[previousPlayerIndex]
+            if previousPlayer.isPlaying {
+                previousPlayer.stop()
+                previousPlayer.currentTime = 0
+            }
         }
         
         // Move to the next player in the pool for the next click
         currentPlayerIndex = (currentPlayerIndex + 1) % playersToUse.count
         
-        // Calculate deviation from perfect timing - measure actual time vs scheduled time
+        // Calculate deviation from perfect timing
         let currentTime = CACurrentMediaTime()
-        let expectedTime = nextBeatTime - beatInterval  // For the current beat that just played
-        let deviationMs = (currentTime - expectedTime) * 1000  // Convert to milliseconds
+        let expectedTime = nextBeatTime - beatInterval
+        let deviationMs = (currentTime - expectedTime) * 1000
         
-        // Add visual feedback in the console for debugging
+        // Debug output
         let beatSymbol = currentBeat == 0 ? "🔵" : "🔴"
         print("\(beatSymbol) Beat \(currentBeat + 1)/\(beatsPerMeasure) [\(selectedSoundName)] at \(String(format: "%.3f", currentTime)) (deviation: \(String(format: "%.1f", deviationMs))ms)")
     }

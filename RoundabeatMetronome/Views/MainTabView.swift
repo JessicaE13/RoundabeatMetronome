@@ -93,7 +93,7 @@ struct MainTabView: View {
                     .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                 
                 Text(title)
-                    .font(.custom("Kanit-Medium", size: 10))
+                    .font(.system(size: 10))
                     .kerning(0.5)
                     .foregroundColor(selectedTab == tab ? Color.white.opacity(0.8) : Color.white.opacity(0.4))
             }
