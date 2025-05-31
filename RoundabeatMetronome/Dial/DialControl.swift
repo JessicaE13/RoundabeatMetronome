@@ -300,7 +300,7 @@ struct DialControl: View {
 
 #Preview {
     ZStack {
-        DarkGrayBackgroundView()
+        BackgroundView()
         DialControl(metronome: MetronomeEngine())
     }
 }

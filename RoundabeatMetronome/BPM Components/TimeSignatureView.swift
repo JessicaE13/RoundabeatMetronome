@@ -184,7 +184,7 @@ struct TimeSignatureView: View {
 
 #Preview {
     ZStack {
-        DarkGrayBackgroundView()
+        BackgroundView()
         TimeSignatureView(
             metronome: MetronomeEngine(),
             showTimeSignaturePicker: .constant(false),

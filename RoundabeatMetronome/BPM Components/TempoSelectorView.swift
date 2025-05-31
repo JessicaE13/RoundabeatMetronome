@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct TempoSelectorView: View {
@@ -21,7 +19,7 @@ struct TempoSelectorView: View {
                             
                             VStack(spacing: 4) {
                                 Text(range.name.uppercased())
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(.system(size: 10, weight: .medium))
                                     .kerning(1.5)
                                     .foregroundColor(isSelected ?
                                                      Color.white.opacity(0.9) :
@@ -31,7 +29,7 @@ struct TempoSelectorView: View {
                                     .minimumScaleFactor(0.8)
                                 
                                 Text("\(range.minBPM)-\(range.maxBPM)")
-                                    .font(.custom("Kanit-Regular",size: 12))
+                                    .font(.custom("Kanit-Regular",size: 10))
                                     .kerning(1.5)
                                     .foregroundColor(isSelected ?
                                                      Color.white.opacity(0.7) :
@@ -71,7 +69,7 @@ struct TempoSelectorView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             if let currentIndex = TempoRange.allRanges.firstIndex(where: { $0.name == TempoRange.getCurrentRange(for: metronome.tempo).name }) {
                                 withAnimation(.easeInOut(duration: 0.5)) {
-                                    proxy.scrollTo(currentIndex, anchor: .center)
+                                    proxy.scrollTo(currentIndex, anchor: getScrollAnchor(for: currentIndex))
                                 }
                             }
                         }
@@ -80,7 +78,7 @@ struct TempoSelectorView: View {
                         // Auto-scroll to current tempo range when tempo changes with smoother animation
                         if let currentIndex = TempoRange.allRanges.firstIndex(where: { $0.name == TempoRange.getCurrentRange(for: metronome.tempo).name }) {
                             withAnimation(.easeInOut(duration: 0.6)) {
-                                proxy.scrollTo(currentIndex, anchor: .center)
+                                proxy.scrollTo(currentIndex, anchor: getScrollAnchor(for: currentIndex))
                             }
                         }
                     }
@@ -89,6 +87,24 @@ struct TempoSelectorView: View {
             .scrollBounceBehavior(.basedOnSize)
         }
         .padding(10)
+    }
+    
+    // Helper function to determine scroll anchor based on position
+    private func getScrollAnchor(for index: Int) -> UnitPoint {
+        let totalCount = TempoRange.allRanges.count
+        
+        // For the first item, align to leading to prevent empty space on the left
+        if index == 0 {
+            return .leading
+        }
+        // For the last item, align to trailing to prevent empty space on the right
+        else if index == totalCount - 1 {
+            return .trailing
+        }
+        // For all middle items, center as usual
+        else {
+            return .center
+        }
     }
 }
 

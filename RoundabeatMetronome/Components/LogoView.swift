@@ -72,7 +72,7 @@ struct LogoView: View {
 
 #Preview {
     ZStack {
-        DarkGrayBackgroundView()
+        BackgroundView()
         LogoView()
     }
 }

@@ -16,7 +16,7 @@ struct DialBackgroundHelp: View {
         
         ZStack {
             
-            DarkGrayBackgroundView()
+            BackgroundView()
             
             // Main Circle Background - darker color
             Circle()

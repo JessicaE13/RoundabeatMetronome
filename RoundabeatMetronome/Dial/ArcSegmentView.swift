@@ -96,7 +96,7 @@ struct ArcSegmentView: View {
 
 #Preview {
     ZStack {
-        DarkGrayBackgroundView()
+        BackgroundView()
         
         GeometryReader { geometry in
             ArcSegmentView(

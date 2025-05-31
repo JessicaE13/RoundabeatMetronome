@@ -38,7 +38,7 @@ struct BPMView: View {
 
 #Preview {
     ZStack {
-        DarkGrayBackgroundView()
+        BackgroundView()
         BPMView(
             metronome: MetronomeEngine(),
             isShowingKeypad: .constant(false),

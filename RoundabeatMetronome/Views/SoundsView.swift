@@ -77,7 +77,7 @@ struct SoundsView: View {
     
     var body: some View {
         ZStack {
-            DarkGrayBackgroundView()
+            BackgroundView()
             
             VStack(spacing: 0) {
                 // Header
@@ -112,7 +112,7 @@ struct SoundsView: View {
                 .padding(.top, 20)
             
             Text("Choose Your Beat")
-                .font(.system(size: 24))
+                .font(.system(size: 12, weight: .medium))
                 .kerning(1)
                 .foregroundColor(Color.white.opacity(0.9))
                 .padding(.bottom, 16)

@@ -21,11 +21,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		05615E3C2DDB60C800F0F8E0 /* Archive */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Archive;
-			sourceTree = "<group>";
-		};
 		05628A602DAC430900277140 /* RoundabeatMetronome */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -52,7 +47,6 @@
 			children = (
 				05628A602DAC430900277140 /* RoundabeatMetronome */,
 				05628A5F2DAC430900277140 /* Products */,
-				05615E3C2DDB60C800F0F8E0 /* Archive */,
 			);
 			sourceTree = "<group>";
 		};
@@ -80,7 +74,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				05615E3C2DDB60C800F0F8E0 /* Archive */,
 				05628A602DAC430900277140 /* RoundabeatMetronome */,
 			);
 			name = RoundabeatMetronome;

@@ -22,63 +22,25 @@ struct ContentView: View {
         
         ZStack(alignment: .center) { // Explicitly set alignment
             
-            DarkGrayBackgroundView()
+            BackgroundView()
             
             // Main metronome interface
             GeometryReader { geometry in
                 VStack(spacing: 0) {
                     
-                    // Top spacing from safe area
                     Spacer()
                         .frame(height: geometry.safeAreaInsets.top + 40)
                     
-                    // BPM display section
-                    HStack { // Wrap in HStack to ensure proper centering
-                        Spacer()
-                        VStack(spacing: 16) {
-                            BPMView(
-                                metronome: metronome,
-                                isShowingKeypad: $showBPMKeypad,
-                                showTimeSignaturePicker: $showTimeSignaturePicker
-                            )
-                        }
-                        Spacer()
-                    }
+                    BPMView(
+                        metronome: metronome,
+                        isShowingKeypad: $showBPMKeypad,
+                        showTimeSignaturePicker: $showTimeSignaturePicker
+                    )
                     
-                    // Spacer between BPM and logo
-                    Spacer()
-                        .frame(height: 32)
+                    LogoView()
                     
-                    // Logo section
-                    HStack { // Wrap in HStack to ensure proper centering
-                        Spacer()
-                        VStack {
-                            LogoView()
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 8)
-                    .padding(.top, 16)
-                    .padding(.bottom, 8)
+                    DialControl(metronome: metronome)
                     
-                    // Spacer between logo and dial
-                    Spacer()
-                        .frame(height: 40)
-                    
-                    // Dial control section
-                    HStack { // Wrap in HStack to ensure proper centering
-                        Spacer()
-                        VStack {
-                            DialControl(metronome: metronome)
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 24)
-                    
-                    // Bottom spacer to push content up and provide breathing room
-                    Spacer()
-                        .frame(height: max(60, geometry.safeAreaInsets.bottom + 40))
                 }
                 .frame(
                     width: geometry.size.width,
@@ -117,7 +79,7 @@ struct ContentView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
             }
-    
+            
         }
         .ignoresSafeArea(.all, edges: .all)
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
@@ -137,7 +99,7 @@ struct ShimmerCurveModifier: ViewModifier {
     let progress: CGFloat
     let amplitude: CGFloat
     let width: CGFloat
-
+    
     func body(content: Content) -> some View {
         content
             .offset(

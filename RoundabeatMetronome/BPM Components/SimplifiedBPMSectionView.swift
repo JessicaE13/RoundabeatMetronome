@@ -209,7 +209,7 @@ struct SimplifiedBPMSectionView: View {
 
 #Preview {
     ZStack {
-        DarkGrayBackgroundView()
+        BackgroundView()
         SimplifiedBPMSectionView(
             metronome: MetronomeEngine(),
             isShowingKeypad: .constant(false),
