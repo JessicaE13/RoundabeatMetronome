@@ -9,7 +9,7 @@ struct BPMView: View {
     @State private var showSettings = false
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             // MARK: - Main BPM Section (without TimeSignatureView)
             SimplifiedBPMSectionView(
                 metronome: metronome,
