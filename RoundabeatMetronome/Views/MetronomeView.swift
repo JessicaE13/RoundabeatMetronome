@@ -68,14 +68,18 @@ struct MetronomeView: View {
                             showSettings: $showSettings
                         )
                         .padding(.top, 16)
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 48)
                         .padding(.horizontal, 24)
                     
-                    Spacer()
+                    
                     
                     LogoView()
+                
+                    
                     Spacer()
+                    
                     DialControl(metronome: metronome)
+                    
                     Spacer()
                 }
                 .frame(
