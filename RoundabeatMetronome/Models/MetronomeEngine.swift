@@ -2,7 +2,7 @@ import Foundation
 import AVFoundation
 import SwiftUI
 
-// MARK: - MetronomeEngine with Persistence and Smooth Sound Switching
+// MARK: - MetronomeEngine with Persistence, Smooth Sound Switching, and Subdivision Support
 
 class MetronomeEngine: ObservableObject {
     @Published var isPlaying = false
@@ -47,6 +47,15 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
+    // Subdivision support with persistence
+    @Published var subdivisionMultiplier: Double = 1.0 {
+        didSet {
+            // Save subdivision whenever it changes
+            UserDefaults.standard.set(subdivisionMultiplier, forKey: "SavedSubdivisionMultiplier")
+            print("🎵 Subdivision updated to \(subdivisionMultiplier)x")
+        }
+    }
+    
     // Constants for tempo range
     let minTempo: Double = 20
     let maxTempo: Double = 400
@@ -62,9 +71,13 @@ class MetronomeEngine: ObservableObject {
     private var displayLink: CADisplayLink?
     private var lastUpdateTime: TimeInterval = 0
     private var beatInterval: TimeInterval = 0.5 // 60.0 / 120 BPM
+    private var subdivisionInterval: TimeInterval = 0.5
     private var timeAccumulator: TimeInterval = 0
     private var nextBeatTime: TimeInterval = 0
     private var audioSession: AVAudioSession?
+    
+    // Subdivision tracking
+    private var subdivisionCounter: Int = 0
     
     init() {
         // Load saved settings before setting up audio
@@ -98,7 +111,11 @@ class MetronomeEngine: ObservableObject {
         let savedHighlightFirstBeat = UserDefaults.standard.object(forKey: "SavedHighlightFirstBeat") as? Bool ?? true
         highlightFirstBeat = savedHighlightFirstBeat
         
-        print("📱 Loaded saved settings: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit) time signature, \(selectedSoundName) sound, highlight first beat: \(highlightFirstBeat)")
+        // Load subdivision multiplier (default to 1.0 if not saved)
+        let savedSubdivisionMultiplier = UserDefaults.standard.object(forKey: "SavedSubdivisionMultiplier") as? Double ?? 1.0
+        subdivisionMultiplier = max(0.5, min(4.0, savedSubdivisionMultiplier))
+        
+        print("📱 Loaded saved settings: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit) time signature, \(selectedSoundName) sound, highlight first beat: \(highlightFirstBeat), subdivision: \(subdivisionMultiplier)x")
     }
     
     func saveCurrentSettings() {
@@ -108,8 +125,9 @@ class MetronomeEngine: ObservableObject {
         UserDefaults.standard.set(beatUnit, forKey: "SavedBeatUnit")
         UserDefaults.standard.set(selectedSoundName, forKey: "SavedSoundName")
         UserDefaults.standard.set(highlightFirstBeat, forKey: "SavedHighlightFirstBeat")
+        UserDefaults.standard.set(subdivisionMultiplier, forKey: "SavedSubdivisionMultiplier")
         
-        print("💾 Settings saved: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit), \(selectedSoundName) sound, highlight first beat: \(highlightFirstBeat)")
+        print("💾 Settings saved: \(Int(tempo)) BPM, \(beatsPerMeasure)/\(beatUnit), \(selectedSoundName) sound, highlight first beat: \(highlightFirstBeat), subdivision: \(subdivisionMultiplier)x")
     }
     
     private func setupAudioSession() {
@@ -421,9 +439,11 @@ class MetronomeEngine: ObservableObject {
     }
     
     private func calculateBeatInterval() {
-        // Convert BPM to seconds per beat
-        beatInterval = 60.0 / tempo
-        print("⏱️ Beat interval set to \(beatInterval) seconds (at \(tempo) BPM)")
+        // Convert BPM to seconds per beat, then apply subdivision
+        let baseBeatInterval = 60.0 / tempo
+        subdivisionInterval = baseBeatInterval / subdivisionMultiplier
+        beatInterval = subdivisionInterval
+        print("⏱️ Beat interval set to \(beatInterval) seconds (at \(tempo) BPM with \(subdivisionMultiplier)x subdivision)")
     }
     
     func togglePlayback() {
@@ -439,6 +459,7 @@ class MetronomeEngine: ObservableObject {
     private func startMetronome() {
         // Reset tracking variables
         currentBeat = 0
+        subdivisionCounter = 0
         
         // Configure audio session for optimal performance
         do {
@@ -463,16 +484,16 @@ class MetronomeEngine: ObservableObject {
             player.volume = 1.0
         }
         
-        // Calculate the beat interval
+        // Calculate the beat interval with subdivision
         calculateBeatInterval()
         
         // Get precise current time
         let now = CACurrentMediaTime()
         
-        // Play the first beat immediately
+        // Play the first click immediately
         playClick()
         
-        // Schedule the next beat to occur one interval from now
+        // Schedule the next subdivision to occur one interval from now
         nextBeatTime = now + beatInterval
         
         // Create a high-precision display link
@@ -492,7 +513,7 @@ class MetronomeEngine: ObservableObject {
     @objc private func updateMetronome(displayLink: CADisplayLink) {
         let currentTime = CACurrentMediaTime()
         
-        // If we've reached the time for the next beat
+        // If we've reached the time for the next subdivision
         if currentTime >= nextBeatTime {
             // Calculate precise timing for this approach
             let elapsedIntervals = floor((currentTime - nextBeatTime) / beatInterval)
@@ -501,13 +522,17 @@ class MetronomeEngine: ObservableObject {
             if elapsedIntervals > 0 {
                 // Skip missed beats and get back on schedule
                 nextBeatTime += beatInterval * (elapsedIntervals + 1)
-                currentBeat = (currentBeat + Int(elapsedIntervals) + 1) % beatsPerMeasure
-                print("⚠️ Metronome skipped \(Int(elapsedIntervals)) beats to stay on tempo")
+                subdivisionCounter = Int((subdivisionCounter + Int(elapsedIntervals) + 1) % Int(subdivisionMultiplier * Double(beatsPerMeasure)))
+                print("⚠️ Metronome skipped \(Int(elapsedIntervals)) subdivision clicks to stay on tempo")
             } else {
-                // Normal case - just increment to next beat
+                // Normal case - just increment to next subdivision
                 nextBeatTime += beatInterval
-                currentBeat = (currentBeat + 1) % beatsPerMeasure
+                subdivisionCounter = (subdivisionCounter + 1) % Int(subdivisionMultiplier * Double(beatsPerMeasure))
             }
+            
+            // Calculate which beat we're on based on subdivision counter
+            let currentBeatFromSubdivision = Int(floor(Double(subdivisionCounter) / subdivisionMultiplier))
+            currentBeat = currentBeatFromSubdivision % beatsPerMeasure
             
             // Play the click - this needs to be as close to the nextBeatTime as possible
             playClick()
@@ -523,6 +548,7 @@ class MetronomeEngine: ObservableObject {
         timeAccumulator = 0
         lastUpdateTime = 0
         currentBeat = 0
+        subdivisionCounter = 0
         
         // Reset any pending audio player reload
         isReloadingAudioPlayers = false
@@ -562,10 +588,21 @@ class MetronomeEngine: ObservableObject {
         // Get the current player
         let player = playersToUse[currentPlayerIndex]
         
+        // Determine if this is a main beat or subdivision
+        let isMainBeat = subdivisionCounter % Int(subdivisionMultiplier) == 0
+        let currentMainBeat = Int(floor(Double(subdivisionCounter) / subdivisionMultiplier)) % beatsPerMeasure
+        
+        // Adjust volume based on whether it's a main beat or subdivision
+        if isMainBeat {
+            player.volume = 1.0 // Full volume for main beats
+        } else {
+            player.volume = 0.6 // Quieter for subdivisions
+        }
+        
         // Reset the current player's timing position
         player.currentTime = 0
         
-        // Play the current beat immediately
+        // Play the current subdivision immediately
         player.play()
         
         // Calculate the previous player index
@@ -589,8 +626,9 @@ class MetronomeEngine: ObservableObject {
         let deviationMs = (currentTime - expectedTime) * 1000
         
         // Debug output
-        let beatSymbol = currentBeat == 0 ? "🔵" : "🔴"
-        print("\(beatSymbol) Beat \(currentBeat + 1)/\(beatsPerMeasure) [\(selectedSoundName)] at \(String(format: "%.3f", currentTime)) (deviation: \(String(format: "%.1f", deviationMs))ms)")
+        let beatSymbol = isMainBeat ? (currentMainBeat == 0 ? "🔵" : "🔴") : "⚪"
+        let subdivisionInfo = isMainBeat ? "Beat \(currentMainBeat + 1)" : "Sub \(subdivisionCounter % Int(subdivisionMultiplier) + 1)"
+        print("\(beatSymbol) \(subdivisionInfo)/\(beatsPerMeasure) [\(selectedSoundName)] at \(String(format: "%.3f", currentTime)) (deviation: \(String(format: "%.1f", deviationMs))ms)")
     }
     
     func updateTempo(to newTempo: Double) {
@@ -654,6 +692,25 @@ class MetronomeEngine: ObservableObject {
         }
         
         print("🎼 Time signature updated to \(beatsPerMeasure)/\(beatUnit)")
+    }
+    
+    // Function to update subdivision
+    func updateSubdivision(to newMultiplier: Double) {
+        // Ensure subdivision is within valid range
+        let clampedMultiplier = max(0.5, min(4.0, newMultiplier))
+        
+        if subdivisionMultiplier != clampedMultiplier {
+            print("🎵 Subdivision updated to \(clampedMultiplier)x (from \(subdivisionMultiplier)x)")
+            
+            subdivisionMultiplier = clampedMultiplier
+            calculateBeatInterval()
+            
+            // If playing, restart to apply the new subdivision
+            if isPlaying {
+                stopMetronome()
+                startMetronome()
+            }
+        }
     }
     
     // MARK: - Improved Sound Selection Method

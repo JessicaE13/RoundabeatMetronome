@@ -4,6 +4,7 @@ struct TimeSignatureView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Binding var showTimeSignaturePicker: Bool
     @Binding var showSettings: Bool
+    @Binding var showSubdivisionPicker: Bool // Add this binding
     
     // Tap tempo state
     @State private var lastTapTime: Date?
@@ -59,11 +60,11 @@ struct TimeSignatureView: View {
                 }
                 .contentShape(Rectangle())
                 
-                // Rhythm Section
+                // Subdivision Section - Updated to work properly
                 Button(action: {
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
-                    // Add rhythm selection logic here
+                    showSubdivisionPicker = true
                 }) {
                     HStack(spacing: 6) {
                         Text("SUB DIV.")
@@ -71,9 +72,8 @@ struct TimeSignatureView: View {
                             .kerning(1.0)
                             .foregroundColor(Color.white.opacity(0.4))
                         
-           
-                        
-                        Image(systemName: "music.note")
+                        // Display the current subdivision symbol
+                        Text(getSubdivisionSymbol())
                             .font(.system(size: 14, weight: .medium))
                             .glowingAccent(size: 24, intensity: 0.4)
                     }
@@ -133,6 +133,26 @@ struct TimeSignatureView: View {
         }
     }
     
+    // Helper function to get the current subdivision symbol
+    private func getSubdivisionSymbol() -> String {
+        switch metronome.subdivisionMultiplier {
+        case 0.5:
+            return "♪"     // Half note
+        case 1.0:
+            return "♩"     // Quarter note
+        case 1.5:
+            return "♪."    // Dotted eighth
+        case 2.0:
+            return "♫"     // Eighth note
+        case 3.0:
+            return "♫♫♫"   // Eighth note triplet
+        case 4.0:
+            return "♬"     // Sixteenth note
+        default:
+            return "♩"     // Default to quarter note
+        }
+    }
+    
     // Tap tempo calculation function
     private func calculateTapTempo() {
         let now = Date()
@@ -188,7 +208,8 @@ struct TimeSignatureView: View {
         TimeSignatureView(
             metronome: MetronomeEngine(),
             showTimeSignaturePicker: .constant(false),
-            showSettings: .constant(false)
+            showSettings: .constant(false),
+            showSubdivisionPicker: .constant(false)
         )
     }
 }

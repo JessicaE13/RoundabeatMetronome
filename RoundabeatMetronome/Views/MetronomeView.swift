@@ -1,10 +1,3 @@
-//
-//  MetronomeView.swift
-//  RoundabeatMetronome
-//
-//  Created by Jessica Estes on 5/31/25.
-//
-
 import SwiftUI
 import AVFoundation
 
@@ -17,7 +10,7 @@ struct MetronomeView: View {
     @State private var isEditingTempo = false
     @State private var showTimeSignaturePicker = false
     @State private var showBPMKeypad = false
-    @State private var showSubdivisionPicker = false // Added for subdivision picker
+    @State private var showSubdivisionPicker = false // Keep this for subdivision picker
     @State private var previousTempo: Double = 120
     @State private var showSettings = false
     
@@ -65,7 +58,8 @@ struct MetronomeView: View {
                         TimeSignatureView(
                             metronome: metronome,
                             showTimeSignaturePicker: $showTimeSignaturePicker,
-                            showSettings: $showSettings
+                            showSettings: $showSettings,
+                            showSubdivisionPicker: $showSubdivisionPicker
                         )
                         .padding(.top, 16)
                         .padding(.bottom, 48)
@@ -116,6 +110,16 @@ struct MetronomeView: View {
                 ) { newTempo in
                     metronome.updateTempo(to: newTempo)
                 }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .zIndex(1)
+            }
+            
+            // Subdivision picker overlay
+            if showSubdivisionPicker {
+                SubdivisionPickerView(
+                    metronome: metronome,
+                    isShowingPicker: $showSubdivisionPicker
+                )
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
             }
