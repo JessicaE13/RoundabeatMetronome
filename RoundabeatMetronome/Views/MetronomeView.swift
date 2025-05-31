@@ -19,6 +19,7 @@ struct MetronomeView: View {
     @State private var showBPMKeypad = false
     @State private var showSubdivisionPicker = false // Added for subdivision picker
     @State private var previousTempo: Double = 120
+    @State private var showSettings = false
     
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
@@ -37,12 +38,38 @@ struct MetronomeView: View {
                     
                     Spacer()
                         .frame(height: geometry.safeAreaInsets.top + 40)
+            
+                            TempoSelectorView(
+                                metronome: metronome,
+                                previousTempo: $previousTempo
+                            )
+                            .padding(.top, 40)
+                            .padding(.horizontal, 40)
+
+                      
+                        BPMControlsView(
+                            metronome: metronome,
+                            isShowingKeypad: $showBPMKeypad,
+                            previousTempo: $previousTempo
+                        )
+                        .padding(.top, 16)
+                     
                     
-                    BPMView(
-                        metronome: metronome,
-                        isShowingKeypad: $showBPMKeypad,
-                        showTimeSignaturePicker: $showTimeSignaturePicker
-                    )
+                    Text("BEATS PER MINUTE (BPM)")
+                                       .font(.system(size: 12, weight: .medium))
+                                       .foregroundColor(Color.white.opacity(0.4))
+                                       .padding(.top, 8)
+                                       .padding(.bottom, 16)
+                                       .tracking(1)
+                    
+                        TimeSignatureView(
+                            metronome: metronome,
+                            showTimeSignaturePicker: $showTimeSignaturePicker,
+                            showSettings: $showSettings
+                        )
+                        .padding(.top, 20)
+                        .padding(.horizontal, 40)
+                    
                     Spacer()
                     
                     LogoView()
@@ -93,6 +120,12 @@ struct MetronomeView: View {
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
         .animation(.spring(response: 0.3), value: showSubdivisionPicker)
+        .sheet(isPresented: $showSettings) {
+            SettingsView(metronome: metronome)
+        }
+        .onAppear {
+            previousTempo = metronome.tempo
+        }
     }
     
     // Function to prepare the audio system for low latency

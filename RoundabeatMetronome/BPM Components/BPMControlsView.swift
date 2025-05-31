@@ -31,17 +31,12 @@ struct BPMControlsView: View {
                 Text("\(Int(metronome.tempo))")
                     .font(.custom("Kanit-SemiBold", size: 90))
                     .kerning(2)
+                    .padding(.top, -20)
                     .padding(.bottom, -20)
                     .foregroundColor(Color.white.opacity(0.8))
                     .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                     .monospacedDigit()
-                
-                Text("BEATS PER MINUTE (BPM)")
-                                   .font(.system(size: 12, weight: .medium))
-                                   .foregroundColor(Color.white.opacity(0.4))
-                                  // .padding(.top, -80)
-                                   .padding(.bottom, 16)
-                                   .tracking(1)
+  
             }
             .frame(width: 200, alignment: .center)
             .contentShape(Rectangle())
