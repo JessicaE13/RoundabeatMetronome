@@ -9,7 +9,7 @@ struct ArcSegmentView: View {
     let isActive: Bool
     let isFirstBeat: Bool
     let gapWidth: CGFloat
-    let highlightFirstBeat: Bool // New parameter
+    let highlightFirstBeat: Bool
    
     var body: some View {
         ZStack {
@@ -23,71 +23,118 @@ struct ArcSegmentView: View {
             }
 
             if isActive {
-                // Determine colors based on first beat highlighting
-                let shouldUseNeonMagenta = isFirstBeat && highlightFirstBeat
-                let primaryColor = shouldUseNeonMagenta ? Color(red: 0.7, green: 0.6, blue: 0.8) : Color.white // Pale subdued purple-magenta
+                // Determine if this beat should get special treatment
+                let shouldHighlightFirstBeat = isFirstBeat && highlightFirstBeat
+                let shouldShowOutlineOnly = !isFirstBeat && highlightFirstBeat
                 
-                // LED-style glow effect with multiple layers
-                
-                // Outermost soft glow (largest radius) - enhanced for neon magenta
-                arcPath
-                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.6 : 0.5),
-                            style: StrokeStyle(lineWidth: lineWidth + (shouldUseNeonMagenta ? 25 : 20), lineCap: .round))
-                    .blur(radius: shouldUseNeonMagenta ? 18 : 15)
-                
-                // Middle glow layer - more intense for neon magenta
-                arcPath
-                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.4 : 0.3),
-                            style: StrokeStyle(lineWidth: lineWidth + (shouldUseNeonMagenta ? 15 : 12), lineCap: .round))
-                    .blur(radius: shouldUseNeonMagenta ? 10 : 8)
-                
-                // Inner glow - vibrant for neon magenta
-                arcPath
-                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.8 : 0.6),
-                            style: StrokeStyle(lineWidth: lineWidth + (shouldUseNeonMagenta ? 6 : 4), lineCap: .round))
-                    .blur(radius: shouldUseNeonMagenta ? 4 : 3)
-                
-                // Core LED light - bright and crisp with enhanced magenta gradient
-                arcPath
-                    .stroke(
-                        LinearGradient(
-                            colors: shouldUseNeonMagenta ?
-                                [Color(red: 0.75, green: 0.65, blue: 0.85), Color(red: 0.65, green: 0.55, blue: 0.75)] :
-                                [Color.white, Color.white.opacity(0.9)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                    )
-                    .shadow(color: primaryColor.opacity(shouldUseNeonMagenta ? 0.6 : 0.8),
-                           radius: shouldUseNeonMagenta ? 3 : 2, x: 0, y: 0)
-                
-                // Inner highlight for extra LED brightness - more pronounced for magenta
-                arcPath
-                    .stroke(primaryColor.opacity(shouldUseNeonMagenta ? 0.7 : 0.9),
-                            style: StrokeStyle(lineWidth: lineWidth * (shouldUseNeonMagenta ? 0.4 : 0.3), lineCap: .round))
-                
-                // Additional subtle glow effect for pale magenta first beat
-                if shouldUseNeonMagenta {
-                    // Extra outer glow for subtle neon effect - using the pale purple color
+                if shouldHighlightFirstBeat {
+                   
+                    let primaryColor = Color.accentColor
+                    
+                    // Outermost soft glow
                     arcPath
-                        .stroke(Color(red: 0.68, green: 0.58, blue: 0.78).opacity(0.2),
-                                style: StrokeStyle(lineWidth: lineWidth + 25, lineCap: .round))
+                        .stroke(primaryColor.opacity(0.5),
+                                style: StrokeStyle(lineWidth: lineWidth + 20, lineCap: .round))
                         .blur(radius: 15)
+                    
+                    // Middle glow layer
+                    arcPath
+                        .stroke(primaryColor.opacity(0.3),
+                                style: StrokeStyle(lineWidth: lineWidth + 12, lineCap: .round))
+                        .blur(radius: 8)
+                    
+                    // Inner glow
+                    arcPath
+                        .stroke(primaryColor.opacity(0.6),
+                                style: StrokeStyle(lineWidth: lineWidth + 4, lineCap: .round))
+                        .blur(radius: 3)
+                    
+                    // Core LED light - bright and crisp
+                    arcPath
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.white, Color.white.opacity(0.9)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                        )
+                        .shadow(color: primaryColor.opacity(0.8),
+                               radius: 2, x: 0, y: 0)
+                    
+                    // Inner highlight for extra LED brightness
+                    arcPath
+                        .stroke(primaryColor.opacity(0.9),
+                                style: StrokeStyle(lineWidth: lineWidth * 0.3, lineCap: .round))
+                        
+                } else if shouldShowOutlineOnly {
+                    // Other beats when first beat highlighting is enabled - OUTLINE only
+                    arcPath
+                        .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                        .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
+                        .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
+                    
+                    arcPath
+                        .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                        .stroke(Color(red: 251/255, green: 251/255, blue: 252/255), lineWidth: 2.5)
+                        .blur(radius: 3)
+                    
+                    arcPath
+                        .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                        .stroke(Color(red: 251/255, green: 251/255, blue: 252/255), lineWidth: 1.5)
+                        .shadow(color: Color(red: 201/255, green: 201/255, blue: 202/255).opacity(0.75), radius: 0.75, x: 0, y: 0)
+                        
+                } else {
+                    // Default behavior when highlighting is disabled - all beats get white glow
+                    let primaryColor = Color.accentColor
+                    
+                    // Outermost soft glow
+                    arcPath
+                        .stroke(primaryColor.opacity(0.5),
+                                style: StrokeStyle(lineWidth: lineWidth + 20, lineCap: .round))
+                        .blur(radius: 15)
+                    
+                    // Middle glow layer
+                    arcPath
+                        .stroke(primaryColor.opacity(0.3),
+                                style: StrokeStyle(lineWidth: lineWidth + 12, lineCap: .round))
+                        .blur(radius: 8)
+                    
+                    // Inner glow
+                    arcPath
+                        .stroke(primaryColor.opacity(0.6),
+                                style: StrokeStyle(lineWidth: lineWidth + 4, lineCap: .round))
+                        .blur(radius: 3)
+                    
+                    // Core LED light - bright and crisp
+                    arcPath
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.white, Color.white.opacity(0.9)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                        )
+                        .shadow(color: primaryColor.opacity(0.8),
+                               radius: 2, x: 0, y: 0)
+                    
+                    // Inner highlight for extra LED brightness
+                    arcPath
+                        .stroke(primaryColor.opacity(0.9),
+                                style: StrokeStyle(lineWidth: lineWidth * 0.3, lineCap: .round))
                 }
                 
             } else {
                 // Inactive state - subtle outline
-              
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
-                    .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
+                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3), radius: 0.5, x: 0, y: 0)
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 1.5)
-                    .shadow(color:   Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.75), radius: 0.5, x: 0, y: 0)
-                
+                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.75), radius: 0.5, x: 0, y: 0)
             }
         }
         .animation(.easeInOut(duration: 0.15), value: isActive)
@@ -105,10 +152,10 @@ struct ArcSegmentView: View {
                 startAngle: 225,
                 endAngle: 315,
                 lineWidth: 25,
-                isActive: true, // Changed to true to show LED effect
-                isFirstBeat: true,
+                isActive: true,
+                isFirstBeat: false,
                 gapWidth: 10,
-                highlightFirstBeat: true // Added to show neon magenta effect
+                highlightFirstBeat: true
             )
         }
     }

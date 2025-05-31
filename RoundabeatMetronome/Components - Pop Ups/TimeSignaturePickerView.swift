@@ -193,7 +193,7 @@ struct TimeSignaturePickerView: View {
                 isShowingPicker = false
             }) {
                 Text("APPLY CUSTOM")
-                    .font(.custom("Kanit-SemiBold", size: 16))
+                    .font(.system(size: 16, weight: .medium))
                     .kerning(1)
                     .foregroundColor(Color.white.opacity(0.9))
                     .frame(maxWidth: .infinity)
@@ -271,3 +271,4 @@ struct TimeSignaturePickerView_Previews: PreviewProvider {
         }
     }
 }
+

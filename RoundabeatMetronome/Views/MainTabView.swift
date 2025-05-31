@@ -64,8 +64,8 @@ struct MainTabView: View {
                 // Dark background matching the app theme
                 LinearGradient(
                     colors: [
-                        Color(red: 28/255, green: 28/255, blue: 29/255),
-                        Color(red: 24/255, green: 24/255, blue: 25/255)
+                        Color(red: 0/255, green: 0/255, blue: 0/255).opacity(0.75),
+                        Color(red: 1/255, green: 1/255, blue: 1/255).opacity(0.95)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
