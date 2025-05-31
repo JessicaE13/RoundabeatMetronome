@@ -30,7 +30,7 @@ struct DialControl: View {
                 dialBackground
                 centerKnob
             }
-            .frame(width: dialSize + 55, height: dialSize + 55)
+            .frame(width: dialSize + 85, height: dialSize + 85)
             .gesture(createDragGesture())
             .onChange(of: metronome.tempo) { _, newTempo in
                 // Only update dial rotation if we're not currently dragging

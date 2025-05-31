@@ -110,42 +110,7 @@ struct SimplifiedBPMSectionView: View {
                 .scaleEffect(pulseAnimation ? 1.02 : 1.0)
                 .animation(.easeInOut(duration: 0.1), value: pulseAnimation)
             }
-//            .background(
-//                // Flatter, more recessed appearance for BPM section
-//                RoundedRectangle(cornerRadius: 24)
-//                    .fill(Color(red: 8/255, green: 8/255, blue: 9/255))
-//                    .overlay(
-//                        // Inner shadow effect for recessed look
-//                        RoundedRectangle(cornerRadius: 24)
-//                            .stroke(
-//                                LinearGradient(
-//                                    colors: [
-//                                        Color.black.opacity(0.6),
-//                                        Color.white.opacity(0.03)
-//                                    ],
-//                                    startPoint: .topLeading,
-//                                    endPoint: .bottomTrailing
-//                                ),
-//                                lineWidth: 1
-//                            )
-//                    )
-//                    .overlay(
-//                        // Subtle inner highlight
-//                        RoundedRectangle(cornerRadius: 24)
-//                            .inset(by: 1)
-//                            .stroke(
-//                                LinearGradient(
-//                                    colors: [
-//                                        Color.white.opacity(0.02),
-//                                        Color.clear
-//                                    ],
-//                                    startPoint: .top,
-//                                    endPoint: .bottom
-//                                ),
-//                                lineWidth: 0.5
-//                            )
-//                    )
-//            )
+
             .scaleEffect(containerScale)
             .gesture(
                 DragGesture()

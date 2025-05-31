@@ -16,13 +16,13 @@ struct MainTabView: View {
                         SoundsView(metronome: metronome)
                        
                     case 1:
-                        ContentView(metronome: metronome)
+                        MetronomeView(metronome: metronome)
                         
                     case 2:
                         SettingsView(metronome: metronome)
                         
                     default:
-                        ContentView(metronome: metronome) // Also ensure default case shows ContentView
+                        MetronomeView(metronome: metronome)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

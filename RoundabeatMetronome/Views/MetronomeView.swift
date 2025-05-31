@@ -1,9 +1,16 @@
+//
+//  MetronomeView.swift
+//  RoundabeatMetronome
+//
+//  Created by Jessica Estes on 5/31/25.
+//
+
 import SwiftUI
 import AVFoundation
 
 // MARK: - Content View
 
-struct ContentView: View {
+struct MetronomeView: View {
     
     // Use an ObservedObject instead of a StateObject to share it between tabs
     @ObservedObject var metronome: MetronomeEngine
@@ -110,7 +117,7 @@ struct ShimmerCurveModifier: ViewModifier {
 }
 
 #Preview {
-    ContentView(
+    MetronomeView(
         metronome: MetronomeEngine()
     )
 }
