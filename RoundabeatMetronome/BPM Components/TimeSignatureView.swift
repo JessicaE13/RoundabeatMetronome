@@ -28,17 +28,17 @@ struct TimeSignatureView: View {
                         Text("\(metronome.beatsPerMeasure)")
                             .font(.custom("Kanit-Regular", size: 14))
                             .kerning(0.8)
-                            .foregroundColor(Color.white.opacity(0.9))
+                            .glowingAccent(size: 24, intensity: 0.4)
                         
                         Text("/")
                             .font(.custom("Kanit-Regular", size: 14))
                             .kerning(0.8)
-                            .foregroundColor(Color.white.opacity(0.7))
+                            .glowingAccent(size: 24, intensity: 0.4)
                         
                         Text("\(metronome.beatUnit)")
                             .font(.custom("Kanit-Regular", size: 14))
                             .kerning(0.8)
-                            .foregroundColor(Color.white.opacity(0.9))
+                            .glowingAccent(size: 24, intensity: 0.4)
                     }
                     .frame(maxWidth: .infinity, minHeight: 38)
                     .background(
@@ -75,7 +75,7 @@ struct TimeSignatureView: View {
                         
                         Image(systemName: "music.note")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.9))
+                            .glowingAccent(size: 24, intensity: 0.4)
                     }
                     .frame(maxWidth: .infinity, minHeight: 38)
                     .background(
@@ -108,7 +108,7 @@ struct TimeSignatureView: View {
                         
                         Image(systemName: "hand.tap")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.9))
+                            .glowingAccent(size: 24, intensity: 0.4)
                     }
                     .frame(maxWidth: .infinity, minHeight: 38)
                     .background(

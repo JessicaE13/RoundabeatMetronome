@@ -44,7 +44,8 @@ struct MetronomeView: View {
                                 previousTempo: $previousTempo
                             )
                             .padding(.top, 40)
-                            .padding(.horizontal, 40)
+                            .padding(.bottom, 16)
+                            .padding(.horizontal, 24)
 
                       
                         BPMControlsView(
@@ -52,8 +53,7 @@ struct MetronomeView: View {
                             isShowingKeypad: $showBPMKeypad,
                             previousTempo: $previousTempo
                         )
-                        .padding(.top, 16)
-                     
+                      
                     
                     Text("BEATS PER MINUTE (BPM)")
                                        .font(.system(size: 12, weight: .medium))
@@ -67,8 +67,9 @@ struct MetronomeView: View {
                             showTimeSignaturePicker: $showTimeSignaturePicker,
                             showSettings: $showSettings
                         )
-                        .padding(.top, 20)
-                        .padding(.horizontal, 40)
+                        .padding(.top, 16)
+                        .padding(.bottom, 24)
+                        .padding(.horizontal, 24)
                     
                     Spacer()
                     

@@ -40,16 +40,10 @@ struct TempoSelectorView: View {
                             .padding(.horizontal, 12)
                             .background(
                                 RoundedRectangle(cornerRadius: 15)
-                                    .fill(isSelected ?
-                                          Color.white.opacity(0.1) :
-                                            Color.clear)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 15)
-                                            .stroke(isSelected ?
-                                                    Color.white.opacity(0.2) :
-                                                        Color.clear, lineWidth: 1)
-                                    )
+                                    .stroke(Color.accentColor.opacity(0.5), lineWidth: 1)
+                                    .opacity(isSelected ? 1 : 0)
                             )
+                            .padding(1)
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
@@ -86,7 +80,7 @@ struct TempoSelectorView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(10)
+     //   .padding(10)
     }
     
     // Helper function to determine scroll anchor based on position
