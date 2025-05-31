@@ -31,9 +31,59 @@ struct SettingsView: View {
                     Toggle("Highlight First Beat", isOn: $metronome.highlightFirstBeat)
                 }
                 
+//                Section(header: Text("Encourage Us")) {
+//                    Link(destination: URL(string: "https://apps.apple.com/app/id[YOUR_APP_ID]?action=write-review")!) {
+//                        HStack {
+//                            Text("Leave a 5-Star Review")
+//                                .foregroundColor(.primary)
+//                            Spacer()
+//                            HStack(spacing: 2) {
+//                                ForEach(0..<5, id: \.self) { _ in
+//                                    Image(systemName: "star.fill")
+//                                        .foregroundColor(.yellow)
+//                                        .font(.caption)
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                
                 Section(header: Text("About")) {
-                    NavigationLink(destination: Text("RoundaBeat Metronome\nVersion 1.0")) {
+                    HStack {
                         Text("App Information")
+                        Spacer()
+                        Text("RoundaBeat Metronome v1.0")
+                            .foregroundColor(.gray)
+                    }
+                    
+                    Link(destination: URL(string: "mailto:hello@roundabeat.com")!) {
+                        HStack {
+                            Text("Feedback")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Image(systemName: "envelope")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    Link(destination: URL(string: "http://roundabeat.com/mobile-app-privacy-policy/")!) {
+                        HStack {
+                            Text("Privacy Policy")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Image(systemName: "arrow.up.right.square")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    Link(destination: URL(string: "http://roundabeat.com/roundabeat-mobile-app-terms-of-use/")!) {
+                        HStack {
+                            Text("Terms of Use")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Image(systemName: "arrow.up.right.square")
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
             }
