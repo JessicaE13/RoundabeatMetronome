@@ -43,11 +43,12 @@ struct MetronomeView: View {
                         isShowingKeypad: $showBPMKeypad,
                         showTimeSignaturePicker: $showTimeSignaturePicker
                     )
+                    Spacer()
                     
                     LogoView()
-                    
+                    Spacer()
                     DialControl(metronome: metronome)
-                    
+                    Spacer()
                 }
                 .frame(
                     width: geometry.size.width,

@@ -11,12 +11,16 @@ struct DialBackgroundHelp: View {
     
     private let dialSize: CGFloat = 225
     @State private var dialRotation: Double = 0.0
+    private let ringLineWidth: CGFloat = 24
+    @ObservedObject var metronome: MetronomeEngine
     
     var body: some View {
         
         ZStack {
             
             BackgroundView()
+            
+            SegmentedCircleView(metronome: metronome, diameter: dialSize + 100, lineWidth: ringLineWidth)
             
             // Main Circle Background - darker color
             Circle()
@@ -77,5 +81,5 @@ struct DialBackgroundHelp: View {
 }
 
 #Preview {
-    DialBackgroundHelp()
+    DialBackgroundHelp(metronome: MetronomeEngine())
 }

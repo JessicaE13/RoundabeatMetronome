@@ -41,9 +41,9 @@ struct MainTabView: View {
     
     private var bottomTabBar: some View {
         VStack(spacing: 0) {
-            // Subtle top border
+            // Consistent top border that works in both light and dark mode
             Rectangle()
-                .fill(Color.white.opacity(0.1))
+                .fill(Color(red: 0.3, green: 0.3, blue: 0.3))
                 .frame(height: 0.5)
             
             HStack(spacing: 0) {
@@ -87,15 +87,23 @@ struct MainTabView: View {
             print("📱 Switched to tab \(tab) (\(title))")
         }) {
             VStack(spacing: 4) {
-                Image(systemName: imageName)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(selectedTab == tab ? Color.white.opacity(0.9) : Color.white.opacity(0.5))
-                    .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
+                Group {
+                    if selectedTab == tab {
+                        Image(systemName: imageName)
+                            .font(.system(size: 20, weight: .medium))
+                            .glowingAccent(intensity: 0.4)
+                    } else {
+                        Image(systemName: imageName)
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(Color.white.opacity(0.5))
+                    }
+                }
+                .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                 
                 Text(title)
                     .font(.system(size: 10))
                     .kerning(0.5)
-                    .foregroundColor(selectedTab == tab ? Color.white.opacity(0.8) : Color.white.opacity(0.4))
+                    .foregroundColor(selectedTab == tab ? Color.white.opacity(0.8) : Color.white.opacity(0.9))
             }
             .frame(maxWidth: .infinity, maxHeight: 50)
             .contentShape(Rectangle())

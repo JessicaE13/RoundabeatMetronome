@@ -22,7 +22,7 @@ struct TimeSignatureView: View {
                     HStack(spacing: 2) {
                         Text("TIME  ")
                             .font(.system(size: 12, weight: .medium))
-                            .kerning(1.2)
+                            .kerning(1.0)
                             .foregroundColor(Color.white.opacity(0.4))
                         
                         Text("\(metronome.beatsPerMeasure)")
@@ -68,7 +68,7 @@ struct TimeSignatureView: View {
                     HStack(spacing: 6) {
                         Text("SUB DIV.")
                             .font(.system(size: 12, weight: .medium))
-                            .kerning(1.2)
+                            .kerning(1.0)
                             .foregroundColor(Color.white.opacity(0.4))
                         
            
@@ -103,7 +103,7 @@ struct TimeSignatureView: View {
                     HStack(spacing: 6) {
                         Text("TAP")
                             .font(.system(size: 12, weight: .medium))
-                            .kerning(1.2)
+                            .kerning(1.0)
                             .foregroundColor(Color.white.opacity(0.4))
                         
                         Image(systemName: "hand.tap")

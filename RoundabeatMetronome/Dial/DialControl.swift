@@ -7,7 +7,7 @@ struct DialControl: View {
     @State private var isDragging = false
     @State private var isKnobTouched = false
 
-    private let dialSize: CGFloat = 225
+    private let dialSize: CGFloat = 220
     private let knobSize: CGFloat = 90
     private let innerDonutRatio: CGFloat = 0.35
     
@@ -51,49 +51,49 @@ struct DialControl: View {
             Circle()
                 .fill(      LinearGradient(
                     gradient: Gradient(colors: [
-                        Color(red: 0/255, green: 0/255, blue: 1/255).opacity(0.85),
-                        Color(red: 0/255, green: 0/255, blue: 1/255).opacity(0.95)
+                        Color(red: 0/255, green: 0/255, blue: 0/255).opacity(0.75),
+                        Color(red: 1/255, green: 1/255, blue: 1/255).opacity(0.95)
                     ]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                             )
-                .frame(width: dialSize+15, height: dialSize+15)
+                .frame(width: dialSize + 13, height: dialSize + 13)
+            
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.01),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.1),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.2),
+                            Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.75
+                )
+                .frame(width: dialSize + 13, height: dialSize + 13)
 
             Circle()
                 .fill(Color(red: 7/255, green: 7/255, blue: 8/255))
                 .frame(width: dialSize, height: dialSize)
                 .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
-
- 
+           
             Circle()
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color(red: 105/255, green: 105/255, blue: 106/255).opacity(0.4),
-                            Color(red: 105/255, green: 105/255, blue: 106/255).opacity(0.35)
+                            Color(red: 85/255, green: 85/255, blue: 86/255).opacity(0.50),
+                            Color(red: 85/255, green: 85/255, blue: 86/255).opacity(0.3),
+                            Color(red: 85/255, green: 85/255, blue: 86/255).opacity(0.25),
+                            Color(red: 85/255, green: 85/255, blue: 86/255).opacity(0.2)
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1.0
-                )
-                .frame(width: dialSize + 2, height: dialSize + 2)
-
-            // Outer highlight ring - simulates light hitting the raised edge
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(red: 85/255, green: 85/255, blue: 86/255).opacity(0.4),
-                            Color(red: 65/255, green: 65/255, blue: 66/255).opacity(0.2),
-                            Color(red: 45/255, green: 45/255, blue: 46/255).opacity(0.1),
-                            Color(red: 25/255, green: 25/255, blue: 26/255).opacity(0.05)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 0.5
+                    lineWidth: 0.75
                 )
                 .frame(width: dialSize + 2, height: dialSize + 2)
 
@@ -115,11 +115,12 @@ struct DialControl: View {
                 .frame(width: dialSize - 2, height: dialSize - 2)
             
             // Rotating indicator line - shows current position
-            Rectangle()
-                .fill(Color.white.opacity(0.5))
-                .frame(width: 3, height: 16)
+            Circle()
+                .glowingAccent(intensity: 0.5)
+                .opacity(0.85)
+                .frame(width: 5, height: 5)
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 0)
-                .offset(y: -(dialSize / 2 - 14))
+                .offset(y: -(dialSize / 2 - 11))
                 .rotationEffect(Angle(degrees: dialRotation))
         }
     }
@@ -189,23 +190,13 @@ struct DialControl: View {
             metronome.togglePlayback()
         }
     }
-
+    
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
             .font(.system(size: 30))
-            .foregroundStyle(
-                RadialGradient(
-                    colors: [
-                        Color(red: 249/255, green: 250/255, blue: 252/255),
-                        Color(red: 187/255, green: 189/255, blue: 192/255)
-                    ],
-                    center: UnitPoint(x: 0.35, y: 0.5),
-                    startRadius: 6,
-                    endRadius: 20
-                )
-            )
+            .glowingAccent()
     }
-
+    
     private func createDragGesture() -> some Gesture {
         DragGesture(minimumDistance: 1)
             .onChanged { value in
