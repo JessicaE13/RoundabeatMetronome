@@ -153,7 +153,7 @@ struct TimeSignaturePickerView: View {
                 }
                 
                 Text("/")
-                    .font(.custom("Kanit-Light", size: 32))
+                    .font(.custom("Kanit-Regular", size: 32))
                     .foregroundColor(Color.white.opacity(0.6))
                 
                 // Denominator picker
