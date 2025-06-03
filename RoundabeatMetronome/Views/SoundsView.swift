@@ -88,7 +88,7 @@ struct SoundsView: View {
                     VStack(spacing: 0) {
                         // Header
                         headerView(isIPad: isIPad)
-                            .padding(.top, geometry.safeAreaInsets.top + (isIPad ? 60 : 36))
+                            .padding(.top, geometry.safeAreaInsets.top + (isIPad ? 40 : 24))
                         
                         // Category Filter
                         categoryFilterView(isIPad: isIPad, horizontalPadding: horizontalPadding)
@@ -99,9 +99,9 @@ struct SoundsView: View {
                         // Current Selection Info
                         currentSelectionView(isIPad: isIPad, horizontalPadding: horizontalPadding)
                         
-                        // Bottom spacing for tab bar
+                        // Reduced bottom spacing since MainTabView handles tab bar spacing
                         Spacer()
-                            .frame(height: isIPad ? 100 : 80)
+                            .frame(height: isIPad ? 30 : 20)
                     }
                     .frame(maxWidth: contentMaxWidth)
                     .frame(maxWidth: .infinity) // Center the content
@@ -109,6 +109,7 @@ struct SoundsView: View {
                 }
             }
         }
+        .ignoresSafeArea(.all, edges: [.top, .leading, .trailing]) // Don't ignore bottom for tab bar
         .onAppear {
             setupAudioSession()
             // Initialize selectedSound based on metronome's current sound
@@ -124,13 +125,13 @@ struct SoundsView: View {
                 .font(.system(size: isIPad ? 16 : 12, weight: .medium))
                 .kerning(1.5)
                 .foregroundColor(Color.white.opacity(0.4))
-                .padding(.top, isIPad ? 30 : 20)
+                .padding(.top, isIPad ? 20 : 12)
             
             Text("Choose Your Beat")
                 .font(.system(size: isIPad ? 18 : 12, weight: .medium))
                 .kerning(1)
                 .foregroundColor(Color.white.opacity(0.9))
-                .padding(.bottom, isIPad ? 24 : 16)
+                .padding(.bottom, isIPad ? 20 : 12)
         }
     }
     
@@ -146,7 +147,7 @@ struct SoundsView: View {
             }
             .padding(.horizontal, horizontalPadding)
         }
-        .padding(.bottom, isIPad ? 30 : 20)
+        .padding(.bottom, isIPad ? 24 : 16)
     }
     
     private func categoryButton(category: SoundCategory?, title: String, isIPad: Bool) -> some View {
@@ -196,7 +197,7 @@ struct SoundsView: View {
             }
         }
         .padding(.horizontal, horizontalPadding)
-        .padding(.bottom, isIPad ? 30 : 20)
+        .padding(.bottom, isIPad ? 24 : 16)
     }
     
     private func soundRowView(sound: SoundOption, isIPad: Bool) -> some View {
@@ -369,7 +370,7 @@ struct SoundsView: View {
                 .disabled(metronome.isPlaying) // Disable the button when metronome is playing
             }
             .padding(.horizontal, horizontalPadding)
-            .padding(.bottom, isIPad ? 30 : 20)
+            .padding(.bottom, isIPad ? 20 : 12)
         }
     }
     

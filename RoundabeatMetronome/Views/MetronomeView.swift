@@ -39,21 +39,21 @@ struct AdaptiveLayout {
         self.screenHeight = screenHeight
     }
     
-    // Adaptive spacing values
+    // Adaptive spacing values - reduced bottom spacing since tab bar handles it
     var topSpacing: CGFloat {
-        isIPad ? 80 : 40
+        isIPad ? 60 : 30
     }
     
     var sectionSpacing: CGFloat {
-        isIPad ? 32 : 16
+        isIPad ? 24 : 12
     }
     
     var componentSpacing: CGFloat {
-        isIPad ? 24 : 16
+        isIPad ? 20 : 12
     }
     
     var bottomSpacing: CGFloat {
-        isIPad ? 60 : 48
+        isIPad ? 30 : 20 // Reduced since tab bar provides spacing
     }
     
     // Adaptive padding values
@@ -155,7 +155,7 @@ struct MetronomeView: View {
                                 adaptiveLayout: layout
                             )
                             .padding(.top, layout.componentSpacing)
-                            .padding(.bottom, layout.bottomSpacing)
+                            .padding(.bottom, layout.sectionSpacing)
                             .padding(.horizontal, layout.horizontalPadding)
                             
                             LogoView()
@@ -169,6 +169,7 @@ struct MetronomeView: View {
                                 adaptiveLayout: layout
                             )
                             
+                            // Reduced bottom spacing since MainTabView handles tab bar spacing
                             Spacer()
                                 .frame(height: layout.bottomSpacing)
                         }
@@ -220,7 +221,7 @@ struct MetronomeView: View {
             }
             
         }
-        .ignoresSafeArea(.all, edges: .all)
+        .ignoresSafeArea(.all, edges: [.top, .leading, .trailing]) // Don't ignore bottom for tab bar
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
         .animation(.spring(response: 0.3), value: showSubdivisionPicker)

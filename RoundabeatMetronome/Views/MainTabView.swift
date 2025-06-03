@@ -8,34 +8,44 @@ struct MainTabView: View {
     var body: some View {
         GeometryReader { geometry in
             let isIPad = UIDevice.current.isIPad
+            let tabBarHeight: CGFloat = isIPad ? 90 : 70 // Calculate tab bar height
             
             ZStack {
                 // Content area
                 VStack(spacing: 0) {
-                    // Main content
+                    // Main content with proper bottom padding for tab bar
                     ZStack {
                         switch selectedTab {
                         case 0:
                             SoundsView(metronome: metronome)
+                                .padding(.bottom, tabBarHeight) // Add padding to prevent overlap
                            
                         case 1:
                             MetronomeView(metronome: metronome)
+                                .padding(.bottom, tabBarHeight) // Add padding to prevent overlap
                             
                         case 2:
                             SettingsView(metronome: metronome)
+                                .padding(.bottom, tabBarHeight) // Add padding to prevent overlap
                             
                         default:
                             MetronomeView(metronome: metronome)
+                                .padding(.bottom, tabBarHeight) // Add padding to prevent overlap
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                    // Bottom Tab Bar - adaptive sizing
-                    bottomTabBar(isIPad: isIPad)
+                    Spacer() // Push tab bar to bottom
+                }
+                
+                // Bottom Tab Bar - positioned at bottom with proper safe area handling
+                VStack {
+                    Spacer() // Push to bottom
+                    bottomTabBar(isIPad: isIPad, geometry: geometry)
                 }
             }
         }
-        .ignoresSafeArea(.all, edges: .all)
+        .ignoresSafeArea(.all, edges: [.top, .leading, .trailing]) // Only ignore top, leading, trailing - preserve bottom safe area
         .onAppear {
             // Always start on the metronome tab
             selectedTab = 1
@@ -43,7 +53,7 @@ struct MainTabView: View {
         }
     }
     
-    private func bottomTabBar(isIPad: Bool) -> some View {
+    private func bottomTabBar(isIPad: Bool, geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             // Consistent top border that works in both light and dark mode
             Rectangle()
@@ -76,7 +86,7 @@ struct MainTabView: View {
                 )
             }
             .padding(.top, isIPad ? 12 : 8)
-            .padding(.bottom, isIPad ? 16 : 8)
+            .padding(.bottom, max(geometry.safeAreaInsets.bottom, isIPad ? 16 : 8)) // Respect safe area
             .background(
                 // Dark background matching the app theme
                 LinearGradient(
