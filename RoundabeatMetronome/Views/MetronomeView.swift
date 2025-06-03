@@ -1,7 +1,94 @@
 import SwiftUI
 import AVFoundation
 
-// MARK: - Content View
+// MARK: - Device Type Detection
+extension UIDevice {
+    var isIPad: Bool {
+        return UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
+    var isIPhone: Bool {
+        return UIDevice.current.userInterfaceIdiom == .phone
+    }
+}
+
+// MARK: - Adaptive Layout Helper
+struct AdaptiveLayout {
+    let isIPad: Bool
+    let screenWidth: CGFloat
+    let screenHeight: CGFloat
+    
+    init(geometry: GeometryProxy) {
+        self.isIPad = UIDevice.current.isIPad
+        self.screenWidth = geometry.size.width
+        self.screenHeight = geometry.size.height
+    }
+    
+    // Default initializer for cases where GeometryProxy isn't available
+    static var `default`: AdaptiveLayout {
+        return AdaptiveLayout(
+            isIPad: UIDevice.current.isIPad,
+            screenWidth: UIScreen.main.bounds.width,
+            screenHeight: UIScreen.main.bounds.height
+        )
+    }
+    
+    private init(isIPad: Bool, screenWidth: CGFloat, screenHeight: CGFloat) {
+        self.isIPad = isIPad
+        self.screenWidth = screenWidth
+        self.screenHeight = screenHeight
+    }
+    
+    // Adaptive spacing values
+    var topSpacing: CGFloat {
+        isIPad ? 80 : 40
+    }
+    
+    var sectionSpacing: CGFloat {
+        isIPad ? 32 : 16
+    }
+    
+    var componentSpacing: CGFloat {
+        isIPad ? 24 : 16
+    }
+    
+    var bottomSpacing: CGFloat {
+        isIPad ? 60 : 48
+    }
+    
+    // Adaptive padding values
+    var horizontalPadding: CGFloat {
+        if isIPad {
+            return max(60, screenWidth * 0.1) // 10% of screen width, minimum 60
+        }
+        return 24
+    }
+    
+    var contentMaxWidth: CGFloat? {
+        isIPad ? min(600, screenWidth * 0.7) : nil
+    }
+    
+    // Font scaling
+    var bpmFontSize: CGFloat {
+        if isIPad {
+            return min(120, screenWidth * 0.15) // Scale with screen width
+        }
+        return 90
+    }
+    
+    var dialSize: CGFloat {
+        if isIPad {
+            return min(300, screenWidth * 0.35)
+        }
+        return 220
+    }
+    
+    var ringLineWidth: CGFloat {
+        isIPad ? 32 : 24
+    }
+}
+
+// MARK: - Content View with Adaptive Layout
 
 struct MetronomeView: View {
     
@@ -10,7 +97,7 @@ struct MetronomeView: View {
     @State private var isEditingTempo = false
     @State private var showTimeSignaturePicker = false
     @State private var showBPMKeypad = false
-    @State private var showSubdivisionPicker = false // Keep this for subdivision picker
+    @State private var showSubdivisionPicker = false
     @State private var previousTempo: Double = 120
     @State private var showSettings = false
     
@@ -21,68 +108,76 @@ struct MetronomeView: View {
     
     var body: some View {
         
-        ZStack(alignment: .center) { // Explicitly set alignment
+        ZStack(alignment: .center) {
             
             BackgroundView()
             
             // Main metronome interface
             GeometryReader { geometry in
-                VStack(spacing: 0) {
-                    
-                    Spacer()
-                        .frame(height: geometry.safeAreaInsets.top + 40)
-            
+                let layout = AdaptiveLayout(geometry: geometry)
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        
+                        Spacer()
+                            .frame(height: geometry.safeAreaInsets.top + layout.topSpacing)
+                
+                        // Content container with max width for iPad
+                        VStack(spacing: 0) {
+                            
                             TempoSelectorView(
                                 metronome: metronome,
                                 previousTempo: $previousTempo
                             )
-                            .padding(.top, 40)
-                            .padding(.bottom, 16)
-                            .padding(.horizontal, 24)
-
-                      
-                        BPMControlsView(
-                            metronome: metronome,
-                            isShowingKeypad: $showBPMKeypad,
-                            previousTempo: $previousTempo
-                        )
-                      
-                    
-                    Text("BEATS PER MINUTE (BPM)")
-                                       .font(.system(size: 12, weight: .medium))
-                                       .foregroundColor(Color.white.opacity(0.4))
-                                       .padding(.top, 8)
-                                       .padding(.bottom, 16)
-                                       .tracking(1)
-                    
-                        TimeSignatureView(
-                            metronome: metronome,
-                            showTimeSignaturePicker: $showTimeSignaturePicker,
-                            showSettings: $showSettings,
-                            showSubdivisionPicker: $showSubdivisionPicker
-                        )
-                        .padding(.top, 16)
-                        .padding(.bottom, 48)
-                        .padding(.horizontal, 24)
-                    
-                    
-                    
-                    LogoView()
-                
-                    
-                    Spacer()
-                    
-                    DialControl(metronome: metronome)
-                    
-                    Spacer()
+                            .padding(.top, layout.sectionSpacing)
+                            .padding(.bottom, layout.componentSpacing)
+                            .padding(.horizontal, layout.horizontalPadding)
+                            
+                            BPMControlsView(
+                                metronome: metronome,
+                                isShowingKeypad: $showBPMKeypad,
+                                previousTempo: $previousTempo,
+                                adaptiveLayout: layout
+                            )
+                            
+                            Text("BEATS PER MINUTE (BPM)")
+                                .font(.system(size: layout.isIPad ? 14 : 12, weight: .medium))
+                                .foregroundColor(Color.white.opacity(0.4))
+                                .padding(.top, layout.componentSpacing / 2)
+                                .padding(.bottom, layout.componentSpacing)
+                                .tracking(1)
+                            
+                            TimeSignatureView(
+                                metronome: metronome,
+                                showTimeSignaturePicker: $showTimeSignaturePicker,
+                                showSettings: $showSettings,
+                                showSubdivisionPicker: $showSubdivisionPicker,
+                                adaptiveLayout: layout
+                            )
+                            .padding(.top, layout.componentSpacing)
+                            .padding(.bottom, layout.bottomSpacing)
+                            .padding(.horizontal, layout.horizontalPadding)
+                            
+                            LogoView()
+                                .scaleEffect(layout.isIPad ? 1.5 : 1.0)
+                            
+                            Spacer()
+                                .frame(height: layout.sectionSpacing)
+                            
+                            DialControl(
+                                metronome: metronome,
+                                adaptiveLayout: layout
+                            )
+                            
+                            Spacer()
+                                .frame(height: layout.bottomSpacing)
+                        }
+                        .frame(maxWidth: layout.contentMaxWidth)
+                        .frame(maxWidth: .infinity) // Center the content
+                    }
+                    .frame(minHeight: geometry.size.height)
                 }
-                .frame(
-                    width: geometry.size.width,
-                    height: geometry.size.height,
-                    alignment: .center
-                ) // Explicitly set frame and alignment
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // Additional centering
             .onAppear {
                 // Prepare audio system as soon as view appears
                 prepareAudioSystem()

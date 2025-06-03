@@ -1,34 +1,38 @@
 import SwiftUI
 
-// MARK: - Main Tab View with Persistence
+// MARK: - Main Tab View with Device-Adaptive Layout
 struct MainTabView: View {
     @StateObject private var metronome = MetronomeEngine()
     @State private var selectedTab = 1 // Always start on metronome tab
     
     var body: some View {
-        ZStack {
-            // Content area
-            VStack(spacing: 0) {
-                // Main content
-                ZStack {
-                    switch selectedTab {
-                    case 0:
-                        SoundsView(metronome: metronome)
-                       
-                    case 1:
-                        MetronomeView(metronome: metronome)
-                        
-                    case 2:
-                        SettingsView(metronome: metronome)
-                        
-                    default:
-                        MetronomeView(metronome: metronome)
+        GeometryReader { geometry in
+            let isIPad = UIDevice.current.isIPad
+            
+            ZStack {
+                // Content area
+                VStack(spacing: 0) {
+                    // Main content
+                    ZStack {
+                        switch selectedTab {
+                        case 0:
+                            SoundsView(metronome: metronome)
+                           
+                        case 1:
+                            MetronomeView(metronome: metronome)
+                            
+                        case 2:
+                            SettingsView(metronome: metronome)
+                            
+                        default:
+                            MetronomeView(metronome: metronome)
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    // Bottom Tab Bar - adaptive sizing
+                    bottomTabBar(isIPad: isIPad)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-                // Bottom Tab Bar - fixed to bottom
-                bottomTabBar
             }
         }
         .ignoresSafeArea(.all, edges: .all)
@@ -39,7 +43,7 @@ struct MainTabView: View {
         }
     }
     
-    private var bottomTabBar: some View {
+    private func bottomTabBar(isIPad: Bool) -> some View {
         VStack(spacing: 0) {
             // Consistent top border that works in both light and dark mode
             Rectangle()
@@ -47,19 +51,32 @@ struct MainTabView: View {
                 .frame(height: 0.5)
             
             HStack(spacing: 0) {
-    
-                
                 // Sounds Tab Button
-                tabButton(imageName: "speaker.wave.2", title: "Sounds", tab: 0)
+                tabButton(
+                    imageName: "speaker.wave.2",
+                    title: "Sounds",
+                    tab: 0,
+                    isIPad: isIPad
+                )
                 
                 // Metronome Tab Button
-                tabButton(imageName: "metronome", title: "Metronome", tab: 1)
+                tabButton(
+                    imageName: "metronome",
+                    title: "Metronome",
+                    tab: 1,
+                    isIPad: isIPad
+                )
                 
                 // Settings Tab Button
-                tabButton(imageName: "gearshape", title: "Settings", tab: 2)
+                tabButton(
+                    imageName: "gearshape",
+                    title: "Settings",
+                    tab: 2,
+                    isIPad: isIPad
+                )
             }
-            .padding(.top, 8)
-            .padding(.bottom, 8)
+            .padding(.top, isIPad ? 12 : 8)
+            .padding(.bottom, isIPad ? 16 : 8)
             .background(
                 // Dark background matching the app theme
                 LinearGradient(
@@ -74,8 +91,8 @@ struct MainTabView: View {
         }
     }
     
-    // Helper function to create tab buttons
-    private func tabButton(imageName: String, title: String, tab: Int) -> some View {
+    // Helper function to create adaptive tab buttons
+    private func tabButton(imageName: String, title: String, tab: Int, isIPad: Bool) -> some View {
         Button(action: {
             selectedTab = tab // Switch tabs but don't persist
             
@@ -86,26 +103,26 @@ struct MainTabView: View {
             
             print("📱 Switched to tab \(tab) (\(title))")
         }) {
-            VStack(spacing: 4) {
+            VStack(spacing: isIPad ? 6 : 4) {
                 Group {
                     if selectedTab == tab {
                         Image(systemName: imageName)
-                            .font(.system(size: 20, weight: .medium))
+                            .font(.system(size: isIPad ? 28 : 20, weight: .medium))
                             .glowingAccent(intensity: 0.4)
                     } else {
                         Image(systemName: imageName)
-                            .font(.system(size: 20, weight: .medium))
+                            .font(.system(size: isIPad ? 28 : 20, weight: .medium))
                             .foregroundColor(Color.white.opacity(0.5))
                     }
                 }
                 .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                 
                 Text(title)
-                    .font(.system(size: 10))
+                    .font(.system(size: isIPad ? 14 : 10))
                     .kerning(0.5)
                     .foregroundColor(selectedTab == tab ? Color.white.opacity(0.8) : Color.white.opacity(0.9))
             }
-            .frame(maxWidth: .infinity, maxHeight: 50)
+            .frame(maxWidth: .infinity, maxHeight: isIPad ? 70 : 50)
             .contentShape(Rectangle())
         }
         .scaleEffect(selectedTab == tab ? 1.05 : 1.0)

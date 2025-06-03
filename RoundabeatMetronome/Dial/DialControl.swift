@@ -6,35 +6,34 @@ struct DialControl: View {
     @State private var previousAngle: Double?
     @State private var isDragging = false
     @State private var isKnobTouched = false
-
-    private let dialSize: CGFloat = 220
-    private let knobSize: CGFloat = 90
-    private let innerDonutRatio: CGFloat = 0.35
     
-    // Changed: Now uses 5 full rotations (1800 degrees total)
-    private let minRotation: Double = -900  // -5 * 180 = -900 degrees
-    private let maxRotation: Double = 900   // +5 * 180 = +900 degrees
-    
-    private let ringLineWidth: CGFloat = 24
-    private var innerDonutDiameter: CGFloat { knobSize + 4 }
+    let adaptiveLayout: AdaptiveLayout
 
-    init(metronome: MetronomeEngine) {
+    private var dialSize: CGFloat { adaptiveLayout.dialSize }
+    private var knobSize: CGFloat { adaptiveLayout.isIPad ? 120 : 90 }
+    private var ringLineWidth: CGFloat { adaptiveLayout.ringLineWidth }
+    
+    // Dial rotation remains the same across devices
+    private let minRotation: Double = -900
+    private let maxRotation: Double = 900
+
+    init(metronome: MetronomeEngine, adaptiveLayout: AdaptiveLayout) {
         self.metronome = metronome
+        self.adaptiveLayout = adaptiveLayout
         self._dialRotation = State(initialValue: tempoToRotation(metronome.tempo))
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: adaptiveLayout.isIPad ? 30 : 20) {
             ZStack {
                 segmentedRing
                 dialBackground
                 centerKnob
             }
-            .frame(width: dialSize + 85, height: dialSize + 85)
+            .frame(width: dialSize + (adaptiveLayout.isIPad ? 120 : 85),
+                   height: dialSize + (adaptiveLayout.isIPad ? 120 : 85))
             .gesture(createDragGesture())
             .onChange(of: metronome.tempo) { _, newTempo in
-                // Only update dial rotation if we're not currently dragging
-                // This prevents conflicts between user input and programmatic updates
                 if !isDragging {
                     dialRotation = tempoToRotation(newTempo)
                 }
@@ -49,15 +48,14 @@ struct DialControl: View {
         ZStack {
             // Main Circle Background - darker color
             Circle()
-                .fill(      LinearGradient(
+                .fill(LinearGradient(
                     gradient: Gradient(colors: [
                         Color(red: 0/255, green: 0/255, blue: 0/255).opacity(0.75),
                         Color(red: 1/255, green: 1/255, blue: 1/255).opacity(0.95)
                     ]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
-                )
-                            )
+                ))
                 .frame(width: dialSize + 13, height: dialSize + 13)
             
             Circle()
@@ -97,7 +95,6 @@ struct DialControl: View {
                 )
                 .frame(width: dialSize + 2, height: dialSize + 2)
 
-            // Inner shadow ring - creates depth
             Circle()
                 .stroke(
                     LinearGradient(
@@ -114,24 +111,28 @@ struct DialControl: View {
                 )
                 .frame(width: dialSize - 2, height: dialSize - 2)
             
-            // Rotating indicator line - shows current position
+            // Rotating indicator - scale size for iPad
             Circle()
                 .glowingAccent(intensity: 0.5)
                 .opacity(0.85)
-                .frame(width: 5, height: 5)
+                .frame(width: adaptiveLayout.isIPad ? 8 : 5, height: adaptiveLayout.isIPad ? 8 : 5)
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 0)
-                .offset(y: -(dialSize / 2 - 11))
+                .offset(y: -(dialSize / 2 - (adaptiveLayout.isIPad ? 16 : 11)))
                 .rotationEffect(Angle(degrees: dialRotation))
         }
     }
 
     private var segmentedRing: some View {
-        SegmentedCircleView(metronome: metronome, diameter: dialSize + 85, lineWidth: ringLineWidth)
+        SegmentedCircleView(
+            metronome: metronome,
+            diameter: dialSize + (adaptiveLayout.isIPad ? 120 : 85),
+            lineWidth: ringLineWidth
+        )
     }
 
     private var centerKnob: some View {
         ZStack {
-            // Center Knob Fill matching DarkGrayBackground view
+            // Center Knob Fill
             Circle()
                 .fill(LinearGradient(
                     colors: [
@@ -193,7 +194,7 @@ struct DialControl: View {
     
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
-            .font(.system(size: 30))
+            .font(.system(size: adaptiveLayout.isIPad ? 40 : 30))
             .glowingAccent()
     }
     
@@ -202,7 +203,6 @@ struct DialControl: View {
             .onChanged { value in
                 if !isKnobTouched {
                     isKnobTouched = true
-                    // Strong haptic feedback when starting to drag
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred(intensity: 0.8)
                 }
@@ -214,15 +214,13 @@ struct DialControl: View {
                 isKnobTouched = false
                 previousAngle = nil
                 
-                // Heavy haptic feedback when ending drag
                 let generator = UIImpactFeedbackGenerator(style: .heavy)
                 generator.impactOccurred(intensity: 1.0)
             }
     }
 
     private func handleDragChange(_ value: DragGesture.Value) {
-        // Calculate center relative to the gesture's coordinate space
-        let frameSize = dialSize + 55
+        let frameSize = dialSize + (adaptiveLayout.isIPad ? 120 : 55)
         let center = CGPoint(x: frameSize / 2, y: frameSize / 2)
         let angle = calculateAngle(center: center, point: value.location)
         
@@ -232,25 +230,16 @@ struct DialControl: View {
         }
         
         let angleDelta = calculateAngleDelta(from: prevAngle, to: angle)
-        
-        // Update the dial rotation first
         let newDialRotation = dialRotation + angleDelta
-        
-        // Clamp the dial rotation to our 5-rotation range
         let clampedDialRotation = max(minRotation, min(maxRotation, newDialRotation))
-        
-        // Convert the clamped dial rotation to tempo
         let newTempo = rotationToTempo(clampedDialRotation)
         
-        // Update both the dial rotation and tempo
         dialRotation = clampedDialRotation
         
-        // Only update metronome tempo if it actually changed
         if newTempo != metronome.tempo {
             let oldTempo = metronome.tempo
             metronome.updateTempo(to: newTempo)
             
-            // Haptic feedback when tempo changes by a whole number
             if Int(oldTempo) != Int(newTempo) {
                 let generator = UIImpactFeedbackGenerator(style: .soft)
                 generator.impactOccurred(intensity: 0.5)
@@ -266,17 +255,15 @@ struct DialControl: View {
         return delta
     }
 
-    // Convert tempo to dial rotation (now spanning 1800 degrees total)
     private func tempoToRotation(_ tempo: Double) -> Double {
         let tempoRange = metronome.maxTempo - metronome.minTempo
-        let rotationRange = maxRotation - minRotation  // 1800 degrees total
+        let rotationRange = maxRotation - minRotation
         let normalizedTempo = (tempo - metronome.minTempo) / tempoRange
         return minRotation + (normalizedTempo * rotationRange)
     }
     
-    // Convert dial rotation back to tempo
     private func rotationToTempo(_ rotation: Double) -> Double {
-        let rotationRange = maxRotation - minRotation  // 1800 degrees total
+        let rotationRange = maxRotation - minRotation
         let tempoRange = metronome.maxTempo - metronome.minTempo
         let normalizedRotation = (rotation - minRotation) / rotationRange
         return metronome.minTempo + (normalizedRotation * tempoRange)
@@ -289,9 +276,22 @@ struct DialControl: View {
     }
 }
 
+// Legacy initializer for compatibility
+extension DialControl {
+    init(metronome: MetronomeEngine) {
+        self.metronome = metronome
+        // Create a default layout for legacy usage
+        self.adaptiveLayout = AdaptiveLayout.default
+        self._dialRotation = State(initialValue: tempoToRotation(metronome.tempo))
+    }
+}
+
 #Preview {
     ZStack {
         BackgroundView()
-        DialControl(metronome: MetronomeEngine())
+        DialControl(
+            metronome: MetronomeEngine(),
+            adaptiveLayout: AdaptiveLayout.default
+        )
     }
 }

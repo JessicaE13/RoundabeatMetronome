@@ -4,7 +4,8 @@ struct TimeSignatureView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Binding var showTimeSignaturePicker: Bool
     @Binding var showSettings: Bool
-    @Binding var showSubdivisionPicker: Bool // Add this binding
+    @Binding var showSubdivisionPicker: Bool
+    let adaptiveLayout: AdaptiveLayout
     
     // Tap tempo state
     @State private var lastTapTime: Date?
@@ -13,40 +14,40 @@ struct TimeSignatureView: View {
     var body: some View {
         ZStack {
             // Single horizontal row containing all three buttons
-            HStack(spacing: 16) {
+            HStack(spacing: adaptiveLayout.isIPad ? 24 : 16) {
                 // Time Signature Section
                 Button(action: {
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
                     showTimeSignaturePicker = true
                 }) {
-                    HStack(spacing: 2) {
+                    HStack(spacing: adaptiveLayout.isIPad ? 4 : 2) {
                         Text("TIME  ")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: adaptiveLayout.isIPad ? 14 : 12, weight: .medium))
                             .kerning(1.0)
                             .foregroundColor(Color.white.opacity(0.4))
                         
                         Text("\(metronome.beatsPerMeasure)")
-                            .font(.custom("Kanit-Regular", size: 14))
+                            .font(.custom("Kanit-Regular", size: adaptiveLayout.isIPad ? 18 : 14))
                             .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .glowingAccent(size: adaptiveLayout.isIPad ? 32 : 24, intensity: 0.4)
                         
                         Text("/")
-                            .font(.custom("Kanit-Regular", size: 14))
+                            .font(.custom("Kanit-Regular", size: adaptiveLayout.isIPad ? 18 : 14))
                             .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .glowingAccent(size: adaptiveLayout.isIPad ? 32 : 24, intensity: 0.4)
                         
                         Text("\(metronome.beatUnit)")
-                            .font(.custom("Kanit-Regular", size: 14))
+                            .font(.custom("Kanit-Regular", size: adaptiveLayout.isIPad ? 18 : 14))
                             .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .glowingAccent(size: adaptiveLayout.isIPad ? 32 : 24, intensity: 0.4)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .frame(maxWidth: .infinity, minHeight: adaptiveLayout.isIPad ? 50 : 38)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: adaptiveLayout.isIPad ? 16 : 12)
                             .fill(Color.black.opacity(0.4))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: adaptiveLayout.isIPad ? 16 : 12)
                                     .stroke(LinearGradient(
                                         gradient: Gradient(colors: [
                                             Color.white.opacity(0.25),
@@ -66,23 +67,23 @@ struct TimeSignatureView: View {
                     generator.impactOccurred()
                     showSubdivisionPicker = true
                 }) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: adaptiveLayout.isIPad ? 8 : 6) {
                         Text("SUB DIV.")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: adaptiveLayout.isIPad ? 14 : 12, weight: .medium))
                             .kerning(1.0)
                             .foregroundColor(Color.white.opacity(0.4))
                         
                         // Display the current subdivision symbol
                         Text(getSubdivisionSymbol())
-                            .font(.system(size: 14, weight: .medium))
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .font(.system(size: adaptiveLayout.isIPad ? 18 : 14, weight: .medium))
+                            .glowingAccent(size: adaptiveLayout.isIPad ? 32 : 24, intensity: 0.4)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .frame(maxWidth: .infinity, minHeight: adaptiveLayout.isIPad ? 50 : 38)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: adaptiveLayout.isIPad ? 16 : 12)
                             .fill(Color.black.opacity(0.4))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: adaptiveLayout.isIPad ? 16 : 12)
                                     .stroke(LinearGradient(
                                         gradient: Gradient(colors: [
                                             Color.white.opacity(0.25),
@@ -100,22 +101,22 @@ struct TimeSignatureView: View {
                 Button(action: {
                     calculateTapTempo()
                 }) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: adaptiveLayout.isIPad ? 8 : 6) {
                         Text("TAP")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: adaptiveLayout.isIPad ? 14 : 12, weight: .medium))
                             .kerning(1.0)
                             .foregroundColor(Color.white.opacity(0.4))
                         
                         Image(systemName: "hand.tap")
-                            .font(.system(size: 14, weight: .medium))
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .font(.system(size: adaptiveLayout.isIPad ? 18 : 14, weight: .medium))
+                            .glowingAccent(size: adaptiveLayout.isIPad ? 32 : 24, intensity: 0.4)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .frame(maxWidth: .infinity, minHeight: adaptiveLayout.isIPad ? 50 : 38)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: adaptiveLayout.isIPad ? 16 : 12)
                             .fill(Color.black.opacity(0.4))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: adaptiveLayout.isIPad ? 16 : 12)
                                     .stroke(LinearGradient(
                                         gradient: Gradient(colors: [
                                             Color.white.opacity(0.25),
@@ -129,7 +130,7 @@ struct TimeSignatureView: View {
                 }
                 .contentShape(Rectangle())
             }
-            .padding(.horizontal, 8) // Match the padding from BPMView
+            .padding(.horizontal, adaptiveLayout.isIPad ? 12 : 8)
         }
     }
     
@@ -202,6 +203,18 @@ struct TimeSignatureView: View {
     }
 }
 
+// Legacy initializer for compatibility
+extension TimeSignatureView {
+    init(metronome: MetronomeEngine, showTimeSignaturePicker: Binding<Bool>, showSettings: Binding<Bool>, showSubdivisionPicker: Binding<Bool>) {
+        self.metronome = metronome
+        self._showTimeSignaturePicker = showTimeSignaturePicker
+        self._showSettings = showSettings
+        self._showSubdivisionPicker = showSubdivisionPicker
+        // Create a default layout for legacy usage
+        self.adaptiveLayout = AdaptiveLayout.default
+    }
+}
+
 #Preview {
     ZStack {
         BackgroundView()
@@ -209,7 +222,8 @@ struct TimeSignatureView: View {
             metronome: MetronomeEngine(),
             showTimeSignaturePicker: .constant(false),
             showSettings: .constant(false),
-            showSubdivisionPicker: .constant(false)
+            showSubdivisionPicker: .constant(false),
+            adaptiveLayout: AdaptiveLayout.default
         )
     }
 }

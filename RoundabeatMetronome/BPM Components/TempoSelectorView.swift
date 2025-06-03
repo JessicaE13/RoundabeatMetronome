@@ -5,82 +5,85 @@ struct TempoSelectorView: View {
     @Binding var previousTempo: Double
     
     var body: some View {
-        ZStack {
-            ScrollView(.horizontal, showsIndicators: false) {
-                ScrollViewReader { proxy in
-                    HStack {
-                   
-                        Spacer()
-                            .frame(width: 75)
-                        
-                        ForEach(TempoRange.allRanges.indices, id: \.self) { index in
-                            let range = TempoRange.allRanges[index]
-                            let isSelected = TempoRange.getCurrentRange(for: metronome.tempo).name == range.name
+        GeometryReader { geometry in
+            let isIPad = UIDevice.current.isIPad
+            
+            ZStack {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    ScrollViewReader { proxy in
+                        HStack {
+                            Spacer()
+                                .frame(width: isIPad ? 120 : 75)
                             
-                            VStack(spacing: 4) {
-                                Text(range.name.uppercased())
-                                    .font(.system(size: 10, weight: .medium))
-                                    .kerning(1.5)
-                                    .foregroundColor(isSelected ?
-                                                     Color.white.opacity(0.9) :
-                                                        Color.white.opacity(0.4))
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .minimumScaleFactor(0.8)
+                            ForEach(TempoRange.allRanges.indices, id: \.self) { index in
+                                let range = TempoRange.allRanges[index]
+                                let isSelected = TempoRange.getCurrentRange(for: metronome.tempo).name == range.name
                                 
-                                Text("\(range.minBPM)-\(range.maxBPM)")
-                                    .font(.custom("Kanit-Regular",size: 10))
-                                    .kerning(1.5)
-                                    .foregroundColor(isSelected ?
-                                                     Color.white.opacity(0.7) :
-                                                        Color.white.opacity(0.3))
+                                VStack(spacing: isIPad ? 6 : 4) {
+                                    Text(range.name.uppercased())
+                                        .font(.system(size: isIPad ? 12 : 10, weight: .medium))
+                                        .kerning(1.5)
+                                        .foregroundColor(isSelected ?
+                                                         Color.white.opacity(0.9) :
+                                                            Color.white.opacity(0.4))
+                                        .multilineTextAlignment(.center)
+                                        .lineLimit(2)
+                                        .minimumScaleFactor(0.8)
+                                    
+                                    Text("\(range.minBPM)-\(range.maxBPM)")
+                                        .font(.custom("Kanit-Regular", size: isIPad ? 12 : 10))
+                                        .kerning(1.5)
+                                        .foregroundColor(isSelected ?
+                                                         Color.white.opacity(0.7) :
+                                                            Color.white.opacity(0.3))
+                                }
+                                .frame(minWidth: isIPad ? 90 : 65)
+                                .padding(isIPad ? 12 : 8)
+                                .padding(.horizontal, isIPad ? 16 : 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: isIPad ? 20 : 15)
+                                        .stroke(Color.accentColor.opacity(0.5), lineWidth: 1)
+                                        .opacity(isSelected ? 1 : 0)
+                                )
+                                .padding(1)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    let generator = UIImpactFeedbackGenerator(style: .medium)
+                                    generator.impactOccurred()
+                                    metronome.updateTempo(to: Double(range.midBPM))
+                                    previousTempo = metronome.tempo
+                                }
+                                .id(index)
                             }
-                            .frame(minWidth: 65)
-                            .padding(8)
-                            .padding(.horizontal, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 15)
-                                    .stroke(Color.accentColor.opacity(0.5), lineWidth: 1)
-                                    .opacity(isSelected ? 1 : 0)
-                            )
-                            .padding(1)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                let generator = UIImpactFeedbackGenerator(style: .medium)
-                                generator.impactOccurred()
-                                metronome.updateTempo(to: Double(range.midBPM))
-                                previousTempo = metronome.tempo
-                            }
-                            .id(index)
+                            
+                            Spacer()
+                                .frame(width: isIPad ? 120 : 75)
                         }
-                        
-                        Spacer()
-                            .frame(width: 75)
-                    }
-                    .padding(.horizontal, 50)
-                    .onAppear {
-                        // Scroll to current tempo range on appear
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        .padding(.horizontal, isIPad ? 75 : 50)
+                        .onAppear {
+                            // Scroll to current tempo range on appear
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                if let currentIndex = TempoRange.allRanges.firstIndex(where: { $0.name == TempoRange.getCurrentRange(for: metronome.tempo).name }) {
+                                    withAnimation(.easeInOut(duration: 0.5)) {
+                                        proxy.scrollTo(currentIndex, anchor: getScrollAnchor(for: currentIndex))
+                                    }
+                                }
+                            }
+                        }
+                        .onChange(of: metronome.tempo) { oldValue, newValue in
+                            // Auto-scroll to current tempo range when tempo changes with smoother animation
                             if let currentIndex = TempoRange.allRanges.firstIndex(where: { $0.name == TempoRange.getCurrentRange(for: metronome.tempo).name }) {
-                                withAnimation(.easeInOut(duration: 0.5)) {
+                                withAnimation(.easeInOut(duration: 0.6)) {
                                     proxy.scrollTo(currentIndex, anchor: getScrollAnchor(for: currentIndex))
                                 }
                             }
                         }
                     }
-                    .onChange(of: metronome.tempo) { oldValue, newValue in
-                        // Auto-scroll to current tempo range when tempo changes with smoother animation
-                        if let currentIndex = TempoRange.allRanges.firstIndex(where: { $0.name == TempoRange.getCurrentRange(for: metronome.tempo).name }) {
-                            withAnimation(.easeInOut(duration: 0.6)) {
-                                proxy.scrollTo(currentIndex, anchor: getScrollAnchor(for: currentIndex))
-                            }
-                        }
-                    }
                 }
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .scrollBounceBehavior(.basedOnSize)
         }
-     //   .padding(10)
+        .frame(height: UIDevice.current.isIPad ? 80 : 60)
     }
     
     // Helper function to determine scroll anchor based on position
