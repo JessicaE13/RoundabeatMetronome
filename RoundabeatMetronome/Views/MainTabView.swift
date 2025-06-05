@@ -7,8 +7,8 @@ struct MainTabView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let isIPad = UIDevice.current.isIPad
-            let tabBarHeight: CGFloat = isIPad ? 90 : 70 // Calculate tab bar height
+           
+            let tabBarHeight: CGFloat = 70 // Calculate tab bar height
             
             ZStack {
                 // Content area
@@ -41,7 +41,7 @@ struct MainTabView: View {
                 // Bottom Tab Bar - positioned at bottom with proper safe area handling
                 VStack {
                     Spacer() // Push to bottom
-                    bottomTabBar(isIPad: isIPad, geometry: geometry)
+                    bottomTabBar(geometry: geometry)
                 }
             }
         }
@@ -53,7 +53,7 @@ struct MainTabView: View {
         }
     }
     
-    private func bottomTabBar(isIPad: Bool, geometry: GeometryProxy) -> some View {
+    private func bottomTabBar(geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             // Consistent top border that works in both light and dark mode
             Rectangle()
@@ -65,28 +65,25 @@ struct MainTabView: View {
                 tabButton(
                     imageName: "speaker.wave.2",
                     title: "Sounds",
-                    tab: 0,
-                    isIPad: isIPad
+                    tab: 0
                 )
                 
                 // Metronome Tab Button
                 tabButton(
                     imageName: "metronome",
                     title: "Metronome",
-                    tab: 1,
-                    isIPad: isIPad
+                    tab: 1
                 )
                 
                 // Settings Tab Button
                 tabButton(
                     imageName: "gearshape",
                     title: "Settings",
-                    tab: 2,
-                    isIPad: isIPad
+                    tab: 2
                 )
             }
-            .padding(.top, isIPad ? 12 : 8)
-            .padding(.bottom, max(geometry.safeAreaInsets.bottom, isIPad ? 16 : 8)) // Respect safe area
+            .padding(.top, 8)
+            .padding(.bottom, max(geometry.safeAreaInsets.bottom, 8)) // Respect safe area
             .background(
                 // Dark background matching the app theme
                 LinearGradient(
@@ -102,7 +99,7 @@ struct MainTabView: View {
     }
     
     // Helper function to create adaptive tab buttons
-    private func tabButton(imageName: String, title: String, tab: Int, isIPad: Bool) -> some View {
+    private func tabButton(imageName: String, title: String, tab: Int) -> some View {
         Button(action: {
             selectedTab = tab // Switch tabs but don't persist
             
@@ -113,26 +110,26 @@ struct MainTabView: View {
             
             print("📱 Switched to tab \(tab) (\(title))")
         }) {
-            VStack(spacing: isIPad ? 6 : 4) {
+            VStack(spacing: 4) {
                 Group {
                     if selectedTab == tab {
                         Image(systemName: imageName)
-                            .font(.system(size: isIPad ? 28 : 20, weight: .medium))
+                            .font(.system(size: 20, weight: .medium))
                             .glowingAccent(intensity: 0.4)
                     } else {
                         Image(systemName: imageName)
-                            .font(.system(size: isIPad ? 28 : 20, weight: .medium))
+                            .font(.system(size: 20, weight: .medium))
                             .foregroundColor(Color.white.opacity(0.5))
                     }
                 }
                 .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                 
                 Text(title)
-                    .font(.system(size: isIPad ? 14 : 10))
+                    .font(.system(size: 10))
                     .kerning(0.5)
                     .foregroundColor(selectedTab == tab ? Color.white.opacity(0.8) : Color.white.opacity(0.9))
             }
-            .frame(maxWidth: .infinity, maxHeight: isIPad ? 70 : 50)
+            .frame(maxWidth: .infinity, maxHeight: 50)
             .contentShape(Rectangle())
         }
         .scaleEffect(selectedTab == tab ? 1.05 : 1.0)

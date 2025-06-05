@@ -1,92 +1,6 @@
 import SwiftUI
 import AVFoundation
 
-// MARK: - Device Type Detection
-extension UIDevice {
-    var isIPad: Bool {
-        return UIDevice.current.userInterfaceIdiom == .pad
-    }
-    
-    var isIPhone: Bool {
-        return UIDevice.current.userInterfaceIdiom == .phone
-    }
-}
-
-// MARK: - Adaptive Layout Helper
-struct AdaptiveLayout {
-    let isIPad: Bool
-    let screenWidth: CGFloat
-    let screenHeight: CGFloat
-    
-    init(geometry: GeometryProxy) {
-        self.isIPad = UIDevice.current.isIPad
-        self.screenWidth = geometry.size.width
-        self.screenHeight = geometry.size.height
-    }
-    
-    // Default initializer for cases where GeometryProxy isn't available
-    static var `default`: AdaptiveLayout {
-        return AdaptiveLayout(
-            isIPad: UIDevice.current.isIPad,
-            screenWidth: UIScreen.main.bounds.width,
-            screenHeight: UIScreen.main.bounds.height
-        )
-    }
-    
-    private init(isIPad: Bool, screenWidth: CGFloat, screenHeight: CGFloat) {
-        self.isIPad = isIPad
-        self.screenWidth = screenWidth
-        self.screenHeight = screenHeight
-    }
-    
-    // Adaptive spacing values - reduced bottom spacing since tab bar handles it
-    var topSpacing: CGFloat {
-        isIPad ? 60 : 30
-    }
-    
-    var sectionSpacing: CGFloat {
-        isIPad ? 24 : 12
-    }
-    
-    var componentSpacing: CGFloat {
-        isIPad ? 20 : 12
-    }
-    
-    var bottomSpacing: CGFloat {
-        isIPad ? 30 : 20 // Reduced since tab bar provides spacing
-    }
-    
-    // Adaptive padding values
-    var horizontalPadding: CGFloat {
-        if isIPad {
-            return max(60, screenWidth * 0.1) // 10% of screen width, minimum 60
-        }
-        return 24
-    }
-    
-    var contentMaxWidth: CGFloat? {
-        isIPad ? min(600, screenWidth * 0.7) : nil
-    }
-    
-    // Font scaling
-    var bpmFontSize: CGFloat {
-        if isIPad {
-            return min(120, screenWidth * 0.15) // Scale with screen width
-        }
-        return 90
-    }
-    
-    var dialSize: CGFloat {
-        if isIPad {
-            return min(300, screenWidth * 0.35)
-        }
-        return 220
-    }
-    
-    var ringLineWidth: CGFloat {
-        isIPad ? 32 : 24
-    }
-}
 
 // MARK: - Content View with Adaptive Layout
 
@@ -114,13 +28,12 @@ struct MetronomeView: View {
             
             // Main metronome interface
             GeometryReader { geometry in
-                let layout = AdaptiveLayout(geometry: geometry)
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         
                         Spacer()
-                            .frame(height: geometry.safeAreaInsets.top + layout.topSpacing)
+                            .frame(height: geometry.safeAreaInsets.top + 24)
                 
                         // Content container with max width for iPad
                         VStack(spacing: 0) {
@@ -129,51 +42,38 @@ struct MetronomeView: View {
                                 metronome: metronome,
                                 previousTempo: $previousTempo
                             )
-                            .padding(.top, layout.sectionSpacing)
-                            .padding(.bottom, layout.componentSpacing)
-                            .padding(.horizontal, layout.horizontalPadding)
                             
                             BPMControlsView(
                                 metronome: metronome,
                                 isShowingKeypad: $showBPMKeypad,
-                                previousTempo: $previousTempo,
-                                adaptiveLayout: layout
+                                previousTempo: $previousTempo
                             )
                             
                             Text("BEATS PER MINUTE (BPM)")
-                                .font(.system(size: layout.isIPad ? 14 : 12, weight: .medium))
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(Color.white.opacity(0.4))
-                                .padding(.top, layout.componentSpacing / 2)
-                                .padding(.bottom, layout.componentSpacing)
                                 .tracking(1)
                             
                             TimeSignatureView(
                                 metronome: metronome,
                                 showTimeSignaturePicker: $showTimeSignaturePicker,
                                 showSettings: $showSettings,
-                                showSubdivisionPicker: $showSubdivisionPicker,
-                                adaptiveLayout: layout
+                                showSubdivisionPicker: $showSubdivisionPicker
                             )
-                            .padding(.top, layout.componentSpacing)
-                            .padding(.bottom, layout.sectionSpacing)
-                            .padding(.horizontal, layout.horizontalPadding)
+         
                             
                             LogoView()
-                                .scaleEffect(layout.isIPad ? 1.5 : 1.0)
                             
                             Spacer()
-                                .frame(height: layout.sectionSpacing)
+                             
                             
                             DialControl(
-                                metronome: metronome,
-                                adaptiveLayout: layout
+                                metronome: metronome
                             )
                             
-                            // Reduced bottom spacing since MainTabView handles tab bar spacing
                             Spacer()
-                                .frame(height: layout.bottomSpacing)
+                                
                         }
-                        .frame(maxWidth: layout.contentMaxWidth)
                         .frame(maxWidth: .infinity) // Center the content
                     }
                     .frame(minHeight: geometry.size.height)

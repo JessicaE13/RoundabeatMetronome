@@ -77,9 +77,8 @@ struct SoundsView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let isIPad = UIDevice.current.isIPad
-            let contentMaxWidth: CGFloat? = isIPad ? min(700, geometry.size.width * 0.8) : nil
-            let horizontalPadding: CGFloat = isIPad ? max(40, geometry.size.width * 0.1) : 20
+            let contentMaxWidth: CGFloat? = nil
+            let horizontalPadding: CGFloat = 20
             
             ZStack {
                 BackgroundView()
@@ -87,21 +86,21 @@ struct SoundsView: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         // Header
-                        headerView(isIPad: isIPad)
-                            .padding(.top, geometry.safeAreaInsets.top + (isIPad ? 40 : 24))
+                        headerView()
+                            .padding(.top, geometry.safeAreaInsets.top + 24)
                         
                         // Category Filter
-                        categoryFilterView(isIPad: isIPad, horizontalPadding: horizontalPadding)
+                        categoryFilterView(horizontalPadding: horizontalPadding)
                         
                         // Sound List
-                        soundListView(isIPad: isIPad, horizontalPadding: horizontalPadding)
+                        soundListView(horizontalPadding: horizontalPadding)
                         
                         // Current Selection Info
-                        currentSelectionView(isIPad: isIPad, horizontalPadding: horizontalPadding)
+                        currentSelectionView(horizontalPadding: horizontalPadding)
                         
                         // Reduced bottom spacing since MainTabView handles tab bar spacing
                         Spacer()
-                            .frame(height: isIPad ? 30 : 20)
+                            .frame(height: 20)
                     }
                     .frame(maxWidth: contentMaxWidth)
                     .frame(maxWidth: .infinity) // Center the content
@@ -119,38 +118,38 @@ struct SoundsView: View {
         }
     }
     
-    private func headerView(isIPad: Bool) -> some View {
-        VStack(spacing: isIPad ? 12 : 8) {
+    private func headerView() -> some View {
+        VStack(spacing: 8) {
             Text("METRONOME SOUNDS")
-                .font(.system(size: isIPad ? 16 : 12, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .kerning(1.5)
                 .foregroundColor(Color.white.opacity(0.4))
-                .padding(.top, isIPad ? 20 : 12)
+                .padding(.top, 12)
             
             Text("Choose Your Beat")
-                .font(.system(size: isIPad ? 18 : 12, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .kerning(1)
                 .foregroundColor(Color.white.opacity(0.9))
-                .padding(.bottom, isIPad ? 20 : 12)
+                .padding(.bottom, 12)
         }
     }
     
-    private func categoryFilterView(isIPad: Bool, horizontalPadding: CGFloat) -> some View {
+    private func categoryFilterView(horizontalPadding: CGFloat) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: isIPad ? 16 : 12) {
+            HStack(spacing: 12) {
                 // All category button
-                categoryButton(category: nil, title: "All", isIPad: isIPad)
+                categoryButton(category: nil, title: "All")
                 
                 ForEach(SoundCategory.allCases, id: \.self) { category in
-                    categoryButton(category: category, title: category.rawValue, isIPad: isIPad)
+                    categoryButton(category: category, title: category.rawValue)
                 }
             }
             .padding(.horizontal, horizontalPadding)
         }
-        .padding(.bottom, isIPad ? 24 : 16)
+        .padding(.bottom, 16)
     }
     
-    private func categoryButton(category: SoundCategory?, title: String, isIPad: Bool) -> some View {
+    private func categoryButton(category: SoundCategory?, title: String) -> some View {
         let isSelected = selectedCategory == category
         
         return Button(action: {
@@ -160,27 +159,27 @@ struct SoundsView: View {
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.5)
             }
         }) {
-            HStack(spacing: isIPad ? 8 : 6) {
+            HStack(spacing: 6) {
                 if let category = category {
                     Image(systemName: category.icon)
-                        .font(.system(size: isIPad ? 16 : 12, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                 } else {
                     Image(systemName: "music.note.list")
-                        .font(.system(size: isIPad ? 16 : 12, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                 }
                 
                 Text(title)
-                    .font(.system(size: isIPad ? 16 : 12))
+                    .font(.system(size: 12))
                     .kerning(0.5)
             }
             .foregroundColor(isSelected ? Color.white.opacity(0.9) : Color.white.opacity(0.6))
-            .padding(.horizontal, isIPad ? 20 : 16)
-            .padding(.vertical, isIPad ? 12 : 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: isIPad ? 25 : 20)
+                RoundedRectangle(cornerRadius: 20)
                     .fill(isSelected ? Color.white.opacity(0.15) : Color.white.opacity(0.05))
                     .overlay(
-                        RoundedRectangle(cornerRadius: isIPad ? 25 : 20)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(
                                 isSelected ? Color.white.opacity(0.25) : Color.white.opacity(0.1),
                                 lineWidth: 1
@@ -190,17 +189,17 @@ struct SoundsView: View {
         }
     }
     
-    private func soundListView(isIPad: Bool, horizontalPadding: CGFloat) -> some View {
-        LazyVStack(spacing: isIPad ? 16 : 12) {
+    private func soundListView(horizontalPadding: CGFloat) -> some View {
+        LazyVStack(spacing: 12) {
             ForEach(filteredSounds) { sound in
-                soundRowView(sound: sound, isIPad: isIPad)
+                soundRowView(sound: sound)
             }
         }
         .padding(.horizontal, horizontalPadding)
-        .padding(.bottom, isIPad ? 24 : 16)
+        .padding(.bottom, 16)
     }
     
-    private func soundRowView(sound: SoundOption, isIPad: Bool) -> some View {
+    private func soundRowView(sound: SoundOption) -> some View {
         // Check if this sound is the currently selected metronome sound
         let isSelected = sound.name == metronome.selectedSoundName
         let isCurrentlyPlaying = isPlaying && selectedSound == sound
@@ -221,23 +220,23 @@ struct SoundsView: View {
                 print("🔊 Sound updated to '\(sound.name)' - preview skipped (metronome playing)")
             }
         }) {
-            HStack(spacing: isIPad ? 20 : 16) {
+            HStack(spacing: 16) {
                 // Sound category icon
                 Image(systemName: sound.category.icon)
-                    .font(.system(size: isIPad ? 24 : 18, weight: .medium))
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundColor(isSelected ? Color.white.opacity(0.9) : Color.white.opacity(0.5))
-                    .frame(width: isIPad ? 32 : 24, height: isIPad ? 32 : 24)
+                    .frame(width: 24, height: 24)
                 
                 // Sound info
-                VStack(alignment: .leading, spacing: isIPad ? 6 : 4) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(sound.displayName)
-                        .font(.system(size: isIPad ? 20 : 16))
+                        .font(.system(size: 16))
                         .kerning(0.5)
                         .foregroundColor(isSelected ? Color.white.opacity(0.9) : Color.white.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
                     Text(sound.description)
-                        .font(.system(size: isIPad ? 16 : 12))
+                        .font(.system(size: 12))
                         .foregroundColor(isSelected ? Color.white.opacity(0.6) : Color.white.opacity(0.4))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -245,14 +244,14 @@ struct SoundsView: View {
                 Spacer()
                 
                 // Play/Playing indicator - show different states based on metronome
-                HStack(spacing: isIPad ? 12 : 8) {
+                HStack(spacing: 8) {
                     if metronome.isPlaying && isSelected {
                         // Show that this sound is actively being used by the metronome
-                        HStack(spacing: isIPad ? 3 : 2) {
+                        HStack(spacing: 2) {
                             ForEach(0..<3) { index in
                                 Rectangle()
                                     .fill(Color.green.opacity(0.8))
-                                    .frame(width: isIPad ? 4 : 3, height: isIPad ? 16 : 12)
+                                    .frame(width: 3, height: 12)
                                     .scaleEffect(y: 1.0)
                                     .animation(
                                         Animation.easeInOut(duration: 0.5)
@@ -262,14 +261,14 @@ struct SoundsView: View {
                                     )
                             }
                         }
-                        .frame(width: isIPad ? 28 : 20, height: isIPad ? 28 : 20)
+                        .frame(width: 20, height: 20)
                     } else if isCurrentlyPlaying && !metronome.isPlaying {
                         // Show preview playing indicator (only when metronome is not playing)
-                        HStack(spacing: isIPad ? 3 : 2) {
+                        HStack(spacing: 2) {
                             ForEach(0..<3) { index in
                                 Rectangle()
                                     .fill(Color.white.opacity(0.8))
-                                    .frame(width: isIPad ? 4 : 3, height: isIPad ? 16 : 12)
+                                    .frame(width: 3, height: 12)
                                     .scaleEffect(y: isCurrentlyPlaying ? 1.0 : 0.3)
                                     .animation(
                                         Animation.easeInOut(duration: 0.5)
@@ -279,28 +278,28 @@ struct SoundsView: View {
                                     )
                             }
                         }
-                        .frame(width: isIPad ? 28 : 20, height: isIPad ? 28 : 20)
+                        .frame(width: 20, height: 20)
                     } else {
                         // Show play button
                         Image(systemName: metronome.isPlaying ? "waveform" : "play.circle")
-                            .font(.system(size: isIPad ? 28 : 20, weight: .medium))
+                            .font(.system(size: 20, weight: .medium))
                             .foregroundColor(metronome.isPlaying && isSelected ? Color.green.opacity(0.8) : Color.white.opacity(0.6))
                     }
                     
                     if isSelected {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: isIPad ? 28 : 20, weight: .medium))
+                            .font(.system(size: 20, weight: .medium))
                             .foregroundColor(metronome.isPlaying ? Color.green.opacity(0.8) : Color.white.opacity(0.8))
                     }
                 }
             }
-            .padding(.horizontal, isIPad ? 24 : 20)
-            .padding(.vertical, isIPad ? 20 : 16)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
             .background(
-                RoundedRectangle(cornerRadius: isIPad ? 20 : 16)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(isSelected ? Color.white.opacity(0.1) : Color.black.opacity(0.2))
                     .overlay(
-                        RoundedRectangle(cornerRadius: isIPad ? 20 : 16)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(
                                 isSelected ? Color.white.opacity(0.2) : Color.white.opacity(0.05),
                                 lineWidth: 1
@@ -312,22 +311,22 @@ struct SoundsView: View {
         .animation(.easeInOut(duration: 0.1), value: isCurrentlyPlaying)
     }
     
-    private func currentSelectionView(isIPad: Bool, horizontalPadding: CGFloat) -> some View {
-        VStack(spacing: isIPad ? 16 : 12) {
+    private func currentSelectionView(horizontalPadding: CGFloat) -> some View {
+        VStack(spacing: 12) {
             Rectangle()
                 .fill(Color.white.opacity(0.1))
                 .frame(height: 1)
                 .padding(.horizontal, horizontalPadding)
             
-            HStack(spacing: isIPad ? 20 : 16) {
-                VStack(alignment: .leading, spacing: isIPad ? 6 : 4) {
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("CURRENT SOUND")
-                        .font(.system(size: isIPad ? 14 : 10, weight: .medium))
+                        .font(.system(size: 10, weight: .medium))
                         .kerning(1)
                         .foregroundColor(Color.white.opacity(0.4))
                     
                     Text(metronome.selectedSoundName)
-                        .font(.system(size: isIPad ? 20 : 16))
+                        .font(.system(size: 16))
                         .kerning(0.5)
                         .foregroundColor(Color.white.opacity(0.9))
                 }
@@ -347,22 +346,22 @@ struct SoundsView: View {
                         }
                     }
                 }) {
-                    HStack(spacing: isIPad ? 12 : 8) {
+                    HStack(spacing: 8) {
                         Image(systemName: metronome.isPlaying ? "waveform" : "play.fill")
-                            .font(.system(size: isIPad ? 18 : 14, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                         
                         Text(metronome.isPlaying ? "PLAYING" : "PREVIEW")
-                            .font(.system(size: isIPad ? 16 : 12))
+                            .font(.system(size: 12))
                             .kerning(0.5)
                     }
                     .foregroundColor(metronome.isPlaying ? Color.green.opacity(0.9) : Color.white.opacity(0.9))
-                    .padding(.horizontal, isIPad ? 20 : 16)
-                    .padding(.vertical, isIPad ? 14 : 10)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
                     .background(
-                        RoundedRectangle(cornerRadius: isIPad ? 25 : 20)
+                        RoundedRectangle(cornerRadius: 20)
                             .fill(metronome.isPlaying ? Color.green.opacity(0.15) : Color.white.opacity(0.15))
                             .overlay(
-                                RoundedRectangle(cornerRadius: isIPad ? 25 : 20)
+                                RoundedRectangle(cornerRadius: 20)
                                     .stroke(metronome.isPlaying ? Color.green.opacity(0.25) : Color.white.opacity(0.25), lineWidth: 1)
                             )
                     )
@@ -370,7 +369,7 @@ struct SoundsView: View {
                 .disabled(metronome.isPlaying) // Disable the button when metronome is playing
             }
             .padding(.horizontal, horizontalPadding)
-            .padding(.bottom, isIPad ? 20 : 12)
+            .padding(.bottom, 12)
         }
     }
     

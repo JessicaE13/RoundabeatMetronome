@@ -50,12 +50,7 @@ struct SubdivisionPickerView: View {
             multiplier: 1.5,
             description: "One and a half clicks per beat"
         ),
-        SubdivisionOption(
-            name: "Half Note",
-            symbol: "♪",
-            multiplier: 0.5,
-            description: "One click every two beats"
-        )
+
     ]
     
     var body: some View {
