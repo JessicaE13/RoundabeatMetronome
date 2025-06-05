@@ -22,7 +22,7 @@ struct DialControl: View {
     }
     private var ringLineWidth: CGFloat {
         if UIDevice.isCompactDevice {
-            return 18  // Thinner on iPhone SE
+            return 20  // Slightly thicker for bigger iPhone SE dial
         } else if UIDevice.current.isIPad {
             return 32
         } else {
@@ -41,7 +41,7 @@ struct DialControl: View {
     }
 
     var body: some View {
-        VStack(spacing: adaptiveLayout.isIPad ? 30 : (UIDevice.isCompactDevice ? 12 : 20)) {
+        VStack(spacing: adaptiveLayout.isIPad ? 30 : (UIDevice.isCompactDevice ? 16 : 20)) {
             ZStack {
                 segmentedRing
                 dialBackground
@@ -143,7 +143,7 @@ struct DialControl: View {
     private var segmentedRing: some View {
         SegmentedCircleView(
             metronome: metronome,
-            diameter: dialSize + (adaptiveLayout.isIPad ? 120 : (UIDevice.isCompactDevice ? 60 : 85)),
+            diameter: dialSize + (adaptiveLayout.isIPad ? 120 : (UIDevice.isCompactDevice ? 75 : 85)),
             lineWidth: ringLineWidth
         )
     }

@@ -9,7 +9,7 @@ struct SegmentedCircleView: View {
     let highlightFirstBeat: Bool // New parameter
     
     private var radius: CGFloat { (diameter - lineWidth) / 2 }
-    private let gapWidthPoints: CGFloat = 37.0
+    private let gapWidthPoints: CGFloat = 25.0
     
     init(
         beatsPerMeasure: Int,
