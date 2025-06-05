@@ -7,10 +7,11 @@ struct DialControl: View {
     @State private var isDragging = false
     @State private var isKnobTouched = false
 
-    // Use adaptive sizing
-    private var dialSize: CGFloat = 55
-    private var knobSize: CGFloat = 90
-    private var ringLineWidth: CGFloat = 24
+    // Percentage-based sizing
+    private let dialSizePercent: CGFloat = 0.60        // 75% of available space
+    private let knobSizePercent: CGFloat = 0.27        // 27% of dial size
+    private let ringLineWidthPercent: CGFloat = 0.13   // 7% of dial size
+    private let outerFramePercent: CGFloat = 0.9       // 100% of available space
     
     // Dial rotation remains the same
     private let minRotation: Double = -900
@@ -22,27 +23,36 @@ struct DialControl: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            ZStack {
-                segmentedRing
-                dialBackground
-                centerKnob
-            }
-            .frame(width: dialSize + 85,
-                   height: dialSize + 85)
-            .gesture(createDragGesture())
-            .onChange(of: metronome.tempo) { _, newTempo in
-                if !isDragging {
-                    dialRotation = tempoToRotation(newTempo)
+        GeometryReader { geometry in
+            let availableSize = min(geometry.size.width, geometry.size.height)
+            let dialSize = availableSize * dialSizePercent
+            let knobSize = dialSize * knobSizePercent
+            let ringLineWidth = dialSize * ringLineWidthPercent
+            let frameSize = availableSize * outerFramePercent
+            
+            VStack(spacing: availableSize * 0.05) { // 5% spacing
+                ZStack {
+                    segmentedRing(frameSize: frameSize, lineWidth: ringLineWidth)
+                    dialBackground(dialSize: dialSize)
+                    centerKnob(knobSize: knobSize)
                 }
+                .frame(width: frameSize, height: frameSize)
+                .gesture(createDragGesture(frameSize: frameSize))
+                .onChange(of: metronome.tempo) { _, newTempo in
+                    if !isDragging {
+                        dialRotation = tempoToRotation(newTempo)
+                    }
+                }
+                .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+                    isKnobTouched = pressing
+                }, perform: {})
             }
-            .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
-                isKnobTouched = pressing
-            }, perform: {})
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .aspectRatio(1, contentMode: .fit) // Keep it square
     }
 
-    private var dialBackground: some View {
+    private func dialBackground(dialSize: CGFloat) -> some View {
         ZStack {
             // Main Circle Background - darker color
             Circle()
@@ -54,7 +64,7 @@ struct DialControl: View {
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ))
-                .frame(width: dialSize + 13, height: dialSize + 13)
+                .frame(width: dialSize * 1.05, height: dialSize * 1.05)
             
             Circle()
                 .stroke(
@@ -68,14 +78,14 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.75
+                    lineWidth: dialSize * 0.003
                 )
-                .frame(width: dialSize + 13, height: dialSize + 13)
+                .frame(width: dialSize * 1.05, height: dialSize * 1.05)
 
             Circle()
                 .fill(Color(red: 7/255, green: 7/255, blue: 8/255))
                 .frame(width: dialSize, height: dialSize)
-                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                .shadow(color: .black.opacity(0.3), radius: dialSize * 0.032, x: 0, y: dialSize * 0.016)
            
             Circle()
                 .stroke(
@@ -89,9 +99,9 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.75
+                    lineWidth: dialSize * 0.003
                 )
-                .frame(width: dialSize + 2, height: dialSize + 2)
+                .frame(width: dialSize * 1.008, height: dialSize * 1.008)
 
             Circle()
                 .stroke(
@@ -105,30 +115,29 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 2.8
+                    lineWidth: dialSize * 0.011
                 )
-                .frame(width: dialSize - 2, height: dialSize - 2)
-            
+                .frame(width: dialSize * 0.992, height: dialSize * 0.992)
             
             Circle()
                 .glowingAccent(intensity: 0.5)
                 .opacity(0.85)
-                .frame(width:5, height: 5)
+                .frame(width: dialSize * 0.02, height: dialSize * 0.02)
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 0)
-                .offset(y: -(dialSize / 2 - 11)) // WHAT IS THIS
+                .offset(y: -(dialSize / 2 - dialSize * 0.044))
                 .rotationEffect(Angle(degrees: dialRotation))
         }
     }
 
-    private var segmentedRing: some View {
+    private func segmentedRing(frameSize: CGFloat, lineWidth: CGFloat) -> some View {
         SegmentedCircleView(
             metronome: metronome,
-            diameter: dialSize + 85,
-            lineWidth: ringLineWidth
+            diameter: frameSize,
+            lineWidth: lineWidth
         )
     }
 
-    private var centerKnob: some View {
+    private func centerKnob(knobSize: CGFloat) -> some View {
         ZStack {
             // Center Knob Fill
             Circle()
@@ -144,7 +153,7 @@ struct DialControl: View {
             
             // Center Knob Dark Outline
             Circle()
-                .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 3.0)
+                .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: knobSize * 0.033)
                 .frame(width: knobSize, height: knobSize)
             
             // Center Knob outer highlight
@@ -160,9 +169,9 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.75
+                    lineWidth: knobSize * 0.008
                 )
-                .frame(width: knobSize + 3.5, height: knobSize + 3.5)
+                .frame(width: knobSize * 1.04, height: knobSize * 1.04)
             
             // Center Knob inner highlight
             Circle()
@@ -177,11 +186,11 @@ struct DialControl: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.75
+                    lineWidth: knobSize * 0.008
                 )
-                .frame(width: knobSize - 3, height: knobSize - 3)
+                .frame(width: knobSize * 0.967, height: knobSize * 0.967)
             
-            playPauseIcon
+            playPauseIcon(knobSize: knobSize)
         }
         .onTapGesture {
             let generator = UIImpactFeedbackGenerator(style: .medium)
@@ -190,13 +199,13 @@ struct DialControl: View {
         }
     }
     
-    private var playPauseIcon: some View {
+    private func playPauseIcon(knobSize: CGFloat) -> some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
-            .font(.system(size: 30))
+            .font(.system(size: knobSize * 0.33))
             .glowingAccent()
     }
     
-    private func createDragGesture() -> some Gesture {
+    private func createDragGesture(frameSize: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 1)
             .onChanged { value in
                 if !isKnobTouched {
@@ -205,7 +214,7 @@ struct DialControl: View {
                     generator.impactOccurred(intensity: 0.8)
                 }
                 isDragging = true
-                handleDragChange(value)
+                handleDragChange(value, frameSize: frameSize)
             }
             .onEnded { _ in
                 isDragging = false
@@ -217,8 +226,7 @@ struct DialControl: View {
             }
     }
 
-    private func handleDragChange(_ value: DragGesture.Value) {
-        let frameSize = dialSize + 85
+    private func handleDragChange(_ value: DragGesture.Value, frameSize: CGFloat) {
         let center = CGPoint(x: frameSize / 2, y: frameSize / 2)
         let angle = calculateAngle(center: center, point: value.location)
         
@@ -271,14 +279,6 @@ struct DialControl: View {
         var degrees = atan2(point.y - center.y, point.x - center.x) * 180 / .pi
         if degrees < 0 { degrees += 360 }
         return degrees
-    }
-}
-
-// Keep your existing legacy initializer
-extension DialControl {
-    init(metronome: MetronomeEngine) {
-        self.metronome = metronome
-        self._dialRotation = State(initialValue: tempoToRotation(metronome.tempo))
     }
 }
 

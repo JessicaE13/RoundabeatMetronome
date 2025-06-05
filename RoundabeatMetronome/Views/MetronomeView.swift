@@ -1,9 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-
 // MARK: - Content View with Adaptive Layout
-
 struct MetronomeView: View {
     
     // Use an ObservedObject instead of a StateObject to share it between tabs

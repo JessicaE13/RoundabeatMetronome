@@ -47,14 +47,7 @@ struct TimeSignatureView: View {
                             .fill(Color.black.opacity(0.4))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.25),
-                                            Color.white.opacity(0.1)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    ), lineWidth: 1)
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
                             )
                     )
                 }
@@ -83,14 +76,7 @@ struct TimeSignatureView: View {
                             .fill(Color.black.opacity(0.4))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.25),
-                                            Color.white.opacity(0.1)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    ), lineWidth: 1)
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
                             )
                     )
                 }
@@ -116,14 +102,7 @@ struct TimeSignatureView: View {
                             .fill(Color.black.opacity(0.4))
                             .overlay(
                                 RoundedRectangle(cornerRadius:  12)
-                                    .stroke(LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.25),
-                                            Color.white.opacity(0.1)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    ), lineWidth: 1)
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
                             )
                     )
                 }
@@ -136,7 +115,6 @@ struct TimeSignatureView: View {
     // Helper function to get the current subdivision symbol
     private func getSubdivisionSymbol() -> String {
         switch metronome.subdivisionMultiplier {
-       
         case 1.0:
             return "♩"     // Quarter note
         case 1.5:
@@ -201,17 +179,6 @@ struct TimeSignatureView: View {
     }
 }
 
-// Legacy initializer for compatibility
-extension TimeSignatureView {
-    init(metronome: MetronomeEngine, showTimeSignaturePicker: Binding<Bool>, showSettings: Binding<Bool>, showSubdivisionPicker: Binding<Bool>) {
-        self.metronome = metronome
-        self._showTimeSignaturePicker = showTimeSignaturePicker
-        self._showSettings = showSettings
-        self._showSubdivisionPicker = showSubdivisionPicker
-      
-    }
-}
-
 #Preview {
     ZStack {
         BackgroundView()
@@ -219,8 +186,7 @@ extension TimeSignatureView {
             metronome: MetronomeEngine(),
             showTimeSignaturePicker: .constant(false),
             showSettings: .constant(false),
-            showSubdivisionPicker: .constant(false),
-          
+            showSubdivisionPicker: .constant(false)
         )
     }
 }
