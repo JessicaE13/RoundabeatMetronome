@@ -7,15 +7,15 @@ struct BPMControlsView: View {
     let adaptiveLayout: AdaptiveLayout
     
     var body: some View {
-        HStack(spacing: adaptiveLayout.isIPad ? 40 : 0) {
+        HStack(spacing: adaptiveLayout.isIPad ? 40 : (UIDevice.isCompactDevice ? 12 : 20)) {
             // Minus Button
             ZStack {
                 Image(systemName: "chevron.backward")
-                    .font(.system(size: adaptiveLayout.isIPad ? 24 : 18, weight: .bold))
+                    .font(.system(size: AdaptiveValues.chevronSize, weight: .bold))
                     .foregroundColor(Color.white.opacity(0.9))
                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
             }
-            .frame(width: adaptiveLayout.isIPad ? 50 : 30, height: adaptiveLayout.isIPad ? 50 : 30)
+            .frame(width: AdaptiveValues.chevronFrameSize, height: AdaptiveValues.chevronFrameSize)
             .contentShape(Rectangle())
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .soft)
@@ -27,15 +27,15 @@ struct BPMControlsView: View {
             // BPM Number Display
             VStack {
                 Text("\(Int(metronome.tempo))")
-                    .font(.custom("Kanit-SemiBold", size: adaptiveLayout.bpmFontSize))
-                    .kerning(adaptiveLayout.isIPad ? 3 : 2)
+                    .font(.custom("Kanit-SemiBold", size: AdaptiveValues.bpmFontSize))
+                    .kerning(adaptiveLayout.isIPad ? 3 : (UIDevice.isCompactDevice ? 1 : 2))
                     .padding(.top, -20)
                     .padding(.bottom, -20)
                     .foregroundColor(Color.white.opacity(0.8))
                     .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                     .monospacedDigit()
             }
-            .frame(width: adaptiveLayout.isIPad ? 300 : 200, alignment: .center)
+            .frame(width: UIDevice.isCompactDevice ? 140 : (adaptiveLayout.isIPad ? 300 : 200), alignment: .center)
             .contentShape(Rectangle())
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .light)
@@ -46,11 +46,11 @@ struct BPMControlsView: View {
             // Plus Button
             ZStack {
                 Image(systemName: "chevron.forward")
-                    .font(.system(size: adaptiveLayout.isIPad ? 24 : 18, weight: .bold, design: .monospaced))
+                    .font(.system(size: AdaptiveValues.chevronSize, weight: .bold, design: .monospaced))
                     .foregroundColor(Color.white.opacity(0.9))
                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
             }
-            .frame(width: adaptiveLayout.isIPad ? 50 : 30, height: adaptiveLayout.isIPad ? 50 : 30)
+            .frame(width: AdaptiveValues.chevronFrameSize, height: AdaptiveValues.chevronFrameSize)
             .contentShape(Rectangle())
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .soft)
@@ -62,13 +62,12 @@ struct BPMControlsView: View {
     }
 }
 
-// Legacy initializer for compatibility
+// Keep your existing legacy initializer
 extension BPMControlsView {
     init(metronome: MetronomeEngine, isShowingKeypad: Binding<Bool>, previousTempo: Binding<Double>) {
         self.metronome = metronome
         self._isShowingKeypad = isShowingKeypad
         self._previousTempo = previousTempo
-        // Create a default layout for legacy usage
         self.adaptiveLayout = AdaptiveLayout.default
     }
 }

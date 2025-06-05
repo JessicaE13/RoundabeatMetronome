@@ -9,11 +9,28 @@ struct DialControl: View {
     
     let adaptiveLayout: AdaptiveLayout
 
-    private var dialSize: CGFloat { adaptiveLayout.dialSize }
-    private var knobSize: CGFloat { adaptiveLayout.isIPad ? 120 : 90 }
-    private var ringLineWidth: CGFloat { adaptiveLayout.ringLineWidth }
+    // Use adaptive sizing
+    private var dialSize: CGFloat { AdaptiveValues.dialSize }
+    private var knobSize: CGFloat {
+        if UIDevice.isCompactDevice {
+            return AdaptiveValues.dialSize * 0.35  // Proportional to dial
+        } else if UIDevice.current.isIPad {
+            return 120
+        } else {
+            return 90
+        }
+    }
+    private var ringLineWidth: CGFloat {
+        if UIDevice.isCompactDevice {
+            return 18  // Thinner on iPhone SE
+        } else if UIDevice.current.isIPad {
+            return 32
+        } else {
+            return 24
+        }
+    }
     
-    // Dial rotation remains the same across devices
+    // Dial rotation remains the same
     private let minRotation: Double = -900
     private let maxRotation: Double = 900
 
@@ -24,14 +41,14 @@ struct DialControl: View {
     }
 
     var body: some View {
-        VStack(spacing: adaptiveLayout.isIPad ? 30 : 20) {
+        VStack(spacing: adaptiveLayout.isIPad ? 30 : (UIDevice.isCompactDevice ? 12 : 20)) {
             ZStack {
                 segmentedRing
                 dialBackground
                 centerKnob
             }
-            .frame(width: dialSize + (adaptiveLayout.isIPad ? 120 : 85),
-                   height: dialSize + (adaptiveLayout.isIPad ? 120 : 85))
+            .frame(width: dialSize + (adaptiveLayout.isIPad ? 120 : (UIDevice.isCompactDevice ? 60 : 85)),
+                   height: dialSize + (adaptiveLayout.isIPad ? 120 : (UIDevice.isCompactDevice ? 60 : 85)))
             .gesture(createDragGesture())
             .onChange(of: metronome.tempo) { _, newTempo in
                 if !isDragging {
@@ -111,13 +128,14 @@ struct DialControl: View {
                 )
                 .frame(width: dialSize - 2, height: dialSize - 2)
             
-            // Rotating indicator - scale size for iPad
+            // Rotating indicator - scale size for different devices
             Circle()
                 .glowingAccent(intensity: 0.5)
                 .opacity(0.85)
-                .frame(width: adaptiveLayout.isIPad ? 8 : 5, height: adaptiveLayout.isIPad ? 8 : 5)
+                .frame(width: UIDevice.isCompactDevice ? 3 : (adaptiveLayout.isIPad ? 8 : 5),
+                       height: UIDevice.isCompactDevice ? 3 : (adaptiveLayout.isIPad ? 8 : 5))
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 0)
-                .offset(y: -(dialSize / 2 - (adaptiveLayout.isIPad ? 16 : 11)))
+                .offset(y: -(dialSize / 2 - (UIDevice.isCompactDevice ? 8 : (adaptiveLayout.isIPad ? 16 : 11))))
                 .rotationEffect(Angle(degrees: dialRotation))
         }
     }
@@ -125,7 +143,7 @@ struct DialControl: View {
     private var segmentedRing: some View {
         SegmentedCircleView(
             metronome: metronome,
-            diameter: dialSize + (adaptiveLayout.isIPad ? 120 : 85),
+            diameter: dialSize + (adaptiveLayout.isIPad ? 120 : (UIDevice.isCompactDevice ? 60 : 85)),
             lineWidth: ringLineWidth
         )
     }
@@ -194,7 +212,7 @@ struct DialControl: View {
     
     private var playPauseIcon: some View {
         Image(systemName: metronome.isPlaying ? "stop.fill" : "play.fill")
-            .font(.system(size: adaptiveLayout.isIPad ? 40 : 30))
+            .font(.system(size: UIDevice.isCompactDevice ? 20 : (adaptiveLayout.isIPad ? 40 : 30)))
             .glowingAccent()
     }
     
@@ -220,7 +238,7 @@ struct DialControl: View {
     }
 
     private func handleDragChange(_ value: DragGesture.Value) {
-        let frameSize = dialSize + (adaptiveLayout.isIPad ? 120 : 55)
+        let frameSize = dialSize + (adaptiveLayout.isIPad ? 120 : (UIDevice.isCompactDevice ? 60 : 85))
         let center = CGPoint(x: frameSize / 2, y: frameSize / 2)
         let angle = calculateAngle(center: center, point: value.location)
         
@@ -276,11 +294,10 @@ struct DialControl: View {
     }
 }
 
-// Legacy initializer for compatibility
+// Keep your existing legacy initializer
 extension DialControl {
     init(metronome: MetronomeEngine) {
         self.metronome = metronome
-        // Create a default layout for legacy usage
         self.adaptiveLayout = AdaptiveLayout.default
         self._dialRotation = State(initialValue: tempoToRotation(metronome.tempo))
     }
