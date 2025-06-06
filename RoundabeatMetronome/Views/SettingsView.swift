@@ -35,7 +35,7 @@ struct SettingsView: View {
     private func customHeaderView() -> some View {
         VStack(spacing: 8) {
             Text("SETTINGS")
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(.title, weight: .medium))
                 .kerning(1.5)
                 .foregroundColor(Color.white.opacity(0.4))
             

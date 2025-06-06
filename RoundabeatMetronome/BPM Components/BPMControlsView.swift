@@ -6,15 +6,15 @@ struct BPMControlsView: View {
     @Binding var previousTempo: Double
     
     var body: some View {
-        HStack(spacing:20) {
+        HStack(spacing: AdaptiveSizing.current.spacing(20)) {
             // Minus Button
             ZStack {
                 Image(systemName: "chevron.backward")
-                    .font(.title.bold())
+                    .adaptiveFont(.title, weight: .bold)
                     .foregroundColor(Color.white.opacity(0.9))
                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
             }
-            .frame(width: 30, height:30)
+            .adaptiveFrame(width: 30, height: 30)
             .contentShape(Rectangle())
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .soft)
@@ -26,16 +26,15 @@ struct BPMControlsView: View {
             // BPM Number Display
             VStack {
                 Text("\(Int(metronome.tempo))")
-                    .font(.custom("Kanit-SemiBold", size: 90)) // Big, bold, intentional
-                    .kerning(2)
-                    .padding(.top, -20)
-                    .padding(.bottom, -20)
+                    .adaptiveCustomFont("Kanit-SemiBold", size: 90) // This will now scale appropriately
+                    .kerning(AdaptiveSizing.current.spacing(2))
+                    .adaptivePadding(.top, -24)
+                    .adaptivePadding(.bottom, -20)
                     .foregroundColor(Color.white.opacity(0.8))
                     .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                     .monospacedDigit()
-
             }
-            .frame(width: 200, alignment: .center)
+            .adaptiveFrame(width: 200)
             .contentShape(Rectangle())
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .light)
@@ -46,11 +45,11 @@ struct BPMControlsView: View {
             // Plus Button
             ZStack {
                 Image(systemName: "chevron.forward")
-                    .font(.title.bold())
+                    .adaptiveFont(.title, weight: .bold)
                     .foregroundColor(Color.white.opacity(0.9))
                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
             }
-            .frame(width: 30, height: 30)
+            .adaptiveFrame(width: 30, height: 30)
             .contentShape(Rectangle())
             .onTapGesture {
                 let generator = UIImpactFeedbackGenerator(style: .soft)

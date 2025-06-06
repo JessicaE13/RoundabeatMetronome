@@ -13,41 +13,41 @@ struct TimeSignatureView: View {
     var body: some View {
         ZStack {
             // Single horizontal row containing all three buttons
-            HStack(spacing: 16) {
+            HStack(spacing: AdaptiveSizing.current.spacing(16)) {
                 // Time Signature Section
                 Button(action: {
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
                     showTimeSignaturePicker = true
                 }) {
-                    HStack(spacing: 2) {
+                    HStack(spacing: AdaptiveSizing.current.spacing(2)) {
                         Text("TIME  ")
-                            .font(.system(.subheadline, weight: .medium))
-                            .kerning(1.2)
+                            .adaptiveFont(.subheadline, weight: .medium)
+                            .kerning(AdaptiveSizing.current.spacing(1.2))
                             .foregroundColor(Color.white.opacity(0.6))
                         
                         Text("\(metronome.beatsPerMeasure)")
-                            .font(.custom("Kanit-Regular", size: 14))
-                            .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.6)
+                            .adaptiveCustomFont("Kanit-Regular", size: 14)
+                            .kerning(AdaptiveSizing.current.spacing(0.8))
+                            .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                         
                         Text("/")
-                            .font(.custom("Kanit-Regular", size: 14))
-                            .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.6)
+                            .adaptiveCustomFont("Kanit-Regular", size: 14)
+                            .kerning(AdaptiveSizing.current.spacing(0.8))
+                            .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                         
                         Text("\(metronome.beatUnit)")
-                            .font(.custom("Kanit-Regular", size:  14))
-                            .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.6)
+                            .adaptiveCustomFont("Kanit-Regular", size: 14)
+                            .kerning(AdaptiveSizing.current.spacing(0.8))
+                            .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .frame(maxWidth: .infinity, minHeight: AdaptiveSizing.current.size(38))
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
                             .fill(Color.black.opacity(0.6))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
+                                    .stroke(Color.white.opacity(0.25), lineWidth: AdaptiveSizing.current.lineWidth(1))
                             )
                     )
                 }
@@ -59,24 +59,24 @@ struct TimeSignatureView: View {
                     generator.impactOccurred()
                     showSubdivisionPicker = true
                 }) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: AdaptiveSizing.current.spacing(6)) {
                         Text("SUB DIV.")
-                            .font(.system(.subheadline, weight: .medium))
-                            .kerning(1.2)
+                            .adaptiveFont(.subheadline, weight: .medium)
+                            .kerning(AdaptiveSizing.current.spacing(1.2))
                             .foregroundColor(Color.white.opacity(0.6))
                         
                         // Display the current subdivision symbol
                         Text(getSubdivisionSymbol())
-                            .font(.system(.headline, weight: .medium))
-                            .glowingAccent(size:  24, intensity: 0.6)
+                            .adaptiveFont(.headline, weight: .medium)
+                            .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .frame(maxWidth: .infinity, minHeight: AdaptiveSizing.current.size(38))
                     .background(
-                        RoundedRectangle(cornerRadius:  12)
+                        RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
                             .fill(Color.black.opacity(0.6))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
+                                    .stroke(Color.white.opacity(0.25), lineWidth: AdaptiveSizing.current.lineWidth(1))
                             )
                     )
                 }
@@ -86,29 +86,29 @@ struct TimeSignatureView: View {
                 Button(action: {
                     calculateTapTempo()
                 }) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: AdaptiveSizing.current.spacing(6)) {
                         Text("TAP")
-                            .font(.system(.subheadline, weight: .medium))
-                            .kerning(1.0)
+                            .adaptiveFont(.subheadline, weight: .medium)
+                            .kerning(AdaptiveSizing.current.spacing(1.0))
                             .foregroundColor(Color.white.opacity(0.6))
                         
                         Image(systemName: "hand.tap")
-                            .font(.system(.subheadline, weight: .medium))
-                            .glowingAccent(size: 24, intensity: 0.6)
+                            .adaptiveFont(.subheadline, weight: .medium)
+                            .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 38)
+                    .frame(maxWidth: .infinity, minHeight: AdaptiveSizing.current.size(38))
                     .background(
-                        RoundedRectangle(cornerRadius:  12)
+                        RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
                             .fill(Color.black.opacity(0.6))
                             .overlay(
-                                RoundedRectangle(cornerRadius:  12)
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
+                                    .stroke(Color.white.opacity(0.25), lineWidth: AdaptiveSizing.current.lineWidth(1))
                             )
                     )
                 }
                 .contentShape(Rectangle())
             }
-            .padding(.horizontal,  8)
+            .adaptivePadding(.horizontal, 8)
         }
     }
     
