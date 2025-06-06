@@ -27,7 +27,7 @@ struct MetronomeView: View {
             // Main metronome interface
             GeometryReader { geometry in
                 
-                ScrollView(showsIndicators: false) {
+          
                     VStack(spacing: 0) {
                         
                         Spacer()
@@ -40,6 +40,8 @@ struct MetronomeView: View {
                                 metronome: metronome,
                                 previousTempo: $previousTempo
                             )
+                            .padding(.leading)
+                            .padding(.trailing)
                             
                             BPMControlsView(
                                 metronome: metronome,
@@ -48,9 +50,10 @@ struct MetronomeView: View {
                             )
                             
                             Text("BEATS PER MINUTE (BPM)")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.system(.subheadline, weight: .medium))
                                 .foregroundColor(Color.white.opacity(0.4))
                                 .tracking(1)
+                                .padding()
                             
                             TimeSignatureView(
                                 metronome: metronome,
@@ -61,8 +64,8 @@ struct MetronomeView: View {
          
                             
                             LogoView()
-                            
-                            Spacer()
+                                .padding(24)
+                            //Spacer()
                              
                             
                             DialControl(
@@ -75,7 +78,7 @@ struct MetronomeView: View {
                         .frame(maxWidth: .infinity) // Center the content
                     }
                     .frame(minHeight: geometry.size.height)
-                }
+                
             }
             .onAppear {
                 // Prepare audio system as soon as view appears
@@ -117,9 +120,7 @@ struct MetronomeView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(1)
             }
-            
         }
-        .ignoresSafeArea(.all, edges: [.top, .leading, .trailing]) // Don't ignore bottom for tab bar
         .animation(.spring(response: 0.3), value: showTimeSignaturePicker)
         .animation(.spring(response: 0.3), value: showBPMKeypad)
         .animation(.spring(response: 0.3), value: showSubdivisionPicker)

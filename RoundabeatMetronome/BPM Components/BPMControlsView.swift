@@ -10,7 +10,7 @@ struct BPMControlsView: View {
             // Minus Button
             ZStack {
                 Image(systemName: "chevron.backward")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.title.bold())
                     .foregroundColor(Color.white.opacity(0.9))
                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
             }
@@ -26,13 +26,14 @@ struct BPMControlsView: View {
             // BPM Number Display
             VStack {
                 Text("\(Int(metronome.tempo))")
-                    .font(.custom("Kanit-SemiBold", size: 90))
+                    .font(.custom("Kanit-SemiBold", size: 90)) // Big, bold, intentional
                     .kerning(2)
                     .padding(.top, -20)
                     .padding(.bottom, -20)
                     .foregroundColor(Color.white.opacity(0.8))
                     .shadow(color: Color.white.opacity(0.1), radius: 0.5, x: 0, y: 0)
                     .monospacedDigit()
+
             }
             .frame(width: 200, alignment: .center)
             .contentShape(Rectangle())
@@ -45,7 +46,7 @@ struct BPMControlsView: View {
             // Plus Button
             ZStack {
                 Image(systemName: "chevron.forward")
-                    .font(.system(size: 18, weight: .bold, design: .monospaced))
+                    .font(.title.bold())
                     .foregroundColor(Color.white.opacity(0.9))
                     .shadow(color: Color.white.opacity(0.3), radius: 0.5, x: 0, y: 0)
             }

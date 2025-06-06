@@ -6,10 +6,22 @@ struct SegmentedCircleView: View {
     let isPlaying: Bool
     let diameter: CGFloat
     let lineWidth: CGFloat
-    let highlightFirstBeat: Bool // New parameter
+    let highlightFirstBeat: Bool
+    let gapMultiplier: CGFloat
     
-    private var radius: CGFloat { (diameter - lineWidth) / 2 }
-    private let gapWidthPoints: CGFloat = 25.0
+    private var radius: CGFloat {
+        (diameter - lineWidth) / 2
+    }
+
+    private var gapWidthPoints: CGFloat {
+        lineWidth * 1.5
+    }
+
+    private var gapDegrees: Double {
+        (gapWidthPoints / (2 * .pi * radius)) * 360.0
+    }
+
+
     
     init(
         beatsPerMeasure: Int,
@@ -17,7 +29,8 @@ struct SegmentedCircleView: View {
         isPlaying: Bool,
         diameter: CGFloat,
         lineWidth: CGFloat,
-        highlightFirstBeat: Bool = true
+        highlightFirstBeat: Bool = true,
+        gapMultiplier: CGFloat = 1.5
     ) {
         self.beatsPerMeasure = beatsPerMeasure
         self.currentBeat = currentBeat
@@ -25,6 +38,7 @@ struct SegmentedCircleView: View {
         self.diameter = diameter
         self.lineWidth = lineWidth
         self.highlightFirstBeat = highlightFirstBeat
+        self.gapMultiplier = gapMultiplier
     }
     
     var body: some View {
@@ -66,14 +80,20 @@ struct SegmentedCircleView: View {
 
 // MARK: - Convenience initializer for MetronomeEngine
 extension SegmentedCircleView {
-    init(metronome: MetronomeEngine, diameter: CGFloat, lineWidth: CGFloat) {
+    init(
+        metronome: MetronomeEngine,
+        diameter: CGFloat,
+        lineWidth: CGFloat,
+        gapMultiplier: CGFloat = 1.2
+    ) {
         self.init(
             beatsPerMeasure: metronome.beatsPerMeasure,
             currentBeat: metronome.currentBeat,
             isPlaying: metronome.isPlaying,
             diameter: diameter,
             lineWidth: lineWidth,
-            highlightFirstBeat: metronome.highlightFirstBeat
+            highlightFirstBeat: metronome.highlightFirstBeat,
+            gapMultiplier: gapMultiplier
         )
     }
 }

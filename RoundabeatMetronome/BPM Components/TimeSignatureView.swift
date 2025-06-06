@@ -22,29 +22,29 @@ struct TimeSignatureView: View {
                 }) {
                     HStack(spacing: 2) {
                         Text("TIME  ")
-                            .font(.system(size: 12, weight: .medium))
-                            .kerning(1.0)
-                            .foregroundColor(Color.white.opacity(0.4))
+                            .font(.system(.subheadline, weight: .medium))
+                            .kerning(1.2)
+                            .foregroundColor(Color.white.opacity(0.6))
                         
                         Text("\(metronome.beatsPerMeasure)")
                             .font(.custom("Kanit-Regular", size: 14))
                             .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .glowingAccent(size: 24, intensity: 0.6)
                         
                         Text("/")
                             .font(.custom("Kanit-Regular", size: 14))
                             .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .glowingAccent(size: 24, intensity: 0.6)
                         
                         Text("\(metronome.beatUnit)")
                             .font(.custom("Kanit-Regular", size:  14))
                             .kerning(0.8)
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .glowingAccent(size: 24, intensity: 0.6)
                     }
                     .frame(maxWidth: .infinity, minHeight: 38)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.4))
+                            .fill(Color.black.opacity(0.6))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color.white.opacity(0.25), lineWidth: 1)
@@ -61,19 +61,19 @@ struct TimeSignatureView: View {
                 }) {
                     HStack(spacing: 6) {
                         Text("SUB DIV.")
-                            .font(.system(size: 12, weight: .medium))
-                            .kerning(1.0)
-                            .foregroundColor(Color.white.opacity(0.4))
+                            .font(.system(.subheadline, weight: .medium))
+                            .kerning(1.2)
+                            .foregroundColor(Color.white.opacity(0.6))
                         
                         // Display the current subdivision symbol
                         Text(getSubdivisionSymbol())
-                            .font(.system(size: 14, weight: .medium))
-                            .glowingAccent(size:  24, intensity: 0.4)
+                            .font(.system(.headline, weight: .medium))
+                            .glowingAccent(size:  24, intensity: 0.6)
                     }
                     .frame(maxWidth: .infinity, minHeight: 38)
                     .background(
                         RoundedRectangle(cornerRadius:  12)
-                            .fill(Color.black.opacity(0.4))
+                            .fill(Color.black.opacity(0.6))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color.white.opacity(0.25), lineWidth: 1)
@@ -88,18 +88,18 @@ struct TimeSignatureView: View {
                 }) {
                     HStack(spacing: 6) {
                         Text("TAP")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(.subheadline, weight: .medium))
                             .kerning(1.0)
-                            .foregroundColor(Color.white.opacity(0.4))
+                            .foregroundColor(Color.white.opacity(0.6))
                         
                         Image(systemName: "hand.tap")
-                            .font(.system(size:  14, weight: .medium))
-                            .glowingAccent(size: 24, intensity: 0.4)
+                            .font(.system(.subheadline, weight: .medium))
+                            .glowingAccent(size: 24, intensity: 0.6)
                     }
                     .frame(maxWidth: .infinity, minHeight: 38)
                     .background(
                         RoundedRectangle(cornerRadius:  12)
-                            .fill(Color.black.opacity(0.4))
+                            .fill(Color.black.opacity(0.6))
                             .overlay(
                                 RoundedRectangle(cornerRadius:  12)
                                     .stroke(Color.white.opacity(0.25), lineWidth: 1)

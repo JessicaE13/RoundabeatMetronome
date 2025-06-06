@@ -8,10 +8,11 @@ struct DialControl: View {
     @State private var isKnobTouched = false
 
     // Percentage-based sizing
-    private let dialSizePercent: CGFloat = 0.60        // 75% of available space
+    private let dialSizePercent: CGFloat = 0.75        // 75% of available space
     private let knobSizePercent: CGFloat = 0.27        // 27% of dial size
-    private let ringLineWidthPercent: CGFloat = 0.13   // 7% of dial size
-    private let outerFramePercent: CGFloat = 0.9       // 100% of available space
+    private let ringLineWidthPercent: CGFloat = 0.1   // 7% of dial size
+    private let outerFramePercent: CGFloat = 1.0       // 100% of available space
+    private let maxHeightPercent: CGFloat = 0.85        // Maximum 50% of screen height
     
     // Dial rotation remains the same
     private let minRotation: Double = -900
@@ -24,13 +25,14 @@ struct DialControl: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let availableSize = min(geometry.size.width, geometry.size.height)
+            let maxAllowedSize = geometry.size.height * maxHeightPercent
+            let availableSize = min(geometry.size.width, geometry.size.height, maxAllowedSize)
             let dialSize = availableSize * dialSizePercent
             let knobSize = dialSize * knobSizePercent
             let ringLineWidth = dialSize * ringLineWidthPercent
             let frameSize = availableSize * outerFramePercent
             
-            VStack(spacing: availableSize * 0.05) { // 5% spacing
+            VStack(spacing: availableSize) {
                 ZStack {
                     segmentedRing(frameSize: frameSize, lineWidth: ringLineWidth)
                     dialBackground(dialSize: dialSize)

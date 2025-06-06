@@ -45,7 +45,7 @@ struct MainTabView: View {
                 }
             }
         }
-        .ignoresSafeArea(.all, edges: [.top, .leading, .trailing]) // Only ignore top, leading, trailing - preserve bottom safe area
+      //  .ignoresSafeArea(.all, edges: [.top, .leading, .trailing]) // Only ignore top, leading, trailing - preserve bottom safe area
         .onAppear {
             // Always start on the metronome tab
             selectedTab = 1

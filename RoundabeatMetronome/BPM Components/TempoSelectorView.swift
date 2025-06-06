@@ -21,8 +21,8 @@ struct TempoSelectorView: View {
                                 
                                 VStack(spacing: 4) {
                                     Text(range.name.uppercased())
-                                        .font(.system(size: 10, weight: .medium))
-                                        .kerning(1.5)
+                                        .font(.system(.subheadline, weight: .medium))
+                                        .kerning(2.0)
                                         .foregroundColor(isSelected ?
                                                          Color.white.opacity(0.9) :
                                                             Color.white.opacity(0.4))
