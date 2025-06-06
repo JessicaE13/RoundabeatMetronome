@@ -8,11 +8,11 @@ struct DialControl: View {
     @State private var isKnobTouched = false
 
     // Percentage-based sizing
-    private let dialSizePercent: CGFloat = 0.75        // 75% of available space
-    private let knobSizePercent: CGFloat = 0.27        // 27% of dial size
-    private let ringLineWidthPercent: CGFloat = 0.1   // 7% of dial size
+    private let dialSizePercent: CGFloat = 0.72        // 75% of available space
+    private let knobSizePercent: CGFloat = 0.42        // 27% of dial size
+    private let ringLineWidthPercent: CGFloat = 0.12   // 7% of dial size
     private let outerFramePercent: CGFloat = 1.0       // 100% of available space
-    private let maxHeightPercent: CGFloat = 0.85        // Maximum 50% of screen height
+    private let maxHeightPercent: CGFloat = 0.8        // Maximum 50% of screen height
     
     // Dial rotation remains the same
     private let minRotation: Double = -900

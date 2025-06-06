@@ -31,7 +31,7 @@ struct MetronomeView: View {
                     VStack(spacing: 0) {
                         
                         Spacer()
-                            .frame(height: geometry.safeAreaInsets.top + 24)
+                            .frame(height: 16)
                 
                         // Content container with max width for iPad
                         VStack(spacing: 0) {
@@ -42,6 +42,7 @@ struct MetronomeView: View {
                             )
                             .padding(.leading)
                             .padding(.trailing)
+                            .padding(.bottom)
                             
                             BPMControlsView(
                                 metronome: metronome,
@@ -53,7 +54,7 @@ struct MetronomeView: View {
                                 .font(.system(.subheadline, weight: .medium))
                                 .foregroundColor(Color.white.opacity(0.4))
                                 .tracking(1)
-                                .padding()
+                                .padding(.bottom)
                             
                             TimeSignatureView(
                                 metronome: metronome,
@@ -61,18 +62,20 @@ struct MetronomeView: View {
                                 showSettings: $showSettings,
                                 showSubdivisionPicker: $showSubdivisionPicker
                             )
+                            .padding()
          
+                 
                             
                             LogoView()
-                                .padding(24)
-                            //Spacer()
+                           
+                        
                              
                             
                             DialControl(
                                 metronome: metronome
                             )
                             
-                            Spacer()
+                           
                                 
                         }
                         .frame(maxWidth: .infinity) // Center the content

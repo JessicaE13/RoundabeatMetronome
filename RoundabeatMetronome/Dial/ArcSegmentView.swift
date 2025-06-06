@@ -137,7 +137,7 @@ struct ArcSegmentView: View {
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.75), radius: 0.5, x: 0, y: 0)
             }
         }
-        .animation(.easeInOut(duration: 0.15), value: isActive)
+        .animation(.easeInOut(duration: 0.04), value: isActive)
     }
 }
 
