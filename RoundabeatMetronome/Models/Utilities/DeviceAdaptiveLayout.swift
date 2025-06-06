@@ -3,7 +3,10 @@ import UIKit
 
 // MARK: - Device Type Detection
 enum DeviceType {
-    case iPhone
+    case iPhoneSmall     // iPhone SE, iPhone 8 and smaller
+    case iPhoneRegular   // iPhone 12 mini, iPhone 13 mini, iPhone 14, iPhone 15
+    case iPhoneLarge     // iPhone 12, iPhone 13, iPhone 14 Plus, iPhone 15 Plus
+    case iPhoneXL        // iPhone 12 Pro Max, iPhone 13 Pro Max, iPhone 14 Pro Max, iPhone 15 Pro Max
     case iPadMini
     case iPad
     case iPadPro
@@ -12,9 +15,30 @@ enum DeviceType {
         let screenWidth = UIScreen.main.bounds.width
         let screenHeight = UIScreen.main.bounds.height
         let screenSize = max(screenWidth, screenHeight)
+        let minScreenSize = min(screenWidth, screenHeight)
         
         if UIDevice.current.userInterfaceIdiom == .phone {
-            return .iPhone
+            // iPhone detection based on screen size
+            // iPhone SE (1st, 2nd, 3rd gen), iPhone 8 and smaller
+            if screenSize <= 667 {
+                return .iPhoneSmall
+            }
+            // iPhone 12 mini, iPhone 13 mini (2340×1080)
+            else if screenSize <= 812 && minScreenSize <= 375 {
+                return .iPhoneRegular
+            }
+            // iPhone 14, iPhone 15 (standard sizes) (2556×1179)
+            else if screenSize <= 852 {
+                return .iPhoneRegular
+            }
+            // iPhone 14 Plus, iPhone 15 Plus (2796×1290)
+            else if screenSize <= 932 {
+                return .iPhoneLarge
+            }
+            // iPhone Pro Max models (2778×1284 and larger)
+            else {
+                return .iPhoneXL
+            }
         } else {
             // iPad detection based on screen size
             if screenSize <= 1080 {
@@ -29,10 +53,33 @@ enum DeviceType {
     
     var isIPad: Bool {
         switch self {
-        case .iPhone:
+        case .iPhoneSmall, .iPhoneRegular, .iPhoneLarge, .iPhoneXL:
             return false
         case .iPadMini, .iPad, .iPadPro:
             return true
+        }
+    }
+    
+    var isIPhone: Bool {
+        return !isIPad
+    }
+    
+    var displayName: String {
+        switch self {
+        case .iPhoneSmall:
+            return "iPhone Small"
+        case .iPhoneRegular:
+            return "iPhone Regular"
+        case .iPhoneLarge:
+            return "iPhone Large"
+        case .iPhoneXL:
+            return "iPhone XL"
+        case .iPadMini:
+            return "iPad Mini"
+        case .iPad:
+            return "iPad"
+        case .iPadPro:
+            return "iPad Pro"
         }
     }
 }
@@ -52,7 +99,22 @@ struct FontScaleFactors {
     let largeTitle: CGFloat
     let custom: CGFloat
     
-    static let iPhone = FontScaleFactors(
+    static let iPhoneSmall = FontScaleFactors(
+        tiny: 0.85,
+        caption: 0.85,
+        footnote: 0.9,
+        subheadline: 0.9,
+        callout: 0.95,
+        body: 0.95,
+        headline: 0.95,
+        title3: 0.95,
+        title2: 0.95,
+        title: 0.95,
+        largeTitle: 1.0,
+        custom: 0.85
+    )
+    
+    static let iPhoneRegular = FontScaleFactors(
         tiny: 1.0,
         caption: 1.0,
         footnote: 1.0,
@@ -67,55 +129,91 @@ struct FontScaleFactors {
         custom: 1.0
     )
     
-    static let iPadMini = FontScaleFactors(
+    static let iPhoneLarge = FontScaleFactors(
+        tiny: 1.05,
+        caption: 1.05,
+        footnote: 1.05,
+        subheadline: 1.05,
+        callout: 1.05,
+        body: 1.05,
+        headline: 1.05,
+        title3: 1.05,
+        title2: 1.05,
+        title: 1.05,
+        largeTitle: 1.1,
+        custom: 1.05
+    )
+    
+    static let iPhoneXL = FontScaleFactors(
         tiny: 1.1,
         caption: 1.1,
-        footnote: 1.15,
-        subheadline: 1.2,
-        callout: 1.2,
-        body: 1.25,
-        headline: 1.3,
-        title3: 1.35,
-        title2: 1.4,
-        title: 1.45,
-        largeTitle: 1.5,
-        custom: 1.3
+        footnote: 1.1,
+        subheadline: 1.1,
+        callout: 1.1,
+        body: 1.1,
+        headline: 1.1,
+        title3: 1.1,
+        title2: 1.1,
+        title: 1.1,
+        largeTitle: 1.15,
+        custom: 1.1
+    )
+    
+    static let iPadMini = FontScaleFactors(
+        tiny: 1.0,
+        caption: 1.0,
+        footnote: 1.05,
+        subheadline: 1.1,
+        callout: 1.1,
+        body: 1.15,
+        headline: 1.2,
+        title3: 1.25,
+        title2: 1.3,
+        title: 1.35,
+        largeTitle: 1.4,
+        custom: 1.2
     )
     
     static let iPad = FontScaleFactors(
-        tiny: 1.2,
-        caption: 1.25,
-        footnote: 1.3,
-        subheadline: 1.4,
-        callout: 1.45,
-        body: 1.5,
-        headline: 1.6,
-        title3: 1.7,
-        title2: 1.8,
-        title: 1.9,
-        largeTitle: 2.0,
-        custom: 1.6
+        tiny: 1.1,
+        caption: 1.15,
+        footnote: 1.2,
+        subheadline: 1.25,
+        callout: 1.3,
+        body: 1.35,
+        headline: 1.4,
+        title3: 1.5,
+        title2: 1.6,
+        title: 1.7,
+        largeTitle: 1.8,
+        custom: 1.4
     )
     
     static let iPadPro = FontScaleFactors(
-        tiny: 1.4,
-        caption: 1.5,
-        footnote: 1.6,
-        subheadline: 1.7,
-        callout: 1.8,
-        body: 1.9,
-        headline: 2.0,
-        title3: 2.2,
-        title2: 2.4,
-        title: 2.6,
-        largeTitle: 2.8,
-        custom: 2.0
+        tiny: 1.2,
+        caption: 1.3,
+        footnote: 1.4,
+        subheadline: 1.5,
+        callout: 1.6,
+        body: 1.7,
+        headline: 1.8,
+        title3: 2.0,
+        title2: 2.2,
+        title: 2.4,
+        largeTitle: 2.6,
+        custom: 1.8
     )
     
     static var current: FontScaleFactors {
         switch DeviceType.current {
-        case .iPhone:
-            return .iPhone
+        case .iPhoneSmall:
+            return .iPhoneSmall
+        case .iPhoneRegular:
+            return .iPhoneRegular
+        case .iPhoneLarge:
+            return .iPhoneLarge
+        case .iPhoneXL:
+            return .iPhoneXL
         case .iPadMini:
             return .iPadMini
         case .iPad:
@@ -218,8 +316,14 @@ struct AdaptiveSizing {
     
     init() {
         switch DeviceType.current {
-        case .iPhone:
+        case .iPhoneSmall:
+            scaleFactor = 0.85
+        case .iPhoneRegular:
             scaleFactor = 1.0
+        case .iPhoneLarge:
+            scaleFactor = 1.05
+        case .iPhoneXL:
+            scaleFactor = 1.1
         case .iPadMini:
             scaleFactor = 1.3
         case .iPad:
@@ -247,6 +351,28 @@ struct AdaptiveSizing {
     
     func lineWidth(_ baseWidth: CGFloat) -> CGFloat {
         return baseWidth * scaleFactor
+    }
+    
+    // Add device-specific adjustments for special cases
+    func adjustedSize(_ baseSize: CGFloat, forDeviceType deviceType: DeviceType? = nil) -> CGFloat {
+        let targetDevice = deviceType ?? DeviceType.current
+        
+        switch targetDevice {
+        case .iPhoneSmall:
+            return baseSize * 0.85
+        case .iPhoneRegular:
+            return baseSize * 1.0
+        case .iPhoneLarge:
+            return baseSize * 1.05
+        case .iPhoneXL:
+            return baseSize * 1.1
+        case .iPadMini:
+            return baseSize * 1.3
+        case .iPad:
+            return baseSize * 1.6
+        case .iPadPro:
+            return baseSize * 2.0
+        }
     }
 }
 
@@ -283,7 +409,7 @@ extension View {
 struct AdaptiveTextExample: View {
     var body: some View {
         VStack(spacing: AdaptiveSizing.current.spacing(20)) {
-            Text("Device: \(DeviceType.current)")
+            Text("Device: \(DeviceType.current.displayName)")
                 .adaptiveFont(.headline)
             
             Text("Large BPM Number")
@@ -307,12 +433,41 @@ struct AdaptiveTextExample: View {
             .background(Color.blue)
             .adaptiveCornerRadius(8)
             .foregroundColor(.white)
+            
+            // TimeSignature-style button for testing
+            HStack(spacing: AdaptiveSizing.current.spacing(2)) {
+                Text("TIME  ")
+                    .adaptiveFont(.subheadline, weight: .medium)
+                    .kerning(AdaptiveSizing.current.spacing(1.2))
+                    .foregroundColor(Color.white.opacity(0.6))
+                
+                Text("4")
+                    .adaptiveCustomFont("Kanit-Regular", size: 14)
+                    .kerning(AdaptiveSizing.current.spacing(0.8))
+                
+                Text("/")
+                    .adaptiveCustomFont("Kanit-Regular", size: 14)
+                    .kerning(AdaptiveSizing.current.spacing(0.8))
+                
+                Text("4")
+                    .adaptiveCustomFont("Kanit-Regular", size: 14)
+                    .kerning(AdaptiveSizing.current.spacing(0.8))
+            }
+            .frame(maxWidth: .infinity, minHeight: AdaptiveSizing.current.size(38))
+            .background(
+                RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
+                    .fill(Color.black.opacity(0.6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
+                            .stroke(Color.white.opacity(0.25), lineWidth: AdaptiveSizing.current.lineWidth(1))
+                    )
+            )
         }
         .padding(.all, AdaptiveSizing.current.padding(20))
     }
 }
 
-#Preview("iPhone") {
+#Preview("iPhone Small") {
     AdaptiveTextExample()
         .preferredColorScheme(.dark)
 }

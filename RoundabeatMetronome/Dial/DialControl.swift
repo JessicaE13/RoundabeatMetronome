@@ -49,7 +49,7 @@ struct DialControl: View {
                     isKnobTouched = pressing
                 }, perform: {})
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity)
         }
         .aspectRatio(1, contentMode: .fit) // Keep it square
     }

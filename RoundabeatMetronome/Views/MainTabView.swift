@@ -30,12 +30,12 @@ struct MainTabView: View {
                             
                         default:
                             MetronomeView(metronome: metronome)
-                                .padding(.bottom, tabBarHeight) // Add padding to prevent overlap
+                              //  .padding(.bottom, tabBarHeight) // Add padding to prevent overlap
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                    Spacer() // Push tab bar to bottom
+                 //   Spacer() // Push tab bar to bottom
                 }
                 
                 // Bottom Tab Bar - positioned at bottom with proper safe area handling

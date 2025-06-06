@@ -27,60 +27,58 @@ struct MetronomeView: View {
             // Main metronome interface
             GeometryReader { geometry in
                 
-          
+                
+                VStack(spacing: 0) {
+                    
+                    Spacer()
+                        .frame(height: 16)
+                    
+                    // Content container with max width for iPad
                     VStack(spacing: 0) {
                         
-                        Spacer()
-                            .frame(height: 16)
-                
-                        // Content container with max width for iPad
-                        VStack(spacing: 0) {
-                            
-                            TempoSelectorView(
-                                metronome: metronome,
-                                previousTempo: $previousTempo
-                            )
-                            .padding(.leading)
-                            .padding(.trailing)
-                            .padding(.bottom)
-                            
-                            BPMControlsView(
-                                metronome: metronome,
-                                isShowingKeypad: $showBPMKeypad,
-                                previousTempo: $previousTempo
-                            )
-                            
-                            Text("BEATS PER MINUTE (BPM)")
-                                .font(.system(.subheadline, weight: .medium))
-                                .foregroundColor(Color.white.opacity(0.4))
-                                .tracking(1)
-                                .padding(.bottom)
-                            
-                            TimeSignatureView(
-                                metronome: metronome,
-                                showTimeSignaturePicker: $showTimeSignaturePicker,
-                                showSettings: $showSettings,
-                                showSubdivisionPicker: $showSubdivisionPicker
-                            )
-                            .padding()
-         
-                 
-                            
-                            LogoView()
-                           
+                        TempoSelectorView(
+                            metronome: metronome,
+                            previousTempo: $previousTempo
+                        )
+                        .padding(.leading)
+                        .padding(.trailing)
+                        .padding(.bottom)
                         
-                             
-                            
-                            DialControl(
-                                metronome: metronome
-                            )
-                            
-                           
-                                
-                        }
-                        .frame(maxWidth: .infinity) // Center the content
+                        BPMControlsView(
+                            metronome: metronome,
+                            isShowingKeypad: $showBPMKeypad,
+                            previousTempo: $previousTempo
+                        )
+                        
+                        Text("BEATS PER MINUTE (BPM)")
+                            .font(.system(.subheadline, weight: .medium))
+                            .foregroundColor(Color.white.opacity(0.4))
+                            .kerning(1.5)
+                            .padding(.bottom)
+                        
+                        TimeSignatureView(
+                            metronome: metronome,
+                            showTimeSignaturePicker: $showTimeSignaturePicker,
+                            showSettings: $showSettings,
+                            showSubdivisionPicker: $showSubdivisionPicker
+                        )
+                        .padding()
+                        
+                        Spacer()
+                        
+                        LogoView()
+                        
+                        
+                        Spacer()
+                        
+                        DialControl(
+                            metronome: metronome
+                        )
+                        
                     }
-                    .frame(minHeight: geometry.size.height)
+                    .frame(maxWidth: .infinity) // Center the content
+                }
+                .frame(minHeight: geometry.size.height)
                 
             }
             .onAppear {

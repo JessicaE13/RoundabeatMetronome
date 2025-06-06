@@ -27,21 +27,21 @@ struct TimeSignatureView: View {
                             .foregroundColor(Color.white.opacity(0.6))
                         
                         Text("\(metronome.beatsPerMeasure)")
-                            .adaptiveCustomFont("Kanit-Regular", size: 14)
+                            .adaptiveFont(.subheadline, weight: .medium)
                             .kerning(AdaptiveSizing.current.spacing(0.8))
                             .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                         
                         Text("/")
-                            .adaptiveCustomFont("Kanit-Regular", size: 14)
+                            .adaptiveFont(.subheadline, weight: .medium)
                             .kerning(AdaptiveSizing.current.spacing(0.8))
                             .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                         
                         Text("\(metronome.beatUnit)")
-                            .adaptiveCustomFont("Kanit-Regular", size: 14)
+                            .adaptiveFont(.subheadline, weight: .medium)
                             .kerning(AdaptiveSizing.current.spacing(0.8))
                             .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                     }
-                    .frame(maxWidth: .infinity, minHeight: AdaptiveSizing.current.size(38))
+                    .frame(maxWidth: .infinity, minHeight: buttonHeight())
                     .background(
                         RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
                             .fill(Color.black.opacity(0.6))
@@ -60,17 +60,17 @@ struct TimeSignatureView: View {
                     showSubdivisionPicker = true
                 }) {
                     HStack(spacing: AdaptiveSizing.current.spacing(6)) {
-                        Text("SUB DIV.")
+                        Text(subdivisionLabelText())
                             .adaptiveFont(.subheadline, weight: .medium)
                             .kerning(AdaptiveSizing.current.spacing(1.2))
                             .foregroundColor(Color.white.opacity(0.6))
                         
                         // Display the current subdivision symbol
                         Text(getSubdivisionSymbol())
-                            .adaptiveFont(.headline, weight: .medium)
+                            .adaptiveFont(.subheadline, weight: .medium)
                             .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                     }
-                    .frame(maxWidth: .infinity, minHeight: AdaptiveSizing.current.size(38))
+                    .frame(maxWidth: .infinity, minHeight: buttonHeight())
                     .background(
                         RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
                             .fill(Color.black.opacity(0.6))
@@ -96,7 +96,7 @@ struct TimeSignatureView: View {
                             .adaptiveFont(.subheadline, weight: .medium)
                             .glowingAccent(size: AdaptiveSizing.current.size(24), intensity: 0.6)
                     }
-                    .frame(maxWidth: .infinity, minHeight: AdaptiveSizing.current.size(38))
+                    .frame(maxWidth: .infinity, minHeight: buttonHeight())
                     .background(
                         RoundedRectangle(cornerRadius: AdaptiveSizing.current.cornerRadius(12))
                             .fill(Color.black.opacity(0.6))
@@ -112,6 +112,26 @@ struct TimeSignatureView: View {
         }
     }
     
+    // Device-specific button height
+    private func buttonHeight() -> CGFloat {
+        switch DeviceType.current {
+        case .iPhoneSmall:
+            return AdaptiveSizing.current.size(34)  // Slightly shorter for small iPhones
+        default:
+            return AdaptiveSizing.current.size(38)  // Standard height
+        }
+    }
+    
+    // Device-specific subdivision label text
+    private func subdivisionLabelText() -> String {
+        switch DeviceType.current {
+        case .iPhoneSmall:
+            return "SUB"  // Shorter text for small devices
+        default:
+            return "SUB DIV."  // Full text for larger devices
+        }
+    }
+    
     // Helper function to get the current subdivision symbol
     private func getSubdivisionSymbol() -> String {
         switch metronome.subdivisionMultiplier {
@@ -122,7 +142,7 @@ struct TimeSignatureView: View {
         case 2.0:
             return "♫"     // Eighth note
         case 3.0:
-            return "♫♫♫"   // Eighth note triplet
+            return "♪×3"   // Eighth note triplet
         case 4.0:
             return "♬"     // Sixteenth note
         default:
