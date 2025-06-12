@@ -81,15 +81,18 @@ struct ContentView: View {
                 BackgroundView()
                 
                 VStack(spacing: 0) {
-                    // Main content area
-                    switch selectedTab {
-                    case .metronome:
-                        MetronomeView(metronome: metronome)
-                    case .settings:
-                        SettingsView(metronome: metronome)
+                    // Main content area - this will now always leave space for the navigation bar
+                    Group {
+                        switch selectedTab {
+                        case .metronome:
+                            MetronomeView(metronome: metronome)
+                        case .settings:
+                            SettingsView(metronome: metronome, themeManager: themeManager)
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                    // Bottom navigation
+                    // Bottom navigation - always visible
                     BottomNavigationBar(selectedTab: $selectedTab)
                 }
             }
