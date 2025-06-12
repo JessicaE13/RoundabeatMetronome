@@ -10,11 +10,11 @@ import SwiftUI
 @main
 struct RoundabeatMetronomeApp: App {
     
-    @StateObject private var metronome = MetronomeEngine()
+   // @StateObject private var metronome = MetronomeEngine()
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+           ContentView()
         }
     }
 }
