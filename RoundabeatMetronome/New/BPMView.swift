@@ -23,6 +23,7 @@ struct BPMView: View {
                 Text("\(metronome.bpm)")
                     .font(.custom("Kanit-SemiBold", size: device.deviceType.largeFontSize))
                     .foregroundStyle(Color.primary.opacity(0.9))
+                    .kerning(2.0)
                     .lineLimit(1)
                     .frame(
                         minWidth: device.deviceType.bpmDisplayMinWidth,

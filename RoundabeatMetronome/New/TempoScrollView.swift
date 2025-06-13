@@ -61,12 +61,12 @@ struct TempoMarkingView: View {
                 
                 // BPM range - Updated to use Kanit-Medium
                 Text("\(tempo.bpmRange.lowerBound)-\(tempo.bpmRange.upperBound)")
-                    .font(.custom("Kanit-Medium", size: device.deviceType.smallFontSize))
+                    .font(.custom("Kanit-Regular", size: device.deviceType.smallFontSize))
                     .foregroundColor(isSelected ? .primary.opacity(0.9) : .primary.opacity(0.4))
                     .kerning(1.4)
                     .padding(.bottom, -4)
             }
-            .frame(width: 140)
+            .frame(width: 120)
             .frame(maxHeight: .infinity) // Content fills available space
         
             .background(
@@ -95,7 +95,7 @@ struct TempoScrollView: View {
     @State private var scrollPosition: CGFloat = 0
     
     private let itemWidth: CGFloat = 100
-    private let itemSpacing: CGFloat = 20
+    private let itemSpacing: CGFloat = 10
     
     var body: some View {
         // Tempo scroll area - constrained to content height
