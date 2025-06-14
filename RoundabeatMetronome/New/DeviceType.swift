@@ -688,11 +688,11 @@ extension DeviceType {
         case .iPadMini:
             return 400
         case .iPadStandard, .iPadAir:
-            return 500
-        case .iPadPro11:
-            return 550
-        case .iPadPro129:
             return 600
+        case .iPadPro11:
+            return 650
+        case .iPadPro129:
+            return 700
         }
     }
 }

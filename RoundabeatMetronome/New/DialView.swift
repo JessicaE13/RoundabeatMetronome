@@ -54,7 +54,7 @@ struct BeatArc: View {
                             endAngle: Angle(degrees: arcAngles.end),
                             clockwise: false)
             }
-
+            
             // Base etched outline (visible mainly when inactive)
             arcPath
                 .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
@@ -63,7 +63,7 @@ struct BeatArc: View {
                         Color(red: 1/255, green: 1/255, blue: 2/255),
                         lineWidth: isActive ? 1.0 : 2.75)  // Thinner when active
                 .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(isActive ? 0.2 : 0.75),
-                       radius: 0.5, x: 0, y: 0)
+                        radius: 0.5, x: 0, y: 0)
             
             if isActive {
                 // Inner light core - brightest white
@@ -100,7 +100,7 @@ struct BeatArc: View {
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
-                           radius: 0.5, x: 0, y: 0)
+                            radius: 0.5, x: 0, y: 0)
             }
         }
         .frame(width: frameSize, height: frameSize)
@@ -299,6 +299,7 @@ struct TempoDialView: View {
 struct DialView: View {
     
     @Bindable var metronome: MetronomeEngine
+    @Environment(\.deviceEnvironment) private var device
     
     var body: some View {
         // Calculate the arc segment size based on device and available space
@@ -322,37 +323,41 @@ struct DialView: View {
             }
         )
         .frame(width: frameSize, height: frameSize)
+        
+        
+        //Text("\(device.deviceType.dialArcSize)")
+        
+        
     }
     
     // Helper function to calculate the arc segment size - INCREASED SIZES
     private func calculateArcSegmentSize() -> CGFloat {
+        
+        //  return device.deviceType.dialArcSize
+        
+        
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
         let screenWidth = UIScreen.main.bounds.width
-        let screenHeight = UIScreen.main.bounds.height
-        let minScreenDimension = min(screenWidth, screenHeight)
+        //let screenHeight = UIScreen.main.bounds.height
+        //let minScreenDimension = min(screenWidth, screenHeight)
         
-        // Size the arc segments based on available space - INCREASED sizes
         if isIPad {
-            // For iPads, increased the size significantly
-            return min(minScreenDimension, 600) // Increased from 0.8 to 0.9, and max from 500 to 600
+            return UIScreen.main.bounds.height * 0.44
         } else {
-            // For iPhones, increased the multipliers to make them bigger
-            if screenWidth <= 375 { // iPhone SE and similar small screens
-                return min(minScreenDimension * 0.75, 240) // Increased from 0.65 to 0.75, and max from 240 to 300
-            } else { // Regular iPhones
-                return min(minScreenDimension * 0.95, 320) // Increased from 0.7 to 0.85, and max from 300 to 380
+            if screenWidth <= 375 {
+                return    UIScreen.main.bounds.height * 0.4
+            } else {
+                return    UIScreen.main.bounds.height * 0.36
             }
         }
+        
     }
     
-    // Helper function to calculate the total frame size including stroke width
     private func calculateFrameSize(for arcSize: CGFloat) -> CGFloat {
-        // Calculate the stroke widths (matching the logic in BeatArc)
         let arcWidth = arcSize * 0.1
         let activeArcWidth = arcWidth * 1.2
         let maxStrokeWidth = activeArcWidth
-        
-        // Frame size needs to account for stroke extending beyond the path
+
         return arcSize + maxStrokeWidth
     }
 }
@@ -361,7 +366,10 @@ struct DialView: View {
 
 #Preview {
     ZStack {
-     BackgroundView()
-        DialView(metronome: MetronomeEngine())
+        BackgroundView()
+        VStack {
+            Spacer()
+            DialView(metronome: MetronomeEngine())
+        }
     }
 }

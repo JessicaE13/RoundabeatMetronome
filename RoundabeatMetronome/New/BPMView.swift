@@ -21,7 +21,10 @@ struct BPMView: View {
                 
                 // Centered BPM display
                 Text("\(metronome.bpm)")
-                    .font(.custom("Kanit-SemiBold", size: device.deviceType.largeFontSize))
+                    .font(.custom("Kanit-SemiBold",
+                                  size: device.screenWidth <= 375 ? 70 :
+                                        device.screenWidth <= 420 ? 90 :
+                                        120))
                     .foregroundStyle(Color.primary.opacity(0.9))
                     .kerning(2.0)
                     .lineLimit(1)
@@ -46,6 +49,9 @@ struct BPMView: View {
             }
             .offset(y: device.deviceType.isIPad ? -8 : -16)
       
+           
+            
+            
             // BPM label
             Text("BEATS PER MINUTE (BPM)")
                 .font(.system(
