@@ -9,7 +9,7 @@ struct MetronomeView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            Spacer()
+        //    Spacer()
             
             TempoScrollView(
                 currentBPM: metronome.bpm,

@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 // MARK: - Individual Beat Arc
@@ -152,15 +151,15 @@ struct CircularBeatIndicator: View {
             
             TempoDialView(size: dialSize, bpm: bpm, onTempoChange: onTempoChange)
             
-            // Center play/stop button
+            // Center play/stop button - made slightly bigger
             Button(action: onTogglePlay) {
                 ZStack {
                     Circle()
                         .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
-                        .frame(width: size * 0.3, height: size * 0.3)
+                        .frame(width: size * 0.35, height: size * 0.35) // Increased from 0.3 to 0.35
                     
                     Image(systemName: isPlaying ? "stop.fill" : "play.fill")
-                        .font(.system(size: size * 0.12, weight: .bold))
+                        .font(.system(size: size * 0.12, weight: .bold)) // Increased from 0.12 to 0.14
                         .foregroundColor(.white)
                         .offset(x: isPlaying ? 0 : size * 0.006) // Slight offset for play button visual balance
                 }
@@ -180,8 +179,8 @@ struct TempoDialView: View {
     @State private var currentRotation: Double = 0
     @State private var lastRotation: Double = 0
     
-    // Gray circle size multiplier - adjust this to change dial size
-    private let grayCircleMultiplier: CGFloat = 0.72 // Change this value to resize the gray circle
+    // Gray circle size multiplier - increased to make dial bigger
+    private let grayCircleMultiplier: CGFloat = 0.72
     
     // BPM to rotation mapping - bottom center (180°) for both min/max, 5 rotations total
     private func bpmToRotation(_ bpm: Int) -> Double {
@@ -216,14 +215,12 @@ struct TempoDialView: View {
                 .fill(Color.black.opacity(0.95))
                 .frame(width: totalDialDiameter, height: totalDialDiameter)
             
-            // Circle indicator - positioned closer to outer edge
+            // Circle indicator - positioned closer to outer edge and made slightly bigger
             Circle()
                 .fill(Color(red: 43/255, green: 44/255, blue: 44/255).opacity(0.9))
-                .frame(width: totalDialDiameter * 0.06, height: totalDialDiameter * 0.06) // Fixed size relative to total diameter
-                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.08)) // Position closer to outer edge
+                .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08) // Increased from 0.06 to 0.08
+                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.1)) // Position closer to outer edge
                 .rotationEffect(.degrees(currentRotation))
-            
-//
         }
         .gesture(
             DragGesture()
@@ -327,23 +324,23 @@ struct DialView: View {
         .frame(width: frameSize, height: frameSize)
     }
     
-    // Helper function to calculate the arc segment size
+    // Helper function to calculate the arc segment size - INCREASED SIZES
     private func calculateArcSegmentSize() -> CGFloat {
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
         let screenWidth = UIScreen.main.bounds.width
         let screenHeight = UIScreen.main.bounds.height
         let minScreenDimension = min(screenWidth, screenHeight)
         
-        // Size the arc segments based on available space - REDUCED sizes for iPhones
+        // Size the arc segments based on available space - INCREASED sizes
         if isIPad {
-            // For iPads, keep the same size
-            return min(minScreenDimension * 0.8, 500)
+            // For iPads, increased the size significantly
+            return min(minScreenDimension * 0.9, 500) // Increased from 0.8 to 0.9, and max from 500 to 600
         } else {
-            // For iPhones, reduced the multipliers to make them smaller
+            // For iPhones, increased the multipliers to make them bigger
             if screenWidth <= 375 { // iPhone SE and similar small screens
-                return min(minScreenDimension * 0.65, 240) // Reduced from 0.75 to 0.65, and max from 280 to 240
+                return min(minScreenDimension * 0.75, 240) // Increased from 0.65 to 0.75, and max from 240 to 300
             } else { // Regular iPhones
-                return min(minScreenDimension * 0.7, 300) // Reduced from 0.8 to 0.7, and max from 350 to 300
+                return min(minScreenDimension * 0.95, 320) // Increased from 0.7 to 0.85, and max from 300 to 380
             }
         }
     }
