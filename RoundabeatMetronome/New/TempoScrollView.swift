@@ -115,7 +115,7 @@ struct TempoScrollView: View {
                 }
                 .padding(.horizontal, device.screenWidth / 2 - itemWidth / 2) // Center the scroll
             }
-            .frame(height: device.deviceType.tempoMarkingHeight + 20) // Match the original height exactly
+            .frame(height: device.deviceType.tempoMarkingHeight + 14) // Match the original height exactly
             .onAppear {
                 // Scroll to current tempo on appear
                 if let currentTempo = TempoMarking.getTempoForBPM(currentBPM),

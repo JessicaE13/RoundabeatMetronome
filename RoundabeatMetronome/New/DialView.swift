@@ -156,11 +156,11 @@ struct CircularBeatIndicator: View {
             Button(action: onTogglePlay) {
                 ZStack {
                     Circle()
-                        .fill(isPlaying ? Color.red : Color.green)
+                        .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
                         .frame(width: size * 0.3, height: size * 0.3)
                     
                     Image(systemName: isPlaying ? "stop.fill" : "play.fill")
-                        .font(.system(size: size * 0.08, weight: .bold))
+                        .font(.system(size: size * 0.12, weight: .bold))
                         .foregroundColor(.white)
                         .offset(x: isPlaying ? 0 : size * 0.006) // Slight offset for play button visual balance
                 }
@@ -213,12 +213,12 @@ struct TempoDialView: View {
         ZStack {
             // Full filled circle (no hole)
             Circle()
-                .fill(Color.black.opacity(0.9))
+                .fill(Color.black.opacity(0.95))
                 .frame(width: totalDialDiameter, height: totalDialDiameter)
             
             // Circle indicator - positioned closer to outer edge
             Circle()
-                .fill(Color.orange)
+                .fill(Color(red: 43/255, green: 44/255, blue: 44/255).opacity(0.9))
                 .frame(width: totalDialDiameter * 0.06, height: totalDialDiameter * 0.06) // Fixed size relative to total diameter
                 .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.08)) // Position closer to outer edge
                 .rotationEffect(.degrees(currentRotation))

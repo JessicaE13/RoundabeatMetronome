@@ -19,7 +19,7 @@ struct UniformButton: View {
             width: device.deviceType.uniformButtonWidth,
             height: device.deviceType.uniformButtonHeight
         )
-        .background(Color(.systemBackground).opacity(0.95))
+        .background(Color(.systemBackground).opacity(0.98))
         .cornerRadius(12)
         .overlay(
               RoundedRectangle(cornerRadius: 12)
@@ -51,7 +51,7 @@ struct UniformButtonWithIcon: View {
             width: device.deviceType.uniformButtonWidth,
             height: device.deviceType.uniformButtonHeight
         )
-        .background(Color(.systemBackground).opacity(0.95))
+        .background(Color(.systemBackground).opacity(0.98))
         .cornerRadius(12)
         .overlay(
               RoundedRectangle(cornerRadius: 12)
