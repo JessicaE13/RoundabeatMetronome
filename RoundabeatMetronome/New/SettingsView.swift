@@ -45,7 +45,7 @@ class ThemeManager {
 
 // MARK: - Settings View
 struct SettingsView: View {
-    @Bindable var metronome: MetronomeEngine
+    @ObservedObject var metronome: MetronomeEngine
     @Bindable var themeManager: ThemeManager
     @Environment(\.deviceEnvironment) private var device
     

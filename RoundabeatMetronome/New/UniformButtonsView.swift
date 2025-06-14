@@ -61,30 +61,20 @@ struct UniformButtonWithIcon: View {
 }
 
 // MARK: - Uniform Buttons View
-// Improved UniformButtonsView with better centering
 struct UniformButtonsView: View {
-    @Bindable var metronome: MetronomeEngine
+    @ObservedObject var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
+    
+    // Binding for showing time signature picker - now controlled by parent
+    @Binding var showingTimeSignaturePicker: Bool
     
     var body: some View {
         HStack(spacing: device.deviceType.buttonSpacing) {
-            // Time signature cycling button
+            // Time signature button - now shows actual time signature and opens picker
             UniformButton(
-                text: "TIME \(metronome.beatsPerBar)/4",
+                text: "TIME \(metronome.beatsPerMeasure)/\(metronome.beatUnit)",
                 action: {
-                    // Cycle through time signatures: 3 -> 4 -> 5 -> 6 -> 3
-                    switch metronome.beatsPerBar {
-                    case 3:
-                        metronome.beatsPerBar = 4
-                    case 4:
-                        metronome.beatsPerBar = 5
-                    case 5:
-                        metronome.beatsPerBar = 6
-                    case 6:
-                        metronome.beatsPerBar = 3
-                    default:
-                        metronome.beatsPerBar = 4
-                    }
+                    showingTimeSignaturePicker = true
                 }
             )
             
@@ -117,15 +107,18 @@ struct UniformButtonsView: View {
                 }
             )
         }
-        .frame(maxWidth: .infinity) // Explicit horizontal centering
+        .frame(maxWidth: .infinity)
         .frame(height: device.deviceType.uniformButtonHeight)
     }
 }
+
 #Preview {
-    
     ZStack {
         BackgroundView()
-        UniformButtonsView(metronome: MetronomeEngine())
-            .deviceEnvironment(DeviceEnvironment())
+        UniformButtonsView(
+            metronome: MetronomeEngine(),
+            showingTimeSignaturePicker: .constant(false)
+        )
+        .deviceEnvironment(DeviceEnvironment())
     }
 }

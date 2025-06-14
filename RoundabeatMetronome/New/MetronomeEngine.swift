@@ -1,17 +1,14 @@
-
-
 import SwiftUI
 import AVFoundation
 
 // MARK: - Metronome Engine with Sample-Accurate Timing
 
-@Observable
-class MetronomeEngine {
-    var bpm: Int = 120 {
+class MetronomeEngine: ObservableObject {
+    @Published var bpm: Int = 120 {
         didSet { updateTiming() }
     }
     
-    var isPlaying: Bool = false {
+    @Published var isPlaying: Bool = false {
         didSet {
             if isPlaying {
                 startMetronome()
@@ -21,29 +18,46 @@ class MetronomeEngine {
         }
     }
     
-    var beatsPerBar: Int = 4 {
+    @Published var beatsPerBar: Int = 4 {
         didSet { resetBeatPosition() }
     }
     
-    var currentBeat: Int = 0
-    var beatIndicator: Bool = false
+    // ADD: Support for beat unit (denominator)
+    @Published var beatUnit: Int = 4 {
+        didSet { resetBeatPosition() }
+    }
+    
+    // ADD: Computed property for beatsPerMeasure (alias for beatsPerBar for compatibility)
+    var beatsPerMeasure: Int {
+        get { beatsPerBar }
+        set { beatsPerBar = newValue }
+    }
+    
+    @Published var currentBeat: Int = 0
+    @Published var beatIndicator: Bool = false
     
     // Settings
-    var clickVolume: Double = 0.5 {
+    @Published var clickVolume: Double = 0.5 {
         didSet { mixerNode.outputVolume = Float(clickVolume) }
     }
-    var accentFirstBeat: Bool = true
-    var visualMetronome: Bool = true
-    var showSquareOutline: Bool = false // New variable for square outline visibility
+    @Published var accentFirstBeat: Bool = true
+    @Published var visualMetronome: Bool = true
+    @Published var showSquareOutline: Bool = false
     
     // Tap tempo functionality
     private var tapTimes: [Date] = []
-    private let maxTapCount = 8 // Use last 8 taps for averaging
-    private let tapTimeoutInterval: TimeInterval = 3.0 // Reset if no tap for 3 seconds
+    private let maxTapCount = 8
+    private let tapTimeoutInterval: TimeInterval = 3.0
     
     // Subdivisions
-    var subdivision: Int = 1 {
+    @Published var subdivision: Int = 1 {
         didSet { updateTiming() }
+    }
+    
+    // ADD: Subdivision multiplier support
+    var subdivisionMultiplier: Double {
+        get { Double(subdivision) }
+        set { subdivision = Int(newValue) }
     }
     
     // Audio components
@@ -57,13 +71,13 @@ class MetronomeEngine {
     private var currentSamplePosition: Int64 = 0
     private var nextBeatSample: Int64 = 0
     private var beatCounter: Int = 0
-    private var lastBeatSample: Int64 = 0  // Track when last beat occurred
+    private var lastBeatSample: Int64 = 0
     
     // Click generation
     private var clickPhase: Float = 0.0
-    private let clickFrequency: Float = 1000.0 // 1kHz click
-    private let accentFrequency: Float = 1200.0 // Higher pitch for accent
-    private let clickDuration: Double = 0.1 // 100ms clicks
+    private let clickFrequency: Float = 1000.0
+    private let accentFrequency: Float = 1200.0
+    private let clickDuration: Double = 0.1
     
     // Debug flag
     private var debugMode = true
@@ -78,17 +92,32 @@ class MetronomeEngine {
         stopMetronome()
     }
     
+    // ADD: Method to update time signature
+    func updateTimeSignature(numerator: Int, denominator: Int) {
+        beatsPerMeasure = numerator
+        beatUnit = denominator
+        if debugMode {
+            print("🎵 Time signature updated to \(numerator)/\(denominator)")
+        }
+    }
+    
+    // ADD: Method to update subdivision
+    func updateSubdivision(to multiplier: Double) {
+        subdivisionMultiplier = multiplier
+        if debugMode {
+            print("🎵 Subdivision updated to \(multiplier)")
+        }
+    }
+    
     private func setupAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         
         do {
-            // Configure for lowest latency playback only
             try audioSession.setCategory(.playback, mode: .default, options: [])
-            try audioSession.setPreferredIOBufferDuration(0.005) // Increased to 5ms for better stability
+            try audioSession.setPreferredIOBufferDuration(0.005)
             try audioSession.setPreferredSampleRate(48000.0)
             try audioSession.setActive(true)
             
-            // Get actual sample rate after activation
             sampleRate = audioSession.sampleRate
             if debugMode {
                 print("✅ Audio session sample rate: \(sampleRate)")
@@ -100,10 +129,8 @@ class MetronomeEngine {
     }
     
     private func setupAudioEngine() {
-        // Create audio format matching system
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
         
-        // Create source node for precise sample generation
         sourceNode = AVAudioSourceNode(format: format) { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
             return self?.renderAudio(frameCount: frameCount, audioBufferList: audioBufferList) ?? noErr
         }
@@ -113,14 +140,12 @@ class MetronomeEngine {
             return
         }
         
-        // Connect nodes: SourceNode -> Mixer -> Output
         audioEngine.attach(sourceNode)
         audioEngine.attach(mixerNode)
         
         audioEngine.connect(sourceNode, to: mixerNode, format: format)
         audioEngine.connect(mixerNode, to: audioEngine.outputNode, format: format)
         
-        // Set mixer volume
         mixerNode.outputVolume = Float(clickVolume)
         
         if debugMode {
@@ -152,12 +177,11 @@ class MetronomeEngine {
         }
         
         do {
-            // Reset timing - schedule first beat immediately as beat 1
             currentSamplePosition = 0
-            nextBeatSample = 0  // First beat happens at sample 0
-            lastBeatSample = 0  // Initialize last beat position
+            nextBeatSample = 0
+            lastBeatSample = 0
             beatCounter = 0
-            currentBeat = 1  // Start on beat 1
+            currentBeat = 1
             clickPhase = 0.0
             
             try audioEngine.start()
@@ -170,7 +194,6 @@ class MetronomeEngine {
             
         } catch {
             print("❌ Failed to start audio engine: \(error)")
-            // Reset isPlaying state if start failed
             DispatchQueue.main.async { [weak self] in
                 self?.isPlaying = false
             }
@@ -187,7 +210,6 @@ class MetronomeEngine {
         
         audioEngine.stop()
         
-        // Update UI on main thread
         DispatchQueue.main.async { [weak self] in
             self?.beatIndicator = false
             self?.currentBeat = 0
@@ -201,7 +223,6 @@ class MetronomeEngine {
     // MARK: - Real-Time Audio Render Callback
     private func renderAudio(frameCount: UInt32, audioBufferList: UnsafeMutablePointer<AudioBufferList>) -> OSStatus {
         
-        // Get audio buffer
         let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
         guard let buffer = ablPointer[0].mData?.assumingMemoryBound(to: Float.self) else {
             if debugMode {
@@ -213,64 +234,48 @@ class MetronomeEngine {
         let frames = Int(frameCount)
         let clickDurationSamples = Int(clickDuration * sampleRate)
         
-        // Track if we triggered a beat in this render cycle
         var beatTriggeredInThisCycle = false
         var newBeatNumber = currentBeat
         
-        // Process each frame
         for frameIndex in 0..<frames {
             let currentSample = currentSamplePosition + Int64(frameIndex)
             var sample: Float = 0.0
             
-            // Check if we should trigger a beat (only once per beat)
             if currentSample >= nextBeatSample && !beatTriggeredInThisCycle {
-                // Update last beat position before scheduling next
                 lastBeatSample = nextBeatSample
-                
-                // Schedule next beat
                 nextBeatSample += Int64(samplesPerBeat)
                 beatCounter += 1
                 
-                // Calculate new beat number (1-based indexing)
                 newBeatNumber = ((beatCounter - 1) % beatsPerBar) + 1
                 
                 beatTriggeredInThisCycle = true
-                
-                // Reset click phase for new click
                 clickPhase = 0.0
                 
-                if debugMode && beatCounter <= 20 { // Only log first 20 beats to avoid spam
+                if debugMode && beatCounter <= 20 {
                     print("🥁 Beat triggered: \(newBeatNumber) at sample \(currentSample), next at \(nextBeatSample)")
                 }
             }
             
-            // Generate click sound if within click duration
             let samplesSinceLastBeat = currentSample - lastBeatSample
             if samplesSinceLastBeat >= 0 && samplesSinceLastBeat < clickDurationSamples {
-                // Generate sine wave click with envelope
                 let clickProgress = Float(samplesSinceLastBeat) / Float(clickDurationSamples)
-                let envelope = (1.0 - clickProgress) * 0.3 // Decay envelope
+                let envelope = (1.0 - clickProgress) * 0.3
                 
-                // Use accent frequency for first beat if enabled
                 let frequency = (accentFirstBeat && newBeatNumber == 1) ? accentFrequency : clickFrequency
                 
                 sample = sin(clickPhase) * envelope
                 clickPhase += 2.0 * Float.pi * frequency / Float(sampleRate)
                 
-                // Keep phase in range
                 if clickPhase >= 2.0 * Float.pi {
                     clickPhase -= 2.0 * Float.pi
                 }
             }
             
-            // Write sample to buffer
             buffer[frameIndex] = sample
         }
         
-        // Update position counter
         currentSamplePosition += Int64(frames)
         
-        // Update UI on main thread only if we triggered a beat
         if beatTriggeredInThisCycle {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -286,21 +291,15 @@ class MetronomeEngine {
     func tapTempo() {
         let now = Date()
         
-        // Remove old taps (older than timeout interval)
         tapTimes.removeAll { now.timeIntervalSince($0) > tapTimeoutInterval }
-        
-        // Add current tap
         tapTimes.append(now)
         
-        // Need at least 2 taps to calculate tempo
         guard tapTimes.count >= 2 else { return }
         
-        // Keep only the most recent taps
         if tapTimes.count > maxTapCount {
             tapTimes.removeFirst()
         }
         
-        // Calculate average interval between taps
         var totalInterval: TimeInterval = 0
         for i in 1..<tapTimes.count {
             totalInterval += tapTimes[i].timeIntervalSince(tapTimes[i-1])
@@ -309,10 +308,8 @@ class MetronomeEngine {
         let averageInterval = totalInterval / Double(tapTimes.count - 1)
         let calculatedBPM = 60.0 / averageInterval
         
-        // Clamp to reasonable BPM range
         let clampedBPM = max(40, min(400, Int(calculatedBPM.rounded())))
         
-        // Update BPM
         bpm = clampedBPM
         
         if debugMode {
@@ -324,13 +321,13 @@ class MetronomeEngine {
     func subdivisionLabel() -> String {
         switch subdivision {
         case 1:
-            return "♩" // Quarter note
+            return "♩"
         case 2:
-            return "♫" // Eighth note
+            return "♫"
         case 4:
-            return "♬" // Sixteenth note
+            return "♬"
         case 3:
-            return "♩." // Dotted quarter (triplet)
+            return "♩."
         default:
             return "♩"
         }

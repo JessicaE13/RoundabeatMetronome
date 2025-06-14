@@ -70,7 +70,7 @@ struct BottomNavigationBar: View {
 
 // MARK: - Main Content View
 struct ContentView: View {
-    @State private var metronome = MetronomeEngine()
+    @StateObject private var metronome = MetronomeEngine()
     @State private var selectedTab: NavigationTab = .metronome
     @State private var deviceEnvironment = DeviceEnvironment()
     @State private var themeManager = ThemeManager()

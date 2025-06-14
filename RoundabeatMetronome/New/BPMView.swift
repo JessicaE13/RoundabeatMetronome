@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BPMView: View {
-    @Bindable var metronome: MetronomeEngine
+    @ObservedObject var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
     
     var body: some View {
@@ -24,6 +24,8 @@ struct BPMView: View {
                     .font(.custom("Kanit-SemiBold",
                                   size: device.screenWidth <= 375 ? 70 :
                                         device.screenWidth <= 420 ? 90 :
+                                        device.screenWidth <= 800 ? 100 :
+                                        device.screenWidth <= 900 ? 110 :
                                         120))
                     .foregroundStyle(Color.primary.opacity(0.9))
                     .kerning(2.0)
@@ -60,7 +62,7 @@ struct BPMView: View {
                 ))
                 .foregroundStyle(Color.primary.opacity(0.4))
                 .kerning(1.2)
-                .offset(y: device.deviceType.isIPad ? 4 : -14)
+                .offset(y: device.deviceType.isIPad ? 4 : -8)
         }
         .frame(maxWidth: .infinity, maxHeight: device.deviceType.bpmViewHeight, alignment: .center)
         .offset(y: device.deviceType.isIPad ? -10 : 6)

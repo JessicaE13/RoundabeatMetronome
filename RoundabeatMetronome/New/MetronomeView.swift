@@ -3,8 +3,11 @@ import AVFoundation
 
 // MARK: - Metronome View
 struct MetronomeView: View {
-    @Bindable var metronome: MetronomeEngine
+    @ObservedObject var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
+    
+    // State for showing time signature picker
+    @State private var showingTimeSignaturePicker = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -25,7 +28,10 @@ struct MetronomeView: View {
             Spacer()
             
             
-            UniformButtonsView(metronome: metronome)
+            UniformButtonsView(
+                metronome: metronome,
+                showingTimeSignaturePicker: $showingTimeSignaturePicker
+            )
             
             Spacer()
          
@@ -41,6 +47,23 @@ struct MetronomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, device.deviceType.horizontalPadding)
+        .overlay(
+            // Time Signature Picker Modal - now covers entire MetronomeView
+            Group {
+                if showingTimeSignaturePicker {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingTimeSignaturePicker = false
+                        }
+                    
+                    TimeSignaturePickerView(
+                        metronome: metronome,
+                        isShowingPicker: $showingTimeSignaturePicker
+                    )
+                }
+            }
+        )
     }
 }
 

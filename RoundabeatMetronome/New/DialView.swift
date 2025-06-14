@@ -298,7 +298,7 @@ struct TempoDialView: View {
 
 struct DialView: View {
     
-    @Bindable var metronome: MetronomeEngine
+    @ObservedObject var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
     
     var body: some View {
