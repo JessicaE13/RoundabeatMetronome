@@ -334,7 +334,7 @@ struct DialView: View {
         // Size the arc segments based on available space - INCREASED sizes
         if isIPad {
             // For iPads, increased the size significantly
-            return min(minScreenDimension * 0.9, 500) // Increased from 0.8 to 0.9, and max from 500 to 600
+            return min(minScreenDimension, 600) // Increased from 0.8 to 0.9, and max from 500 to 600
         } else {
             // For iPhones, increased the multipliers to make them bigger
             if screenWidth <= 375 { // iPhone SE and similar small screens

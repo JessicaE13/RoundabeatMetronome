@@ -109,8 +109,8 @@ extension DeviceType {
     // MARK: - Component Heights
     var tempoScrollHeight: CGFloat {
         switch self {
-        case .compactPhone: return 55
-        case .regularPhone: return 65
+        case .compactPhone: return 50
+        case .regularPhone: return 60
         case .iPad: return 80
         }
     }
