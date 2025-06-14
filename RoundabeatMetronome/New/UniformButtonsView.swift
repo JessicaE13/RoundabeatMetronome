@@ -61,14 +61,13 @@ struct UniformButtonWithIcon: View {
 }
 
 // MARK: - Uniform Buttons View
+// Improved UniformButtonsView with better centering
 struct UniformButtonsView: View {
     @Bindable var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
     
     var body: some View {
         HStack(spacing: device.deviceType.buttonSpacing) {
-            Spacer()
-            
             // Time signature cycling button
             UniformButton(
                 text: "TIME \(metronome.beatsPerBar)/4",
@@ -117,13 +116,11 @@ struct UniformButtonsView: View {
                     metronome.tapTempo()
                 }
             )
-            
-            Spacer()
         }
+        .frame(maxWidth: .infinity) // Explicit horizontal centering
         .frame(height: device.deviceType.uniformButtonHeight)
     }
 }
-
 #Preview {
     
     ZStack {

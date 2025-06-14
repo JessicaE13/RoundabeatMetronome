@@ -119,7 +119,7 @@ extension DeviceType {
         switch self {
         case .compactPhone: return 85
         case .regularPhone: return 90
-        case .iPad: return 120
+        case .iPad: return 150
         }
     }
     
@@ -258,7 +258,7 @@ extension DeviceType {
         switch self {
         case .compactPhone: return 160
         case .regularPhone: return 180
-        case .iPad: return 220
+        case .iPad: return 280
         }
     }
     

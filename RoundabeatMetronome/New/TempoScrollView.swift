@@ -44,6 +44,11 @@ struct TempoMarkingView: View {
     let onTap: () -> Void
     @Environment(\.deviceEnvironment) private var device
     
+    // Device-responsive width
+    private var itemWidth: CGFloat {
+        device.deviceType.isIPad ? 180 : 120 // Increased from 120 to 180 for iPad
+    }
+    
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 4) {
@@ -66,7 +71,7 @@ struct TempoMarkingView: View {
                     .kerning(1.4)
                     .padding(.bottom, -4)
             }
-            .frame(width: 120)
+            .frame(width: itemWidth) // Use device-responsive width
             .frame(maxHeight: .infinity) // Content fills available space
         
             .background(
@@ -94,8 +99,14 @@ struct TempoScrollView: View {
     
     @State private var scrollPosition: CGFloat = 0
     
-    private let itemWidth: CGFloat = 100
-    private let itemSpacing: CGFloat = 10
+    // Device-responsive item width and spacing
+    private var itemWidth: CGFloat {
+        device.deviceType.isIPad ? 180 : 100 // Increased for iPad
+    }
+    
+    private var itemSpacing: CGFloat {
+        device.deviceType.isIPad ? 12 : 8 // Slightly more spacing for iPad
+    }
     
     var body: some View {
         // Tempo scroll area - constrained to content height

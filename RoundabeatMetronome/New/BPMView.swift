@@ -54,7 +54,7 @@ struct BPMView: View {
                 ))
                 .foregroundStyle(Color.primary.opacity(0.4))
                 .kerning(1.2)
-                .offset(y: device.deviceType.isIPad ? -10 : -14)
+                .offset(y: device.deviceType.isIPad ? 4 : -14)
         }
         .frame(maxWidth: .infinity, maxHeight: device.deviceType.bpmViewHeight, alignment: .center)
         .offset(y: device.deviceType.isIPad ? -10 : 6)
