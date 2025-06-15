@@ -65,12 +65,22 @@ struct UniformButtonsView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
     
-    // Binding for showing time signature picker - now controlled by parent
+    // Bindings for showing pickers - now controlled by parent
     @Binding var showingTimeSignaturePicker: Bool
+    @Binding var showingSubdivisionPicker: Bool
+    
+    // Helper function to get current subdivision symbol
+    private func getCurrentSubdivisionSymbol() -> String {
+        // Find the subdivision option that matches the current multiplier
+        let currentOption = SubdivisionPickerView.subdivisionOptions.first { option in
+            option.multiplier == metronome.subdivisionMultiplier
+        }
+        return currentOption?.symbol ?? "♩"
+    }
     
     var body: some View {
         HStack(spacing: device.deviceType.buttonSpacing) {
-            // Time signature button - now shows actual time signature and opens picker
+            // Time signature button - shows actual time signature and opens picker
             UniformButton(
                 text: "TIME \(metronome.beatsPerMeasure)/\(metronome.beatUnit)",
                 action: {
@@ -78,23 +88,11 @@ struct UniformButtonsView: View {
                 }
             )
             
-            // Subdivision cycling button
+            // Subdivision button - now opens subdivision picker
             UniformButton(
-                text: "SUB DIV. \(metronome.subdivisionLabel())",
+                text: "SUB DIV. \(getCurrentSubdivisionSymbol())",
                 action: {
-                    // Cycle through subdivisions: 1 -> 2 -> 4 -> 3 -> 1
-                    switch metronome.subdivision {
-                    case 1:
-                        metronome.subdivision = 2 // Quarter to eighth
-                    case 2:
-                        metronome.subdivision = 4 // Eighth to sixteenth
-                    case 4:
-                        metronome.subdivision = 3 // Sixteenth to triplet
-                    case 3:
-                        metronome.subdivision = 1 // Triplet to quarter
-                    default:
-                        metronome.subdivision = 1
-                    }
+                    showingSubdivisionPicker = true
                 }
             )
             
@@ -117,7 +115,8 @@ struct UniformButtonsView: View {
         BackgroundView()
         UniformButtonsView(
             metronome: MetronomeEngine(),
-            showingTimeSignaturePicker: .constant(false)
+            showingTimeSignaturePicker: .constant(false),
+            showingSubdivisionPicker: .constant(false)
         )
         .deviceEnvironment(DeviceEnvironment())
     }

@@ -6,8 +6,10 @@ struct MetronomeView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
     
-    // State for showing time signature picker
+    // State for showing pickers
     @State private var showingTimeSignaturePicker = false
+    @State private var showingSubdivisionPicker = false
+    @State private var showingNumberPad = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -23,14 +25,18 @@ struct MetronomeView: View {
             
             Spacer()
             
-            BPMView(metronome: metronome)
+            BPMView(
+                metronome: metronome,
+                showingNumberPad: $showingNumberPad
+            )
             
             Spacer()
             
             
             UniformButtonsView(
                 metronome: metronome,
-                showingTimeSignaturePicker: $showingTimeSignaturePicker
+                showingTimeSignaturePicker: $showingTimeSignaturePicker,
+                showingSubdivisionPicker: $showingSubdivisionPicker
             )
             
             Spacer()
@@ -48,8 +54,9 @@ struct MetronomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, device.deviceType.horizontalPadding)
         .overlay(
-            // Time Signature Picker Modal - now covers entire MetronomeView
+            // Modal Overlays
             Group {
+                // Time Signature Picker Modal
                 if showingTimeSignaturePicker {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
@@ -60,6 +67,37 @@ struct MetronomeView: View {
                     TimeSignaturePickerView(
                         metronome: metronome,
                         isShowingPicker: $showingTimeSignaturePicker
+                    )
+                }
+                
+                // Subdivision Picker Modal
+                if showingSubdivisionPicker {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingSubdivisionPicker = false
+                        }
+                    
+                    SubdivisionPickerView(
+                        metronome: metronome,
+                        isShowingPicker: $showingSubdivisionPicker
+                    )
+                }
+                
+                // Number Pad Modal
+                if showingNumberPad {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showingNumberPad = false
+                        }
+                    
+                    NumberPadView(
+                        isShowingKeypad: $showingNumberPad,
+                        currentTempo: Double(metronome.bpm),
+                        onSubmit: { newBPM in
+                            metronome.bpm = Int(newBPM)
+                        }
                     )
                 }
             }

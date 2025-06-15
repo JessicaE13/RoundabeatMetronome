@@ -3,6 +3,12 @@ import SwiftUI
 struct BPMView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Environment(\.deviceEnvironment) private var device
+    @Binding var showingNumberPad: Bool
+    
+    // Get actual screen width directly
+    private var actualScreenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -19,23 +25,28 @@ struct BPMView: View {
                 )
                 .buttonStyle(.bordered)
                 
-                // Centered BPM display
-                Text("\(metronome.bpm)")
-                    .font(.custom("Kanit-SemiBold",
-                                  size: device.screenWidth <= 375 ? 70 :
-                                        device.screenWidth <= 420 ? 90 :
-                                        device.screenWidth <= 800 ? 100 :
-                                        device.screenWidth <= 900 ? 110 :
-                                        120))
-                    .foregroundStyle(Color.primary.opacity(0.9))
-                    .kerning(2.0)
-                    .lineLimit(1)
-                    .frame(
-                        minWidth: device.deviceType.bpmDisplayMinWidth,
-                        idealHeight: device.deviceType.largeFontSize,
-                        maxHeight: device.deviceType.largeFontSize
-                    )
-                    .background(Color.clear)
+                // Centered BPM display - now tappable and uses actual screen width
+                Button(action: {
+                    showingNumberPad = true
+                }) {
+                    Text("\(metronome.bpm)")
+                        .font(.custom("Kanit-SemiBold",
+                                      size: actualScreenWidth <= 375 ? 70 :
+                                            actualScreenWidth <= 420 ? 90 :
+                                            actualScreenWidth <= 800 ? 100 :
+                                            actualScreenWidth <= 900 ? 110 :
+                                            120))
+                        .foregroundStyle(Color.primary.opacity(0.9))
+                        .kerning(2.0)
+                        .lineLimit(1)
+                        .frame(
+                            minWidth: device.deviceType.bpmDisplayMinWidth,
+                            idealHeight: device.deviceType.largeFontSize,
+                            maxHeight: device.deviceType.largeFontSize
+                        )
+                        .background(Color.clear)
+                }
+                .buttonStyle(.plain)
                 
                 // Plus button
                 Button("+1") {
@@ -51,7 +62,7 @@ struct BPMView: View {
             }
             .offset(y: device.deviceType.isIPad ? -8 : -16)
       
-           
+          // Text("\(actualScreenWidth)")
             
             
             // BPM label
@@ -66,11 +77,19 @@ struct BPMView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: device.deviceType.bpmViewHeight, alignment: .center)
         .offset(y: device.deviceType.isIPad ? -10 : 6)
+        .onAppear {
+            // Debug: Print the actual screen width vs device environment width
+            print("🔍 Actual screen width: \(actualScreenWidth)")
+            print("🔍 Device environment width: \(device.screenWidth)")
+        }
     }
 }
 
 #Preview {
-    BPMView(metronome: MetronomeEngine())
-        .deviceEnvironment(DeviceEnvironment())
-        .background(Color.red)
+    BPMView(
+        metronome: MetronomeEngine(),
+        showingNumberPad: .constant(false)
+    )
+    .deviceEnvironment(DeviceEnvironment())
+    .background(Color.red)
 }
