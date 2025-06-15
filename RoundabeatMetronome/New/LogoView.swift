@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 struct LogoView: View {
@@ -7,16 +5,22 @@ struct LogoView: View {
     @State private var shimmerOffset: CGFloat = 0.0
     private let logoWidth: CGFloat = 700 // adjust this as needed
     
+    // Get screen dimensions directly
+    private var screenHeight: CGFloat {
+        UIScreen.main.bounds.height
+    }
+    
+    // Check if device is iPad
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
     // Computed property to determine logo height based on device
     private var logoHeight: CGFloat {
-        let idiom = UIDevice.current.userInterfaceIdiom
-        let screenHeight = UIScreen.main.bounds.height
-        
-        switch idiom {
-        case .pad:
+        if isIPad {
             // Larger for iPads
             return 35
-        case .phone:
+        } else {
             // Smaller for smaller iPhones (iPhone SE, 12 mini, 13 mini)
             if screenHeight <= 667 {
                 return 20
@@ -25,8 +29,6 @@ struct LogoView: View {
             else {
                 return 25
             }
-        default:
-            return 25
         }
     }
     
@@ -45,49 +47,48 @@ struct LogoView: View {
     }
 
     var body: some View {
-
-            VStack {
-                ZStack {
-                    Image("roundabeatlogo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: logoHeight)
-                        .foregroundStyle(logoColor)
-                    
-                    Image("roundabeatlogo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: logoHeight)
-                        .foregroundStyle(logoColor)
-                        .overlay(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    .clear,
-                                    shimmerColor,
-                                    .clear
-                                ]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                            .offset(x: shimmerOffset * logoWidth)
-                            .mask(
-                                Image("roundabeatlogo")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(height: logoHeight)
-                            )
+        VStack {
+            ZStack {
+                Image("roundabeatlogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: logoHeight)
+                    .foregroundStyle(logoColor)
+                
+                Image("roundabeatlogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: logoHeight)
+                    .foregroundStyle(logoColor)
+                    .overlay(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                .clear,
+                                shimmerColor,
+                                .clear
+                            ]),
+                            startPoint: .leading,
+                            endPoint: .trailing
                         )
-                        .onAppear {
-                            startShimmerAnimation()
-                        }
-                        .opacity(shimmerOffset >= 1.0 ? 0 : 1)
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    startShimmerAnimation()
-                }
+                        .offset(x: shimmerOffset * logoWidth)
+                        .mask(
+                            Image("roundabeatlogo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: logoHeight)
+                        )
+                    )
+                    .onAppear {
+                        startShimmerAnimation()
+                    }
+                    .opacity(shimmerOffset >= 1.0 ? 0 : 1)
             }
-            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                startShimmerAnimation()
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func startShimmerAnimation() {

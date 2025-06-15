@@ -42,11 +42,35 @@ struct TempoMarkingView: View {
     let tempo: TempoMarking
     let isSelected: Bool
     let onTap: () -> Void
-    @Environment(\.deviceEnvironment) private var device
+    
+    // Get screen dimensions directly
+    private var screenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
+    
+    // Check if device is iPad
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
     
     // Device-responsive width
     private var itemWidth: CGFloat {
-        device.deviceType.isIPad ? 180 : 120 // Increased from 120 to 180 for iPad
+        isIPad ? 180 : 120
+    }
+    
+    // Device-responsive font sizes
+    private var smallFontSize: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 13 :
+                   screenWidth <= 834 ? 14 :
+                   screenWidth <= 1024 ? 15 :
+                   16
+        } else {
+            return screenWidth <= 320 ? 10 :
+                   screenWidth <= 375 ? 11 :
+                   screenWidth <= 393 ? 12 :
+                   13
+        }
     }
     
     var body: some View {
@@ -55,7 +79,7 @@ struct TempoMarkingView: View {
                 // Tempo name
                 Text(tempo.name.uppercased())
                     .font(.system(
-                        size: device.deviceType.smallFontSize,
+                        size: smallFontSize,
                         weight: isSelected ? .bold : .medium
                     ))
                     .foregroundColor(isSelected ? .primary.opacity(0.9) : .primary.opacity(0.4))
@@ -66,7 +90,7 @@ struct TempoMarkingView: View {
                 
                 // BPM range - Updated to use Kanit-Medium
                 Text("\(tempo.bpmRange.lowerBound)-\(tempo.bpmRange.upperBound)")
-                    .font(.custom("Kanit-Regular", size: device.deviceType.smallFontSize))
+                    .font(.custom("Kanit-Regular", size: smallFontSize))
                     .foregroundColor(isSelected ? .primary.opacity(0.9) : .primary.opacity(0.4))
                     .kerning(1.4)
                     .padding(.bottom, -4)
@@ -95,17 +119,41 @@ struct TempoMarkingView: View {
 struct TempoScrollView: View {
     let currentBPM: Int
     let onTempoChange: (Int) -> Void
-    @Environment(\.deviceEnvironment) private var device
     
     @State private var scrollPosition: CGFloat = 0
     
+    // Get screen dimensions directly
+    private var screenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
+    
+    // Check if device is iPad
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
     // Device-responsive item width and spacing
     private var itemWidth: CGFloat {
-        device.deviceType.isIPad ? 180 : 100 // Increased for iPad
+        isIPad ? 180 : 100
     }
     
     private var itemSpacing: CGFloat {
-        device.deviceType.isIPad ? 12 : 8 // Slightly more spacing for iPad
+        isIPad ? 12 : 8
+    }
+    
+    // Device-responsive height
+    private var tempoMarkingHeight: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 45 :
+                   screenWidth <= 834 ? 50 :
+                   screenWidth <= 1024 ? 55 :
+                   60
+        } else {
+            return screenWidth <= 320 ? 32 :
+                   screenWidth <= 375 ? 36 :
+                   screenWidth <= 393 ? 40 :
+                   42
+        }
     }
     
     var body: some View {
@@ -124,9 +172,9 @@ struct TempoScrollView: View {
                         .id(index)
                     }
                 }
-                .padding(.horizontal, device.screenWidth / 2 - itemWidth / 2) // Center the scroll
+                .padding(.horizontal, screenWidth / 2 - itemWidth / 2) // Center the scroll
             }
-            .frame(height: device.deviceType.tempoMarkingHeight + 14) // Match the original height exactly
+            .frame(height: tempoMarkingHeight + 14) // Match the original height exactly
             .onAppear {
                 // Scroll to current tempo on appear
                 if let currentTempo = TempoMarking.getTempoForBPM(currentBPM),
@@ -148,19 +196,12 @@ struct TempoScrollView: View {
 }
 
 #Preview {
-    let deviceEnv = DeviceEnvironment()
-    deviceEnv.updateDevice(width: 390, height: 844) // Simulate iPhone screen size
-    
-    return VStack {
+    VStack {
         TempoScrollView(
             currentBPM: 120,
             onTempoChange: { bpm in print("BPM changed to \(bpm)") }
         )
-     
         .background(Color.red.opacity(0.2))
-        .deviceEnvironment(deviceEnv)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-
 }
-

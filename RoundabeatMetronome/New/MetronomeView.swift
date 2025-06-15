@@ -4,17 +4,24 @@ import AVFoundation
 // MARK: - Metronome View
 struct MetronomeView: View {
     @ObservedObject var metronome: MetronomeEngine
-    @Environment(\.deviceEnvironment) private var device
     
     // State for showing pickers
     @State private var showingTimeSignaturePicker = false
     @State private var showingSubdivisionPicker = false
     @State private var showingNumberPad = false
     
+    // Get screen dimensions directly
+    private var screenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
+    
+    // Check if device is iPad
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
-            
-        //    Spacer()
             
             TempoScrollView(
                 currentBPM: metronome.bpm,
@@ -32,7 +39,6 @@ struct MetronomeView: View {
             
             Spacer()
             
-            
             UniformButtonsView(
                 metronome: metronome,
                 showingTimeSignaturePicker: $showingTimeSignaturePicker,
@@ -42,7 +48,6 @@ struct MetronomeView: View {
             Spacer()
          
             LogoView()
-            
   
             Spacer()
             
@@ -52,7 +57,7 @@ struct MetronomeView: View {
             
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, device.deviceType.horizontalPadding)
+        .padding(.horizontal, horizontalPadding)
         .overlay(
             // Modal Overlays
             Group {
@@ -103,9 +108,24 @@ struct MetronomeView: View {
             }
         )
     }
+    
+    // MARK: - Responsive Properties
+    
+    private var horizontalPadding: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 48 :
+                   screenWidth <= 834 ? 60 :
+                   screenWidth <= 1024 ? 72 :
+                   84
+        } else {
+            return screenWidth <= 320 ? 12 :
+                   screenWidth <= 375 ? 16 :
+                   screenWidth <= 393 ? 20 :
+                   24
+        }
+    }
 }
 
 #Preview {
     MetronomeView(metronome: MetronomeEngine())
-        .deviceEnvironment(DeviceEnvironment())
 }

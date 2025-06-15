@@ -295,11 +295,22 @@ struct TempoDialView: View {
     }
 }
 
-
 struct DialView: View {
-    
     @ObservedObject var metronome: MetronomeEngine
-    @Environment(\.deviceEnvironment) private var device
+    
+    // Get screen dimensions directly
+    private var screenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
+    
+    private var screenHeight: CGFloat {
+        UIScreen.main.bounds.height
+    }
+    
+    // Check if device is iPad
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
     
     var body: some View {
         // Calculate the arc segment size based on device and available space
@@ -323,46 +334,28 @@ struct DialView: View {
             }
         )
         .frame(width: frameSize, height: frameSize)
-        
-        
-        //Text("\(device.deviceType.dialArcSize)")
-        
-        
     }
     
-    // Helper function to calculate the arc segment size - INCREASED SIZES
+    // Helper function to calculate the arc segment size
     private func calculateArcSegmentSize() -> CGFloat {
-        
-        //  return device.deviceType.dialArcSize
-        
-        
-        let isIPad = UIDevice.current.userInterfaceIdiom == .pad
-        let screenWidth = UIScreen.main.bounds.width
-        //let screenHeight = UIScreen.main.bounds.height
-        //let minScreenDimension = min(screenWidth, screenHeight)
-        
         if isIPad {
-            return UIScreen.main.bounds.height * 0.44
+            return screenHeight * 0.44
         } else {
             if screenWidth <= 375 {
-                return    UIScreen.main.bounds.height * 0.4
+                return screenHeight * 0.4
             } else {
-                return    UIScreen.main.bounds.height * 0.36
+                return screenHeight * 0.36
             }
         }
-        
     }
     
     private func calculateFrameSize(for arcSize: CGFloat) -> CGFloat {
         let arcWidth = arcSize * 0.1
         let activeArcWidth = arcWidth * 1.2
         let maxStrokeWidth = activeArcWidth
-
         return arcSize + maxStrokeWidth
     }
 }
-
-
 
 #Preview {
     ZStack {

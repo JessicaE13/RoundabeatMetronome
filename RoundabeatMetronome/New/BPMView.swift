@@ -2,26 +2,35 @@ import SwiftUI
 
 struct BPMView: View {
     @ObservedObject var metronome: MetronomeEngine
-    @Environment(\.deviceEnvironment) private var device
     @Binding var showingNumberPad: Bool
     
     // Get actual screen width directly
-    private var actualScreenWidth: CGFloat {
+    private var screenWidth: CGFloat {
         UIScreen.main.bounds.width
+    }
+    
+    // Get screen height for responsive sizing
+    private var screenHeight: CGFloat {
+        UIScreen.main.bounds.height
+    }
+    
+    // Check if device is iPad
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            HStack(alignment: .center, spacing: device.deviceType.buttonSpacing) {
+            HStack(alignment: .center, spacing: buttonSpacing) {
                 // Minus button
                 Button("-1") {
                     let newBPM = metronome.bpm - 1
                     metronome.bpm = max(40, min(400, newBPM))
                 }
-                .font(.system(size: device.deviceType.buttonFontSize, weight: .medium))
+                .font(.system(size: buttonFontSize, weight: .medium))
                 .frame(
-                    width: device.deviceType.bpmButtonWidth,
-                    height: device.deviceType.bpmButtonHeight
+                    width: bpmButtonWidth,
+                    height: bpmButtonHeight
                 )
                 .buttonStyle(.bordered)
                 
@@ -31,18 +40,18 @@ struct BPMView: View {
                 }) {
                     Text("\(metronome.bpm)")
                         .font(.custom("Kanit-SemiBold",
-                                      size: actualScreenWidth <= 375 ? 70 :
-                                            actualScreenWidth <= 420 ? 90 :
-                                            actualScreenWidth <= 800 ? 100 :
-                                            actualScreenWidth <= 900 ? 110 :
-                                            120))
+                                      size: screenWidth <= 375 ? 70 :
+                                            screenWidth <= 420 ? 90 :
+                                            screenWidth <= 800 ? 100 :
+                                            screenWidth <= 900 ? 140 :
+                                            160))
                         .foregroundStyle(Color.primary.opacity(0.9))
                         .kerning(2.0)
                         .lineLimit(1)
                         .frame(
-                            minWidth: device.deviceType.bpmDisplayMinWidth,
-                            idealHeight: device.deviceType.largeFontSize,
-                            maxHeight: device.deviceType.largeFontSize
+                            minWidth: bpmDisplayMinWidth,
+                            idealHeight: largeFontSize,
+                            maxHeight: largeFontSize
                         )
                         .background(Color.clear)
                 }
@@ -53,34 +62,126 @@ struct BPMView: View {
                     let newBPM = metronome.bpm + 1
                     metronome.bpm = max(40, min(400, newBPM))
                 }
-                .font(.system(size: device.deviceType.buttonFontSize, weight: .medium))
+                .font(.system(size: buttonFontSize, weight: .medium))
                 .frame(
-                    width: device.deviceType.bpmButtonWidth,
-                    height: device.deviceType.bpmButtonHeight
+                    width: bpmButtonWidth,
+                    height: bpmButtonHeight
                 )
                 .buttonStyle(.bordered)
             }
-            .offset(y: device.deviceType.isIPad ? -8 : -16)
-      
-          // Text("\(actualScreenWidth)")
-            
+            .offset(y: isIPad ? -8 : -16)
             
             // BPM label
             Text("BEATS PER MINUTE (BPM)")
                 .font(.system(
-                    size: device.deviceType.buttonFontSize,
+                    size: buttonFontSize,
                     weight: .medium
                 ))
                 .foregroundStyle(Color.primary.opacity(0.4))
                 .kerning(1.2)
-                .offset(y: device.deviceType.isIPad ? 4 : -8)
+                .offset(y: isIPad ? 4 : -8)
         }
-        .frame(maxWidth: .infinity, maxHeight: device.deviceType.bpmViewHeight, alignment: .center)
-        .offset(y: device.deviceType.isIPad ? -10 : 6)
-        .onAppear {
-            // Debug: Print the actual screen width vs device environment width
-            print("🔍 Actual screen width: \(actualScreenWidth)")
-            print("🔍 Device environment width: \(device.screenWidth)")
+        .frame(maxWidth: .infinity, maxHeight: bpmViewHeight, alignment: .center)
+        .offset(y: isIPad ? -10 : 6)
+    }
+    
+    // MARK: - Responsive Properties
+    
+    private var largeFontSize: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 100 :
+                   screenWidth <= 834 ? 120 :
+                   screenWidth <= 1024 ? 130 :
+                   150
+        } else {
+            return screenWidth <= 320 ? 65 :
+                   screenWidth <= 375 ? 75 :
+                   screenWidth <= 393 ? 90 :
+                   95
+        }
+    }
+    
+    private var buttonFontSize: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 14 :
+                   screenWidth <= 834 ? 16 :
+                   screenWidth <= 1024 ? 18 :
+                   20
+        } else {
+            return screenWidth <= 320 ? 10 :
+                   screenWidth <= 375 ? 11 :
+                   screenWidth <= 393 ? 12 :
+                   13
+        }
+    }
+    
+    private var buttonSpacing: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 16 :
+                   screenWidth <= 834 ? 20 :
+                   screenWidth <= 1024 ? 24 :
+                   28
+        } else {
+            return screenWidth <= 320 ? 6 :
+                   screenWidth <= 375 ? 8 :
+                   screenWidth <= 393 ? 10 :
+                   12
+        }
+    }
+    
+    private var bpmViewHeight: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 130 :
+                   screenWidth <= 834 ? 150 :
+                   screenWidth <= 1024 ? 160 :
+                   180
+        } else {
+            return screenWidth <= 320 ? 75 :
+                   screenWidth <= 375 ? 85 :
+                   screenWidth <= 393 ? 90 :
+                   95
+        }
+    }
+    
+    private var bpmButtonWidth: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 70 :
+                   screenWidth <= 834 ? 80 :
+                   screenWidth <= 1024 ? 90 :
+                   100
+        } else {
+            return screenWidth <= 320 ? 32 :
+                   screenWidth <= 375 ? 38 :
+                   screenWidth <= 393 ? 45 :
+                   50
+        }
+    }
+    
+    private var bpmButtonHeight: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 45 :
+                   screenWidth <= 834 ? 50 :
+                   screenWidth <= 1024 ? 55 :
+                   60
+        } else {
+            return screenWidth <= 320 ? 28 :
+                   screenWidth <= 375 ? 32 :
+                   screenWidth <= 393 ? 36 :
+                   40
+        }
+    }
+    
+    private var bpmDisplayMinWidth: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 240 :
+                   screenWidth <= 834 ? 280 :
+                   screenWidth <= 1024 ? 320 :
+                   360
+        } else {
+            return screenWidth <= 320 ? 140 :
+                   screenWidth <= 375 ? 160 :
+                   screenWidth <= 393 ? 180 :
+                   200
         }
     }
 }
@@ -90,6 +191,5 @@ struct BPMView: View {
         metronome: MetronomeEngine(),
         showingNumberPad: .constant(false)
     )
-    .deviceEnvironment(DeviceEnvironment())
     .background(Color.red)
 }

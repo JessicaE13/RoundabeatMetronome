@@ -16,28 +16,19 @@ enum NavigationTab: String, CaseIterable {
     }
 }
 
-// MARK: - Info Row Component
-struct InfoRow: View {
-    let title: String
-    let value: String
-    @Environment(\.deviceEnvironment) private var device
-    
-    var body: some View {
-        HStack {
-            Text(title)
-                .font(.system(size: device.deviceType.mediumFontSize, weight: .medium))
-            Spacer()
-            Text(value)
-                .font(.system(size: device.deviceType.mediumFontSize, weight: .regular))
-                .foregroundColor(.secondary)
-        }
-    }
-}
-
 // MARK: - Bottom Navigation Bar
 struct BottomNavigationBar: View {
     @Binding var selectedTab: NavigationTab
-    @Environment(\.deviceEnvironment) private var device
+    
+    // Get screen dimensions directly
+    private var screenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
+    
+    // Check if device is iPad
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
     
     var body: some View {
         HStack {
@@ -45,13 +36,13 @@ struct BottomNavigationBar: View {
                 Button(action: {
                     selectedTab = tab
                 }) {
-                    VStack(spacing: device.deviceType.isIPad ? 8 : 6) {
+                    VStack(spacing: isIPad ? 8 : 6) {
                         Image(systemName: tab.iconName)
-                            .font(.system(size: device.deviceType.isIPad ? 22 : 20, weight: .medium))
+                            .font(.system(size: isIPad ? 22 : 20, weight: .medium))
                             .foregroundColor(selectedTab == tab ? .accentColor : .secondary)
                         
                         Text(tab.rawValue)
-                            .font(.system(size: device.deviceType.isIPad ? 12 : 10, weight: .medium))
+                            .font(.system(size: isIPad ? 12 : 10, weight: .medium))
                             .foregroundColor(selectedTab == tab ? .accentColor : .secondary)
                     }
                 }
@@ -59,12 +50,28 @@ struct BottomNavigationBar: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, device.deviceType.isIPad ? 20 : 16)
-        .padding(.horizontal, device.deviceType.sectionPadding)
+        .padding(.vertical, isIPad ? 20 : 16)
+        .padding(.horizontal, sectionPadding)
         .background(
             Color(.systemBackground)
                 .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: -1)
         )
+    }
+    
+    // MARK: - Responsive Properties
+    
+    private var sectionPadding: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 32 :
+                   screenWidth <= 834 ? 40 :
+                   screenWidth <= 1024 ? 48 :
+                   56
+        } else {
+            return screenWidth <= 320 ? 12 :
+                   screenWidth <= 375 ? 16 :
+                   screenWidth <= 393 ? 20 :
+                   22
+        }
     }
 }
 
@@ -72,7 +79,6 @@ struct BottomNavigationBar: View {
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
     @State private var selectedTab: NavigationTab = .metronome
-    @State private var deviceEnvironment = DeviceEnvironment()
     @State private var themeManager = ThemeManager()
     
     var body: some View {
@@ -97,13 +103,6 @@ struct ContentView: View {
                 }
             }
             .preferredColorScheme(themeManager.colorScheme)
-            .deviceEnvironment(deviceEnvironment)
-            .onAppear {
-                deviceEnvironment.updateDevice(width: geometry.size.width, height: geometry.size.height)
-            }
-            .onChange(of: geometry.size) { _, newSize in
-                deviceEnvironment.updateDevice(width: newSize.width, height: newSize.height)
-            }
         }
         .onDisappear {
             metronome.isPlaying = false
