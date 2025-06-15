@@ -4,15 +4,12 @@ import AVFoundation
 // MARK: - Navigation State
 enum NavigationTab: String, CaseIterable {
     case metronome = "Metronome"
-    case sounds = "Sounds"
     case settings = "Settings"
     
     var iconName: String {
         switch self {
         case .metronome:
             return "metronome"
-        case .sounds:
-            return "speaker.wave.2"
         case .settings:
             return "gear"
         }
@@ -95,8 +92,6 @@ struct ContentView: View {
                         switch selectedTab {
                         case .metronome:
                             MetronomeView(metronome: metronome)
-                        case .sounds:
-                            SoundsView(metronome: metronome)
                         case .settings:
                             SettingsView(metronome: metronome, themeManager: themeManager)
                         }

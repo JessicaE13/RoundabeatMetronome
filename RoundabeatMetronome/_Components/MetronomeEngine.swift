@@ -1,13 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-// MARK: - Sound Type Enum
-enum SoundType {
-    case synthetic
-    case audioFile(String, String) // fileName, fileExtension
-}
-
-// MARK: - Metronome Engine with Sample-Accurate Timing and Sound File Support
+// MARK: - Metronome Engine with Sample-Accurate Timing
 
 class MetronomeEngine: ObservableObject {
     @Published var bpm: Int = 120 {
@@ -44,20 +38,11 @@ class MetronomeEngine: ObservableObject {
     
     // Settings
     @Published var clickVolume: Double = 0.5 {
-        didSet {
-            mixerNode.outputVolume = Float(clickVolume)
-            // Also update file player volume if it exists
-            filePlayerNode?.volume = Float(clickVolume)
-        }
+        didSet { mixerNode.outputVolume = Float(clickVolume) }
     }
     @Published var accentFirstBeat: Bool = true
     @Published var visualMetronome: Bool = true
     @Published var showSquareOutline: Bool = false
-    
-    // NEW: Sound selection
-    @Published var selectedSoundName: String = "Synthetic Click" {
-        didSet { updateSoundType() }
-    }
     
     // Tap tempo functionality
     private var tapTimes: [Date] = []
@@ -80,11 +65,6 @@ class MetronomeEngine: ObservableObject {
     private var sourceNode: AVAudioSourceNode?
     private let mixerNode = AVAudioMixerNode()
     
-    // NEW: Audio file playback components
-    private var filePlayerNode: AVAudioPlayerNode?
-    private var audioFiles: [String: AVAudioFile] = [:]
-    private var currentSoundType: SoundType = .synthetic
-    
     // Timing variables (accessed atomically from audio thread)
     private var sampleRate: Double = 44100.0
     private var samplesPerBeat: Double = 0
@@ -105,92 +85,11 @@ class MetronomeEngine: ObservableObject {
     init() {
         setupAudioSession()
         setupAudioEngine()
-        loadAudioFiles()
         updateTiming()
-        updateSoundType()
     }
     
     deinit {
         stopMetronome()
-    }
-    
-    // NEW: Update sound selection
-    func updateSoundSelection(to soundName: String) {
-        selectedSoundName = soundName
-        if debugMode {
-            print("🔊 Sound selection updated to: \(soundName)")
-        }
-    }
-    
-    // NEW: Update sound type based on selection
-    private func updateSoundType() {
-        if selectedSoundName == "Synthetic Click" {
-            currentSoundType = .synthetic
-        } else {
-            // Map sound names to file names - you may need to adjust these mappings
-            // based on your actual audio file names
-            let soundFileMap: [String: (String, String)] = [
-                "Wood Block": ("woodblock", "wav"),
-                "Bongo": ("bongo", "wav"),
-                "Snap": ("snap", "wav"),
-                "Clap": ("clap", "wav"),
-                "Cowbell": ("cowbell", "wav"),
-                "Digital Beep": ("digitalbeep", "wav"),
-                "Synth Click": ("synthclick", "wav"),
-                "Blip": ("blip", "wav"),
-                "Piano Note": ("piano", "wav"),
-                "Guitar Pick": ("guitar", "wav"),
-                "Classic Tick": ("tick", "wav"),
-                "Mechanical Click": ("mechanical", "wav")
-            ]
-            
-            if let (fileName, fileExtension) = soundFileMap[selectedSoundName] {
-                currentSoundType = .audioFile(fileName, fileExtension)
-            } else {
-                currentSoundType = .synthetic
-                if debugMode {
-                    print("⚠️ Sound file not found for '\(selectedSoundName)', falling back to synthetic")
-                }
-            }
-        }
-    }
-    
-    // NEW: Load audio files
-    private func loadAudioFiles() {
-        let soundFiles = [
-            ("woodblock", "wav"),
-            ("bongo", "wav"),
-            ("snap", "wav"),
-            ("clap", "wav"),
-            ("cowbell", "wav"),
-            ("digitalbeep", "wav"),
-            ("synthclick", "wav"),
-            ("blip", "wav"),
-            ("piano", "wav"),
-            ("guitar", "wav"),
-            ("tick", "wav"),
-            ("mechanical", "wav")
-        ]
-        
-        for (fileName, fileExtension) in soundFiles {
-            if let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) {
-                do {
-                    let audioFile = try AVAudioFile(forReading: url)
-                    audioFiles[fileName] = audioFile
-                    if debugMode {
-                        print("✅ Loaded audio file: \(fileName).\(fileExtension)")
-                    }
-                } catch {
-                    if debugMode {
-                        print("❌ Failed to load audio file \(fileName).\(fileExtension): \(error)")
-                    }
-                }
-            } else {
-                if debugMode {
-                    print("⚠️ Audio file not found: \(fileName).\(fileExtension)")
-                }
-            }
-        }
     }
     
     // ADD: Method to update time signature
@@ -232,30 +131,22 @@ class MetronomeEngine: ObservableObject {
     private func setupAudioEngine() {
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
         
-        // Setup synthetic sound source node
         sourceNode = AVAudioSourceNode(format: format) { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
             return self?.renderAudio(frameCount: frameCount, audioBufferList: audioBufferList) ?? noErr
         }
         
-        // Setup audio file player node
-        filePlayerNode = AVAudioPlayerNode()
-        
-        guard let sourceNode = sourceNode, let filePlayerNode = filePlayerNode else {
-            print("❌ Failed to create audio nodes")
+        guard let sourceNode = sourceNode else {
+            print("❌ Failed to create source node")
             return
         }
         
         audioEngine.attach(sourceNode)
-        audioEngine.attach(filePlayerNode)
         audioEngine.attach(mixerNode)
         
-        // Connect both nodes to mixer
         audioEngine.connect(sourceNode, to: mixerNode, format: format)
-        audioEngine.connect(filePlayerNode, to: mixerNode, format: format)
         audioEngine.connect(mixerNode, to: audioEngine.outputNode, format: format)
         
         mixerNode.outputVolume = Float(clickVolume)
-        filePlayerNode.volume = Float(clickVolume)
         
         if debugMode {
             print("✅ Audio engine setup complete")
@@ -298,7 +189,7 @@ class MetronomeEngine: ObservableObject {
             if debugMode {
                 print("🎵 Metronome started at \(bpm) BPM on beat 1")
                 print("🎵 Engine running: \(audioEngine.isRunning)")
-                print("🎵 Current sound type: \(currentSoundType)")
+                print("🎵 Output node: \(audioEngine.outputNode)")
             }
             
         } catch {
@@ -318,7 +209,6 @@ class MetronomeEngine: ObservableObject {
         }
         
         audioEngine.stop()
-        filePlayerNode?.stop()
         
         DispatchQueue.main.async { [weak self] in
             self?.beatIndicator = false
@@ -327,33 +217,6 @@ class MetronomeEngine: ObservableObject {
         
         if debugMode {
             print("🛑 Metronome stopped")
-        }
-    }
-    
-    // NEW: Play audio file click
-    private func playAudioFileClick(fileName: String, isAccent: Bool) {
-        guard let audioFile = audioFiles[fileName],
-              let filePlayerNode = filePlayerNode else {
-            if debugMode {
-                print("❌ Audio file or player node not available for: \(fileName)")
-            }
-            return
-        }
-        
-        // For audio files, we can use volume to simulate accent
-        let volume = isAccent ? Float(clickVolume * 1.2) : Float(clickVolume)
-        filePlayerNode.volume = min(1.0, volume)
-        
-        // Schedule the audio file to play
-        filePlayerNode.scheduleFile(audioFile, at: nil) {
-            // Reset volume after playing
-            DispatchQueue.main.async {
-                filePlayerNode.volume = Float(self.clickVolume)
-            }
-        }
-        
-        if !filePlayerNode.isPlaying {
-            filePlayerNode.play()
         }
     }
     
@@ -384,41 +247,27 @@ class MetronomeEngine: ObservableObject {
                 beatCounter += 1
                 
                 newBeatNumber = ((beatCounter - 1) % beatsPerBar) + 1
+                
                 beatTriggeredInThisCycle = true
-                
-                let isAccent = accentFirstBeat && newBeatNumber == 1
-                
-                // Handle different sound types
-                switch currentSoundType {
-                case .synthetic:
-                    clickPhase = 0.0 // Reset synthetic click phase
-                case .audioFile(let fileName, _):
-                    // Trigger audio file playback on main thread
-                    DispatchQueue.main.async { [weak self] in
-                        self?.playAudioFileClick(fileName: fileName, isAccent: isAccent)
-                    }
-                }
+                clickPhase = 0.0
                 
                 if debugMode && beatCounter <= 20 {
                     print("🥁 Beat triggered: \(newBeatNumber) at sample \(currentSample), next at \(nextBeatSample)")
                 }
             }
             
-            // Only generate synthetic sound if using synthetic sound type
-            if case .synthetic = currentSoundType {
-                let samplesSinceLastBeat = currentSample - lastBeatSample
-                if samplesSinceLastBeat >= 0 && samplesSinceLastBeat < clickDurationSamples {
-                    let clickProgress = Float(samplesSinceLastBeat) / Float(clickDurationSamples)
-                    let envelope = (1.0 - clickProgress) * 0.3
-                    
-                    let frequency = (accentFirstBeat && newBeatNumber == 1) ? accentFrequency : clickFrequency
-                    
-                    sample = sin(clickPhase) * envelope
-                    clickPhase += 2.0 * Float.pi * frequency / Float(sampleRate)
-                    
-                    if clickPhase >= 2.0 * Float.pi {
-                        clickPhase -= 2.0 * Float.pi
-                    }
+            let samplesSinceLastBeat = currentSample - lastBeatSample
+            if samplesSinceLastBeat >= 0 && samplesSinceLastBeat < clickDurationSamples {
+                let clickProgress = Float(samplesSinceLastBeat) / Float(clickDurationSamples)
+                let envelope = (1.0 - clickProgress) * 0.3
+                
+                let frequency = (accentFirstBeat && newBeatNumber == 1) ? accentFrequency : clickFrequency
+                
+                sample = sin(clickPhase) * envelope
+                clickPhase += 2.0 * Float.pi * frequency / Float(sampleRate)
+                
+                if clickPhase >= 2.0 * Float.pi {
+                    clickPhase -= 2.0 * Float.pi
                 }
             }
             
