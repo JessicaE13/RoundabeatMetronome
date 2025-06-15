@@ -307,14 +307,14 @@ class MetronomeEngine: ObservableObject {
                 
                 // Generate frequency based on sound type and accent
                 let frequency = generateFrequency(for: selectedSoundType,
-                                                isAccent: accentFirstBeat && newBeatNumber == 1,
-                                                progress: clickProgress)
+                                                  isAccent: accentFirstBeat && newBeatNumber == 1,
+                                                  progress: clickProgress)
                 
                 // Generate the sample
                 sample = generateSample(for: selectedSoundType,
-                                      frequency: frequency,
-                                      envelope: envelope,
-                                      progress: clickProgress)
+                                        frequency: frequency,
+                                        envelope: envelope,
+                                        progress: clickProgress)
                 
                 clickPhase += 2.0 * Float.pi * frequency / Float(sampleRate)
                 
@@ -348,7 +348,10 @@ class MetronomeEngine: ObservableObject {
         case .click, .beep:
             return (1.0 - progress) * baseAmplitude
             
-        case .snap, .pop, .blip:
+        case .snap:
+            return exp(-progress * 40.0) * (1.0 - progress) * baseAmplitude * 1.5
+            
+        case .pop, .blip:
             // Sharp attack, quick decay
             return exp(-progress * 25.0) * (1.0 - progress) * baseAmplitude * 1.3
             
@@ -375,7 +378,7 @@ class MetronomeEngine: ObservableObject {
             
         case .snap:
             // Frequency sweep down for snap effect
-            return (2000.0 + (1.0 - progress) * 1000.0) * accentMultiplier
+            return (2500.0 + (1.0 - progress) * 2000.0) * accentMultiplier
             
         case .pop:
             // Low frequency with slight sweep
@@ -407,9 +410,10 @@ class MetronomeEngine: ObservableObject {
             
         case .snap:
             // Add noise and harmonic for snap
-            let harmonic = sin(clickPhase * 2.0) * 0.5 * envelope
-            let noise = Float.random(in: -0.2...0.2) * envelope * 0.3
-            return fundamental + harmonic + noise
+            let harmonic1 = sin(clickPhase * 2.0) * 0.6 * envelope
+            let harmonic2 = sin(clickPhase * 4.0) * 0.3 * envelope
+            let noise = Float.random(in: -0.4...0.4) * envelope * 0.5 // Increased noise
+            return fundamental + harmonic1 + harmonic2 + noise
             
         case .pop:
             // Add harmonic for pop
