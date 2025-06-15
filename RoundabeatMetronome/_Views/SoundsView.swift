@@ -1,26 +1,28 @@
 import SwiftUI
 import AVFoundation
 
-// MARK: - Sound Option Model (unchanged)
+// MARK: - Sound Option Model
 struct SoundOption: Identifiable, Equatable {
     let id = UUID()
     let name: String
-    let fileName: String
-    let fileExtension: String
+    let fileName: String?  // nil for synthetic sounds
+    let fileExtension: String?
     let category: SoundCategory
     let description: String
+    let isSynthetic: Bool
     
     var displayName: String {
         return name
     }
     
     static func == (lhs: SoundOption, rhs: SoundOption) -> Bool {
-        return lhs.fileName == rhs.fileName && lhs.fileExtension == rhs.fileExtension
+        return lhs.name == rhs.name
     }
 }
 
-// MARK: - Sound Categories (unchanged)
+// MARK: - Sound Categories
 enum SoundCategory: String, CaseIterable {
+    case synthetic = "Synthetic"
     case percussion = "Percussion"
     case electronic = "Electronic"
     case acoustic = "Acoustic"
@@ -28,6 +30,7 @@ enum SoundCategory: String, CaseIterable {
     
     var icon: String {
         switch self {
+        case .synthetic: return "waveform.path"
         case .percussion: return "drum"
         case .electronic: return "waveform"
         case .acoustic: return "music.note"
@@ -45,27 +48,30 @@ struct SoundsView: View {
     @State private var selectedCategory: SoundCategory? = nil
     @State private var playerDelegate: SoundPlayerDelegate?
     
-    // Available sound options (same as before)
+    // Available sound options - synthetic sound first as default
     static let defaultSounds: [SoundOption] = [
+        // Synthetic (Default)
+        SoundOption(name: "Synthetic Click", fileName: nil, fileExtension: nil, category: .synthetic, description: "Built-in synthetic metronome sound", isSynthetic: true),
+        
         // Percussion
-        SoundOption(name: "Wood Block", fileName: "Wood Block", fileExtension: "wav", category: .percussion, description: "Classic wooden metronome sound"),
-        SoundOption(name: "Bongo", fileName: "bongo", fileExtension: "wav", category: .percussion, description: "Warm bongo drum hit"),
-        SoundOption(name: "Snap", fileName: "Snap", fileExtension: "wav", category: .percussion, description: "Crisp finger snap"),
-        SoundOption(name: "Clap", fileName: "clap", fileExtension: "wav", category: .percussion, description: "Hand clap sound"),
-        SoundOption(name: "Cowbell", fileName: "cowbell", fileExtension: "wav", category: .percussion, description: "Classic cowbell ring"),
+        SoundOption(name: "Wood Block", fileName: "woodblock", fileExtension: "wav", category: .percussion, description: "Classic wooden metronome sound", isSynthetic: false),
+        SoundOption(name: "Bongo", fileName: "bongo", fileExtension: "wav", category: .percussion, description: "Warm bongo drum hit", isSynthetic: false),
+        SoundOption(name: "Snap", fileName: "snap", fileExtension: "wav", category: .percussion, description: "Crisp finger snap", isSynthetic: false),
+        SoundOption(name: "Clap", fileName: "clap", fileExtension: "wav", category: .percussion, description: "Hand clap sound", isSynthetic: false),
+        SoundOption(name: "Cowbell", fileName: "cowbell", fileExtension: "wav", category: .percussion, description: "Classic cowbell ring", isSynthetic: false),
         
         // Electronic
-        SoundOption(name: "Digital Beep", fileName: "Digital Beep", fileExtension: "wav", category: .electronic, description: "Clean digital beep"),
-        SoundOption(name: "Synth Click", fileName: "Synth Click", fileExtension: "wav", category: .electronic, description: "Electronic click sound"),
-        SoundOption(name: "Blip", fileName: "Blip", fileExtension: "wav", category: .electronic, description: "Short electronic blip"),
+        SoundOption(name: "Digital Beep", fileName: "digitalbeep", fileExtension: "wav", category: .electronic, description: "Clean digital beep", isSynthetic: false),
+        SoundOption(name: "Synth Click", fileName: "synthclick", fileExtension: "wav", category: .electronic, description: "Electronic click sound", isSynthetic: false),
+        SoundOption(name: "Blip", fileName: "blip", fileExtension: "wav", category: .electronic, description: "Short electronic blip", isSynthetic: false),
         
         // Acoustic
-        SoundOption(name: "Piano Note", fileName: "Piano Note", fileExtension: "wav", category: .acoustic, description: "Single piano note"),
-        SoundOption(name: "Guitar Pick", fileName: "Guitar Pick", fileExtension: "wav", category: .acoustic, description: "Guitar string pick"),
+        SoundOption(name: "Piano Note", fileName: "piano", fileExtension: "wav", category: .acoustic, description: "Single piano note", isSynthetic: false),
+        SoundOption(name: "Guitar Pick", fileName: "guitar", fileExtension: "wav", category: .acoustic, description: "Guitar string pick", isSynthetic: false),
         
         // Classic
-        SoundOption(name: "Classic Tick", fileName: "Classic Tick", fileExtension: "wav", category: .classic, description: "Traditional metronome tick"),
-        SoundOption(name: "Mechanical Click", fileName: "Mechanical Click", fileExtension: "wav", category: .classic, description: "Mechanical metronome click")
+        SoundOption(name: "Classic Tick", fileName: "tick", fileExtension: "wav", category: .classic, description: "Traditional metronome tick", isSynthetic: false),
+        SoundOption(name: "Mechanical Click", fileName: "mechanical", fileExtension: "wav", category: .classic, description: "Mechanical metronome click", isSynthetic: false)
     ]
     
     var filteredSounds: [SoundOption] {
@@ -211,7 +217,13 @@ struct SoundsView: View {
             
             // Only play preview if metronome is NOT currently playing
             if !metronome.isPlaying {
-                playSound(sound)
+                if sound.isSynthetic {
+                    // For synthetic sound, just play a brief synthetic preview
+                    playSyntheticPreview()
+                } else {
+                    // For audio files, play the actual file
+                    playSound(sound)
+                }
             } else {
                 // If metronome is playing, just provide haptic feedback
                 if #available(iOS 10.0, *) {
@@ -229,19 +241,33 @@ struct SoundsView: View {
                 
                 // Sound info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(sound.displayName)
-                        .font(.system(size: 16))
-                        .kerning(0.5)
-                        .foregroundColor(isSelected ? Color.white.opacity(0.9) : Color.white.opacity(0.7))
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack {
+                        Text(sound.displayName)
+                            .font(.system(size: 16))
+                            .kerning(0.5)
+                            .foregroundColor(isSelected ? Color.white.opacity(0.9) : Color.white.opacity(0.7))
+                        
+                        if sound.isSynthetic {
+                            Text("DEFAULT")
+                                .font(.system(size: 10, weight: .bold))
+                                .kerning(0.5)
+                                .foregroundColor(Color.blue.opacity(0.8))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color.blue.opacity(0.2))
+                                )
+                        }
+                        
+                        Spacer()
+                    }
                     
                     Text(sound.description)
                         .font(.system(size: 12))
                         .foregroundColor(isSelected ? Color.white.opacity(0.6) : Color.white.opacity(0.4))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                
-                Spacer()
                 
                 // Play/Playing indicator - show different states based on metronome
                 HStack(spacing: 8) {
@@ -325,10 +351,25 @@ struct SoundsView: View {
                         .kerning(1)
                         .foregroundColor(Color.white.opacity(0.4))
                     
-                    Text(metronome.selectedSoundName)
-                        .font(.system(size: 16))
-                        .kerning(0.5)
-                        .foregroundColor(Color.white.opacity(0.9))
+                    HStack {
+                        Text(metronome.selectedSoundName)
+                            .font(.system(size: 16))
+                            .kerning(0.5)
+                            .foregroundColor(Color.white.opacity(0.9))
+                        
+                        if metronome.selectedSoundName == "Synthetic Click" {
+                            Text("DEFAULT")
+                                .font(.system(size: 8, weight: .bold))
+                                .kerning(0.5)
+                                .foregroundColor(Color.blue.opacity(0.8))
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 1)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 3)
+                                        .fill(Color.blue.opacity(0.2))
+                                )
+                        }
+                    }
                 }
                 
                 Spacer()
@@ -336,7 +377,9 @@ struct SoundsView: View {
                 Button(action: {
                     // Only preview if metronome is not playing
                     if !metronome.isPlaying {
-                        if let currentSound = SoundsView.defaultSounds.first(where: { $0.name == metronome.selectedSoundName }) {
+                        if metronome.selectedSoundName == "Synthetic Click" {
+                            playSyntheticPreview()
+                        } else if let currentSound = SoundsView.defaultSounds.first(where: { $0.name == metronome.selectedSoundName }) {
                             playSound(currentSound)
                         }
                     } else {
@@ -384,13 +427,80 @@ struct SoundsView: View {
         }
     }
     
+    // NEW: Play synthetic preview
+    private func playSyntheticPreview() {
+        // Create a simple synthetic click sound using AVAudioEngine
+        let audioEngine = AVAudioEngine()
+        let playerNode = AVAudioPlayerNode()
+        
+        audioEngine.attach(playerNode)
+        audioEngine.connect(playerNode, to: audioEngine.outputNode, format: audioEngine.outputNode.outputFormat(forBus: 0))
+        
+        do {
+            try audioEngine.start()
+            
+            // Generate a brief synthetic click
+            let sampleRate = 44100.0
+            let duration = 0.1
+            let frameCount = UInt32(sampleRate * duration)
+            
+            guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1) else { return }
+            guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return }
+            
+            buffer.frameLength = frameCount
+            
+            let frequency: Float = 1000.0
+            let amplitude: Float = 0.3
+            
+            for frame in 0..<Int(frameCount) {
+                let sampleTime = Float(frame) / Float(sampleRate)
+                let envelope = (1.0 - sampleTime / Float(duration)) * amplitude
+                let sample = sin(2.0 * Float.pi * frequency * sampleTime) * envelope
+                buffer.floatChannelData?[0][frame] = sample
+            }
+            
+            playerNode.scheduleBuffer(buffer) {
+                DispatchQueue.main.async {
+                    self.isPlaying = false
+                    audioEngine.stop()
+                }
+            }
+            
+            isPlaying = true
+            playerNode.play()
+            
+            // Add haptic feedback
+            if #available(iOS 10.0, *) {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+            
+            // Auto-stop playing indicator after duration
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.1) {
+                if self.isPlaying {
+                    self.isPlaying = false
+                }
+            }
+            
+        } catch {
+            print("Failed to play synthetic preview: \(error)")
+            isPlaying = false
+        }
+    }
+    
     private func playSound(_ sound: SoundOption) {
+        // Don't play if it's synthetic (handled separately)
+        guard !sound.isSynthetic,
+              let fileName = sound.fileName,
+              let fileExtension = sound.fileExtension else {
+            return
+        }
+        
         // Stop any currently playing sound
         audioPlayer?.stop()
         
         // Try to find the sound file
-        guard let url = findSoundFile(sound) else {
-            print("Could not find sound file: \(sound.fileName).\(sound.fileExtension)")
+        guard let url = findSoundFile(fileName: fileName, fileExtension: fileExtension) else {
+            print("Could not find sound file: \(fileName).\(fileExtension)")
             return
         }
         
@@ -430,29 +540,34 @@ struct SoundsView: View {
         }
     }
     
-    private func findSoundFile(_ sound: SoundOption) -> URL? {
+    private func findSoundFile(fileName: String, fileExtension: String) -> URL? {
         // Try the exact filename first
-        if let url = Bundle.main.url(forResource: sound.fileName, withExtension: sound.fileExtension) {
+        if let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) {
             return url
         }
         
         // Try common variations
         let variations = [
-            sound.fileName.lowercased(),
-            sound.fileName.uppercased(),
-            sound.fileName.capitalized
+            fileName.lowercased(),
+            fileName.uppercased(),
+            fileName.capitalized,
+            fileName.replacingOccurrences(of: " ", with: ""),
+            fileName.replacingOccurrences(of: " ", with: "_"),
+            fileName.replacingOccurrences(of: " ", with: "-")
         ]
         
-        let extensions = [sound.fileExtension, "wav", "mp3", "aiff", "m4a"]
+        let extensions = [fileExtension, "wav", "mp3", "aiff", "m4a"]
         
         for name in variations {
             for ext in extensions {
                 if let url = Bundle.main.url(forResource: name, withExtension: ext) {
+                    print("✅ Found sound file: \(name).\(ext)")
                     return url
                 }
             }
         }
         
+        print("❌ Could not find sound file with any variation of: \(fileName).\(fileExtension)")
         return nil
     }
 }
