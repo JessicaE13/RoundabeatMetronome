@@ -349,7 +349,15 @@ class MetronomeEngine: ObservableObject {
             return (1.0 - progress) * baseAmplitude
             
         case .snap:
-            return exp(-progress * 40.0) * (1.0 - progress) * baseAmplitude * 1.5
+            // Physical snap envelope: instantaneous attack, exponential decay
+            if progress < 0.02 {
+                   // Very sharp attack (first 2% of duration)
+                   return baseAmplitude * 1.8
+               } else {
+                   // Clean exponential decay
+                   return exp(-progress * 15.0) * baseAmplitude * 1.8
+               }
+               
             
         case .pop, .blip:
             // Sharp attack, quick decay
@@ -377,8 +385,10 @@ class MetronomeEngine: ObservableObject {
             return (isAccent ? accentFrequency : clickFrequency) * accentMultiplier
             
         case .snap:
-            // Frequency sweep down for snap effect
-            return (2500.0 + (1.0 - progress) * 2000.0) * accentMultiplier
+
+            let primaryFreq: Float = 800.0  // Much lower, around 800Hz
+            let sweep = primaryFreq * (1.0 + (1.0 - progress) * 0.2) // Gentle upward sweep
+            return sweep * accentMultiplier
             
         case .pop:
             // Low frequency with slight sweep
@@ -409,11 +419,20 @@ class MetronomeEngine: ObservableObject {
             return fundamental
             
         case .snap:
-            // Add noise and harmonic for snap
-            let harmonic1 = sin(clickPhase * 2.0) * 0.6 * envelope
-            let harmonic2 = sin(clickPhase * 4.0) * 0.3 * envelope
-            let noise = Float.random(in: -0.4...0.4) * envelope * 0.5 // Increased noise
-            return fundamental + harmonic1 + harmonic2 + noise
+            // Layered approach for realism
+            let primary = sin(clickPhase) * envelope
+            let harmonic = sin(clickPhase * 2.5) * 0.4 * envelope
+            let highHarmonic = sin(clickPhase * 6.0 + 0.01) * 0.2 * envelope
+            let fingerRes = sin(clickPhase * 0.3 - 0.02) * 0.5 * envelope
+
+            // Crack transient: a fast, randomized burst
+            let crackIntensity = progress < 0.03 ? (1.0 - progress * 33.0) : 0.0
+            let crack = Float.random(in: -0.2...0.2) * envelope * crackIntensity * 0.3
+
+            // Crackle noise burst, mimicking friction/snap burst
+            let crackle = progress < 0.05 ? Float.random(in: -1...1) * envelope * 0.6 : 0.0
+
+            return primary + harmonic + highHarmonic + fingerRes + crack + crackle
             
         case .pop:
             // Add harmonic for pop
