@@ -1,6 +1,39 @@
 import SwiftUI
 import AVFoundation
 
+// MARK: - Synthetic Sound Types
+enum SyntheticSound: String, CaseIterable {
+    case click = "Synthetic Click"
+    case snap = "Snap"
+    case pop = "Pop"
+    case tick = "Tick"
+    case beep = "Beep"
+    case blip = "Blip"
+    case wood = "Wood Block"
+    case cowbell = "Cowbell"
+    
+    var description: String {
+        switch self {
+        case .click:
+            return "Classic sine wave click"
+        case .snap:
+            return "Sharp finger snap sound"
+        case .pop:
+            return "Quick pop sound"
+        case .tick:
+            return "Mechanical tick sound"
+        case .beep:
+            return "Digital beep tone"
+        case .blip:
+            return "Short electronic blip"
+        case .wood:
+            return "Wooden block hit"
+        case .cowbell:
+            return "Metallic cowbell ring"
+        }
+    }
+}
+
 // MARK: - Metronome Engine with Sample-Accurate Timing
 
 class MetronomeEngine: ObservableObject {
@@ -36,6 +69,9 @@ class MetronomeEngine: ObservableObject {
     @Published var currentBeat: Int = 0
     @Published var beatIndicator: Bool = false
     
+    // ADD: Sound selection property
+    @Published var selectedSoundType: SyntheticSound = .click
+    
     // Settings
     @Published var clickVolume: Double = 0.5 {
         didSet { mixerNode.outputVolume = Float(clickVolume) }
@@ -65,6 +101,10 @@ class MetronomeEngine: ObservableObject {
     private var sourceNode: AVAudioSourceNode?
     private let mixerNode = AVAudioMixerNode()
     
+    // Preview audio components - separate from main metronome
+    private var previewEngine: AVAudioEngine?
+    private var previewPlayerNode: AVAudioPlayerNode?
+    
     // Timing variables (accessed atomically from audio thread)
     private var sampleRate: Double = 44100.0
     private var samplesPerBeat: Double = 0
@@ -80,7 +120,7 @@ class MetronomeEngine: ObservableObject {
     private let clickDuration: Double = 0.1
     
     // Debug flag
-    private var debugMode = true
+    private var debugMode = false // Turn off debug by default to reduce console spam
     
     init() {
         setupAudioSession()
@@ -90,6 +130,7 @@ class MetronomeEngine: ObservableObject {
     
     deinit {
         stopMetronome()
+        cleanupPreviewEngine()
     }
     
     // ADD: Method to update time signature
@@ -106,6 +147,14 @@ class MetronomeEngine: ObservableObject {
         subdivisionMultiplier = multiplier
         if debugMode {
             print("🎵 Subdivision updated to \(multiplier)")
+        }
+    }
+    
+    // ADD: Method to update sound type
+    func updateSoundType(to soundType: SyntheticSound) {
+        selectedSoundType = soundType
+        if debugMode {
+            print("🔊 Sound updated to: \(soundType.rawValue)")
         }
     }
     
@@ -220,14 +269,11 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // MARK: - Real-Time Audio Render Callback
+    // MARK: - Updated Real-Time Audio Render Callback with Dynamic Sound Generation
     private func renderAudio(frameCount: UInt32, audioBufferList: UnsafeMutablePointer<AudioBufferList>) -> OSStatus {
         
         let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
         guard let buffer = ablPointer[0].mData?.assumingMemoryBound(to: Float.self) else {
-            if debugMode {
-                print("❌ Failed to get audio buffer")
-            }
             return kAudioUnitErr_InvalidParameter
         }
         
@@ -250,20 +296,26 @@ class MetronomeEngine: ObservableObject {
                 
                 beatTriggeredInThisCycle = true
                 clickPhase = 0.0
-                
-                if debugMode && beatCounter <= 20 {
-                    print("🥁 Beat triggered: \(newBeatNumber) at sample \(currentSample), next at \(nextBeatSample)")
-                }
             }
             
             let samplesSinceLastBeat = currentSample - lastBeatSample
             if samplesSinceLastBeat >= 0 && samplesSinceLastBeat < clickDurationSamples {
                 let clickProgress = Float(samplesSinceLastBeat) / Float(clickDurationSamples)
-                let envelope = (1.0 - clickProgress) * 0.3
                 
-                let frequency = (accentFirstBeat && newBeatNumber == 1) ? accentFrequency : clickFrequency
+                // Generate envelope based on sound type
+                let envelope = generateEnvelope(for: selectedSoundType, progress: clickProgress)
                 
-                sample = sin(clickPhase) * envelope
+                // Generate frequency based on sound type and accent
+                let frequency = generateFrequency(for: selectedSoundType,
+                                                isAccent: accentFirstBeat && newBeatNumber == 1,
+                                                progress: clickProgress)
+                
+                // Generate the sample
+                sample = generateSample(for: selectedSoundType,
+                                      frequency: frequency,
+                                      envelope: envelope,
+                                      progress: clickProgress)
+                
                 clickPhase += 2.0 * Float.pi * frequency / Float(sampleRate)
                 
                 if clickPhase >= 2.0 * Float.pi {
@@ -285,6 +337,103 @@ class MetronomeEngine: ObservableObject {
         }
         
         return noErr
+    }
+    
+    // MARK: - Sound Generation Helpers
+    
+    private func generateEnvelope(for soundType: SyntheticSound, progress: Float) -> Float {
+        let baseAmplitude: Float = 0.3
+        
+        switch soundType {
+        case .click, .beep:
+            return (1.0 - progress) * baseAmplitude
+            
+        case .snap, .pop, .blip:
+            // Sharp attack, quick decay
+            return exp(-progress * 25.0) * (1.0 - progress) * baseAmplitude * 1.3
+            
+        case .tick:
+            // Medium attack, medium decay
+            return exp(-progress * 15.0) * baseAmplitude
+            
+        case .wood:
+            // Sharp attack, medium decay with resonance
+            return exp(-progress * 8.0) * (1.0 - progress * 0.5) * baseAmplitude * 1.2
+            
+        case .cowbell:
+            // Sharp attack, longer sustain for metallic ring
+            return exp(-progress * 4.0) * baseAmplitude
+        }
+    }
+    
+    private func generateFrequency(for soundType: SyntheticSound, isAccent: Bool, progress: Float) -> Float {
+        let accentMultiplier: Float = isAccent ? 1.2 : 1.0
+        
+        switch soundType {
+        case .click:
+            return (isAccent ? accentFrequency : clickFrequency) * accentMultiplier
+            
+        case .snap:
+            // Frequency sweep down for snap effect
+            return (2000.0 + (1.0 - progress) * 1000.0) * accentMultiplier
+            
+        case .pop:
+            // Low frequency with slight sweep
+            return (80.0 + (1.0 - progress) * 40.0) * accentMultiplier
+            
+        case .tick:
+            return 1500.0 * accentMultiplier
+            
+        case .beep:
+            return 800.0 * accentMultiplier
+            
+        case .blip:
+            return 2400.0 * accentMultiplier
+            
+        case .wood:
+            return 600.0 * accentMultiplier
+            
+        case .cowbell:
+            return 540.0 * accentMultiplier
+        }
+    }
+    
+    private func generateSample(for soundType: SyntheticSound, frequency: Float, envelope: Float, progress: Float) -> Float {
+        let fundamental = sin(clickPhase) * envelope
+        
+        switch soundType {
+        case .click, .beep, .blip:
+            return fundamental
+            
+        case .snap:
+            // Add noise and harmonic for snap
+            let harmonic = sin(clickPhase * 2.0) * 0.5 * envelope
+            let noise = Float.random(in: -0.2...0.2) * envelope * 0.3
+            return fundamental + harmonic + noise
+            
+        case .pop:
+            // Add harmonic for pop
+            let harmonic = sin(clickPhase * 3.0) * 0.3 * envelope
+            return fundamental + harmonic
+            
+        case .tick:
+            // Add overtone for metallic tick
+            let overtone = sin(clickPhase * 2.5) * 0.4 * envelope
+            return fundamental + overtone
+            
+        case .wood:
+            // Multiple harmonics for wood resonance
+            let harmonic1 = sin(clickPhase * 2.0) * 0.6 * envelope
+            let harmonic2 = sin(clickPhase * 4.0) * 0.3 * envelope
+            return fundamental + harmonic1 + harmonic2
+            
+        case .cowbell:
+            // Inharmonic frequencies for cowbell
+            let freq2 = sin(clickPhase * 1.5) * 0.8 * envelope
+            let freq3 = sin(clickPhase * 2.44) * 0.6 * envelope
+            let freq4 = sin(clickPhase * 3.33) * 0.4 * envelope
+            return fundamental + freq2 + freq3 + freq4
+        }
     }
     
     // MARK: - Tap Tempo
@@ -337,5 +486,128 @@ class MetronomeEngine: ObservableObject {
     func toggleDebugMode() {
         debugMode.toggle()
         print("🐛 Debug mode: \(debugMode ? "ON" : "OFF")")
+    }
+    
+    // MARK: - Safe Sound Preview Method
+    func playSoundPreview(_ soundType: SyntheticSound? = nil) {
+        let previewSoundType = soundType ?? selectedSoundType
+        
+        // Clean up any existing preview engine
+        cleanupPreviewEngine()
+        
+        // Use a simple haptic feedback instead of audio preview to avoid crashes
+        DispatchQueue.main.async {
+            if #available(iOS 10.0, *) {
+                let impact = UIImpactFeedbackGenerator(style: .light)
+                impact.prepare()
+                impact.impactOccurred()
+            }
+        }
+        
+        if debugMode {
+            print("🔊 Sound preview: \(previewSoundType.rawValue)")
+        }
+    }
+    
+    // MARK: - Alternative Preview Method (More Complex but Safer)
+    func playSoundPreviewAdvanced(_ soundType: SyntheticSound? = nil) {
+        let previewSoundType = soundType ?? selectedSoundType
+        
+        // Clean up any existing preview engine first
+        cleanupPreviewEngine()
+        
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            
+            do {
+                // Create a fresh engine for preview
+                let engine = AVAudioEngine()
+                let playerNode = AVAudioPlayerNode()
+                
+                // Store references
+                self.previewEngine = engine
+                self.previewPlayerNode = playerNode
+                
+                // Setup engine
+                engine.attach(playerNode)
+                
+                let outputFormat = engine.outputNode.outputFormat(forBus: 0)
+                let format = AVAudioFormat(
+                    commonFormat: .pcmFormatFloat32,
+                    sampleRate: outputFormat.sampleRate,
+                    channels: 1,
+                    interleaved: false
+                )!
+                
+                engine.connect(playerNode, to: engine.outputNode, format: format)
+                
+                // Generate preview buffer
+                let duration = 0.1
+                let frameCount = UInt32(format.sampleRate * duration)
+                
+                guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+                    DispatchQueue.main.async {
+                        if #available(iOS 10.0, *) {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }
+                    }
+                    return
+                }
+                
+                buffer.frameLength = frameCount
+                
+                // Generate sound data
+                var phase: Float = 0.0
+                let sampleRate = Float(format.sampleRate)
+                
+                for frame in 0..<Int(frameCount) {
+                    let progress = Float(frame) / Float(frameCount)
+                    let envelope = self.generateEnvelope(for: previewSoundType, progress: progress)
+                    let frequency = self.generateFrequency(for: previewSoundType, isAccent: false, progress: progress)
+                    
+                    phase += 2.0 * Float.pi * frequency / sampleRate
+                    if phase >= 2.0 * Float.pi {
+                        phase -= 2.0 * Float.pi
+                    }
+                    
+                    let sample = self.generateSample(for: previewSoundType, frequency: frequency, envelope: envelope, progress: progress)
+                    buffer.floatChannelData?[0][frame] = sample * 0.5 // Reduce volume for preview
+                }
+                
+                // Start engine and schedule buffer
+                try engine.start()
+                
+                playerNode.scheduleBuffer(buffer) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        self.cleanupPreviewEngine()
+                    }
+                }
+                
+                playerNode.play()
+                
+                // Add haptic feedback
+                DispatchQueue.main.async {
+                    if #available(iOS 10.0, *) {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
+                }
+                
+            } catch {
+                print("❌ Failed to play sound preview: \(error)")
+                DispatchQueue.main.async {
+                    if #available(iOS 10.0, *) {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
+                }
+                self.cleanupPreviewEngine()
+            }
+        }
+    }
+    
+    private func cleanupPreviewEngine() {
+        previewPlayerNode?.stop()
+        previewEngine?.stop()
+        previewPlayerNode = nil
+        previewEngine = nil
     }
 }

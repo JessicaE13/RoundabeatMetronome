@@ -5,7 +5,7 @@ import AVFoundation
 struct MetronomeView: View {
     @ObservedObject var metronome: MetronomeEngine
     
-    // State for showing pickers
+    // State for showing pickers - removed sound picker
     @State private var showingTimeSignaturePicker = false
     @State private var showingSubdivisionPicker = false
     @State private var showingNumberPad = false
@@ -59,7 +59,7 @@ struct MetronomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, horizontalPadding)
         .overlay(
-            // Modal Overlays
+            // Modal Overlays - removed sound picker modal
             Group {
                 // Time Signature Picker Modal
                 if showingTimeSignaturePicker {

@@ -42,8 +42,8 @@ struct UniformButton: View {
         if isIPad {
             return screenWidth <= 768 ? 14 :
                    screenWidth <= 834 ? 16 :
-                   screenWidth <= 1024 ? 180 :
-                   180
+                   screenWidth <= 1024 ? 18 :
+                   20
         } else {
             return screenWidth <= 320 ? 10 :
                    screenWidth <= 375 ? 11 :
@@ -166,11 +166,11 @@ struct UniformButtonWithIcon: View {
     }
 }
 
-// MARK: - Uniform Buttons View
+// MARK: - Uniform Buttons View (Back to Original Layout)
 struct UniformButtonsView: View {
     @ObservedObject var metronome: MetronomeEngine
     
-    // Bindings for showing pickers - now controlled by parent
+    // Bindings for showing pickers - removed sound picker
     @Binding var showingTimeSignaturePicker: Bool
     @Binding var showingSubdivisionPicker: Bool
     

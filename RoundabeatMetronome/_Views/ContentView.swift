@@ -3,11 +3,14 @@ import AVFoundation
 
 // MARK: - Navigation State
 enum NavigationTab: String, CaseIterable {
+    case sounds = "Sounds"
     case metronome = "Metronome"
     case settings = "Settings"
     
     var iconName: String {
         switch self {
+        case .sounds:
+            return "speaker.wave.3"
         case .metronome:
             return "metronome"
         case .settings:
@@ -90,6 +93,8 @@ struct ContentView: View {
                     // Main content area - this will now always leave space for the navigation bar
                     Group {
                         switch selectedTab {
+                        case .sounds:
+                            SoundsView(metronome: metronome)
                         case .metronome:
                             MetronomeView(metronome: metronome)
                         case .settings:
