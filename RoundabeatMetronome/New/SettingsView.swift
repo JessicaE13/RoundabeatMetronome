@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Theme Manager
 @Observable
 class ThemeManager {
-    var colorScheme: ColorScheme? = nil // nil = system default
+    var colorScheme: ColorScheme? = .dark // Default to dark mode instead of nil
     
     var isSystemDefault: Bool {
         return colorScheme == nil
@@ -90,6 +90,7 @@ struct InfoRow: View {
 struct SettingsView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Bindable var themeManager: ThemeManager
+    @Environment(\.colorScheme) var currentColorScheme
     
     // Get screen dimensions directly
     private var screenWidth: CGFloat {
@@ -180,7 +181,7 @@ struct SettingsView: View {
                                 themeManager.setSystemDefault()
                             }
                             .font(.system(size: buttonFontSize, weight: .medium))
-                            .foregroundColor(themeManager.isSystemDefault ? .white : .primary)
+                            .foregroundColor(themeManager.isSystemDefault ? getSelectedTextColor() : .primary)
                             .frame(maxWidth: .infinity)
                             .frame(height: uniformButtonHeight)
                             .background(themeManager.isSystemDefault ? Color.accentColor : Color(.systemGray6))
@@ -191,7 +192,7 @@ struct SettingsView: View {
                                 themeManager.setLightMode()
                             }
                             .font(.system(size: buttonFontSize, weight: .medium))
-                            .foregroundColor(themeManager.isLightMode ? .white : .primary)
+                            .foregroundColor(themeManager.isLightMode ? getSelectedTextColor() : .primary)
                             .frame(maxWidth: .infinity)
                             .frame(height: uniformButtonHeight)
                             .background(themeManager.isLightMode ? Color.accentColor : Color(.systemGray6))
@@ -202,7 +203,7 @@ struct SettingsView: View {
                                 themeManager.setDarkMode()
                             }
                             .font(.system(size: buttonFontSize, weight: .medium))
-                            .foregroundColor(themeManager.isDarkMode ? .white : .primary)
+                            .foregroundColor(themeManager.isDarkMode ? getSelectedTextColor() : .primary)
                             .frame(maxWidth: .infinity)
                             .frame(height: uniformButtonHeight)
                             .background(themeManager.isDarkMode ? Color.accentColor : Color(.systemGray6))
@@ -266,6 +267,14 @@ struct SettingsView: View {
             }
             .padding(.horizontal, horizontalPadding)
         }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func getSelectedTextColor() -> Color {
+        // For selected buttons (with accent color background), use contrasting text
+        // If we're in dark mode, use black text; if light mode, use white text
+        return currentColorScheme == .dark ? .black : .white
     }
     
     // MARK: - Responsive Properties
