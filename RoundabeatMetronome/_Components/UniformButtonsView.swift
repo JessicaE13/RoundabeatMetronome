@@ -2,7 +2,8 @@ import SwiftUI
 
 // MARK: - Uniform Button Component
 struct UniformButton: View {
-    let text: String
+    let label: String // e.g., "TIME" or "SUB DIV."
+    let value: String // e.g., "4/4" or "♩"
     let action: () -> Void
     
     // Get screen dimensions directly
@@ -17,12 +18,17 @@ struct UniformButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text(text)
-                .font(.system(size: buttonFontSize, weight: .medium))
-                .foregroundColor(.primary.opacity(0.6))
-                .kerning(1.2)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .multilineTextAlignment(.center)
+            HStack(spacing: 2) {
+                Text(label)
+                    .font(.system(size: buttonFontSize, weight: .medium))
+                    .foregroundColor(.primary.opacity(0.4)) // Gray label
+                Text(value)
+                    .font(.system(size: buttonFontSize, weight: .medium))
+                    .foregroundColor(.white) // White value
+            }
+            .kerning(1.2)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .multilineTextAlignment(.center)
         }
         .frame(
             width: uniformButtonWidth,
@@ -31,9 +37,9 @@ struct UniformButton: View {
         .background(Color(.systemBackground).opacity(0.98))
         .cornerRadius(8)
         .overlay(
-              RoundedRectangle(cornerRadius: 8)
-                  .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-          )
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+        )
     }
     
     // MARK: - Responsive Properties
@@ -41,42 +47,42 @@ struct UniformButton: View {
     private var buttonFontSize: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 14 :
-                   screenWidth <= 834 ? 16 :
-                   screenWidth <= 1024 ? 18 :
-                   20
+            screenWidth <= 834 ? 16 :
+            screenWidth <= 1024 ? 18 :
+            20
         } else {
             return screenWidth <= 320 ? 10 :
-                   screenWidth <= 375 ? 11 :
-                   screenWidth <= 393 ? 12 :
-                   13
+            screenWidth <= 375 ? 11 :
+            screenWidth <= 393 ? 12 :
+            13
         }
     }
     
     private var uniformButtonWidth: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 110 :
-                   screenWidth <= 834 ? 120 :
-                   screenWidth <= 1024 ? 130 :
-                   140
+            screenWidth <= 834 ? 120 :
+            screenWidth <= 1024 ? 130 :
+            140
         } else {
             return screenWidth <= 320 ? 75 :
-                   screenWidth <= 375 ? 85 :
-                   screenWidth <= 393 ? 95 :
-                   105
+            screenWidth <= 375 ? 85 :
+            screenWidth <= 393 ? 95 :
+            105
         }
     }
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 40 :
-                   screenWidth <= 834 ? 44 :
-                   screenWidth <= 1024 ? 48 :
-                   52
+            screenWidth <= 834 ? 44 :
+            screenWidth <= 1024 ? 48 :
+            52
         } else {
             return screenWidth <= 320 ? 28 :
-                   screenWidth <= 375 ? 32 :
-                   screenWidth <= 393 ? 36 :
-                   38
+            screenWidth <= 375 ? 32 :
+            screenWidth <= 393 ? 36 :
+            38
         }
     }
 }
@@ -102,10 +108,11 @@ struct UniformButtonWithIcon: View {
             HStack(spacing: 3) {
                 Text(text)
                     .font(.system(size: buttonFontSize, weight: .medium))
+                    .foregroundColor(.primary.opacity(0.4)) // Gray text
                 Image(systemName: iconName)
                     .font(.system(size: buttonFontSize - 1))
+                    .foregroundColor(.white) // White icon
             }
-            .foregroundColor(.primary.opacity(0.6))
             .kerning(1.2)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -116,9 +123,9 @@ struct UniformButtonWithIcon: View {
         .background(Color(.systemBackground).opacity(0.98))
         .cornerRadius(8)
         .overlay(
-              RoundedRectangle(cornerRadius: 8)
-                  .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-          )
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+        )
     }
     
     // MARK: - Responsive Properties
@@ -126,51 +133,51 @@ struct UniformButtonWithIcon: View {
     private var buttonFontSize: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 14 :
-                   screenWidth <= 834 ? 16 :
-                   screenWidth <= 1024 ? 18 :
-                   20
+            screenWidth <= 834 ? 16 :
+            screenWidth <= 1024 ? 18 :
+            20
         } else {
             return screenWidth <= 320 ? 10 :
-                   screenWidth <= 375 ? 11 :
-                   screenWidth <= 393 ? 12 :
-                   13
+            screenWidth <= 375 ? 11 :
+            screenWidth <= 393 ? 12 :
+            13
         }
     }
     
     private var uniformButtonWidth: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 110 :
-                   screenWidth <= 834 ? 120 :
-                   screenWidth <= 1024 ? 130 :
-                   140
+            screenWidth <= 834 ? 120 :
+            screenWidth <= 1024 ? 130 :
+            140
         } else {
             return screenWidth <= 320 ? 75 :
-                   screenWidth <= 375 ? 85 :
-                   screenWidth <= 393 ? 95 :
-                   105
+            screenWidth <= 375 ? 85 :
+            screenWidth <= 393 ? 95 :
+            105
         }
     }
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 40 :
-                   screenWidth <= 834 ? 44 :
-                   screenWidth <= 1024 ? 48 :
-                   52
+            screenWidth <= 834 ? 44 :
+            screenWidth <= 1024 ? 48 :
+            52
         } else {
             return screenWidth <= 320 ? 28 :
-                   screenWidth <= 375 ? 32 :
-                   screenWidth <= 393 ? 36 :
-                   38
+            screenWidth <= 375 ? 32 :
+            screenWidth <= 393 ? 36 :
+            38
         }
     }
 }
 
-// MARK: - Uniform Buttons View (Back to Original Layout)
+// MARK: - Uniform Buttons View
 struct UniformButtonsView: View {
     @ObservedObject var metronome: MetronomeEngine
     
-    // Bindings for showing pickers - removed sound picker
+    // Bindings for showing pickers
     @Binding var showingTimeSignaturePicker: Bool
     @Binding var showingSubdivisionPicker: Bool
     
@@ -195,17 +202,19 @@ struct UniformButtonsView: View {
     
     var body: some View {
         HStack(spacing: buttonSpacing) {
-            // Time signature button - shows actual time signature and opens picker
+            // Time signature button
             UniformButton(
-                text: "TIME \(metronome.beatsPerMeasure)/\(metronome.beatUnit)",
+                label: "TIME",
+                value: "\(metronome.beatsPerMeasure)/\(metronome.beatUnit)",
                 action: {
                     showingTimeSignaturePicker = true
                 }
             )
             
-            // Subdivision button - now opens subdivision picker
+            // Subdivision button
             UniformButton(
-                text: "SUB DIV. \(getCurrentSubdivisionSymbol())",
+                label: "SUB DIV.",
+                value: getCurrentSubdivisionSymbol(),
                 action: {
                     showingSubdivisionPicker = true
                 }
@@ -229,28 +238,28 @@ struct UniformButtonsView: View {
     private var buttonSpacing: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 16 :
-                   screenWidth <= 834 ? 20 :
-                   screenWidth <= 1024 ? 24 :
-                   28
+            screenWidth <= 834 ? 20 :
+            screenWidth <= 1024 ? 24 :
+            28
         } else {
             return screenWidth <= 320 ? 6 :
-                   screenWidth <= 375 ? 8 :
-                   screenWidth <= 393 ? 10 :
-                   12
+            screenWidth <= 375 ? 8 :
+            screenWidth <= 393 ? 10 :
+            12
         }
     }
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
             return screenWidth <= 768 ? 40 :
-                   screenWidth <= 834 ? 44 :
-                   screenWidth <= 1024 ? 48 :
-                   52
+            screenWidth <= 834 ? 44 :
+            screenWidth <= 1024 ? 48 :
+            52
         } else {
             return screenWidth <= 320 ? 28 :
-                   screenWidth <= 375 ? 32 :
-                   screenWidth <= 393 ? 36 :
-                   38
+            screenWidth <= 375 ? 32 :
+            screenWidth <= 393 ? 36 :
+            38
         }
     }
 }

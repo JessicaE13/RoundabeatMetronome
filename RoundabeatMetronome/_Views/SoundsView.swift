@@ -209,10 +209,10 @@ struct SoundsView: View {
         guard !isPreviewPlaying else { return }
         
         isPreviewPlaying = true
-        metronome.playSoundPreview(sound)
+        metronome.playSoundPreviewAdvanced(sound)
         
         // Reset preview state after a reasonable duration
-        let previewDuration = sound == .snap ? 0.25 : 0.2
+        let previewDuration = sound == .snap ? 0.25 : 0.25
         DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration) {
             isPreviewPlaying = false
         }

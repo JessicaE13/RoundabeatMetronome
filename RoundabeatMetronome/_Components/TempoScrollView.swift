@@ -99,10 +99,10 @@ struct TempoMarkingView: View {
             .frame(maxHeight: .infinity) // Content fills available space
         
             .background(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(isSelected ? Color.clear : Color.clear)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.primary.opacity(isSelected ? 0.3 : 0), lineWidth: 1)
                     )
             )
