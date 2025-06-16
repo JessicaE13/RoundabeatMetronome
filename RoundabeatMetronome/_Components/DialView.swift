@@ -367,7 +367,7 @@ struct DialView: View {
             return screenHeight * 0.44
         } else {
             if screenWidth <= 375 {
-                return screenHeight * 0.4
+                return screenHeight * 0.36
             } else {
                 return screenHeight * 0.36
             }

@@ -19,15 +19,15 @@ struct LogoView: View {
     private var logoHeight: CGFloat {
         if isIPad {
             // Larger for iPads
-            return 35
+            return 36
         } else {
             // Smaller for smaller iPhones (iPhone SE, 12 mini, 13 mini)
             if screenHeight <= 667 {
-                return 20
+                return 18
             }
             // Regular size for standard iPhones
             else {
-                return 25
+                return 24
             }
         }
     }
