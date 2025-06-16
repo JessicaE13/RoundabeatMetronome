@@ -35,7 +35,7 @@ struct BeatArc: View {
     }
     
     private var arcAngles: (start: Double, end: Double) {
-        // Fixed spacing between segments (constant gap size regardless of beat count)
+
         let fixedGapDegrees: Double = 16.0 // 16 degrees gap between segments
         let gapAsFraction: CGFloat = CGFloat(fixedGapDegrees / 360.0)
         let totalGapFraction = gapAsFraction * CGFloat(totalBeats)
@@ -86,7 +86,7 @@ struct BeatArc: View {
                 
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .stroke(Color.white, lineWidth: 1.75)
+                    .stroke(Color.white.opacity(0.6), lineWidth: 1.75)
                     .shadow(color: Color.white.opacity(shouldShowNormalActive ? 0.3 : 0.6), radius: 4, x: 0, y: 0)
                     .shadow(color: Color.white.opacity(shouldShowNormalActive ? 0.2 : 0.4), radius: 8, x: 0, y: 0)
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.1 : 0.3), radius: 12, x: 0, y: 0)
@@ -129,7 +129,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color(red: 57/255, green: 57/255, blue: 59/255))
+                    .fill(Color(red: 48/255, green: 48/255, blue: 46/255))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
                             radius: 0.5, x: 0, y: 0)
             }
