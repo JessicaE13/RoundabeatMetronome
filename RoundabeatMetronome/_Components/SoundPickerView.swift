@@ -27,7 +27,7 @@ struct SoundPickerView: View {
             }
             .padding(30)
         }
-        .frame(width: 360, height: 600)
+        .frame(width: 360, height: 500)
         .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
     }
     
@@ -92,7 +92,7 @@ struct SoundPickerView: View {
                     }
                 }
             }
-            .frame(maxHeight: 300)
+            .frame(maxHeight: 250)
         }
     }
     
@@ -177,18 +177,10 @@ struct SoundPickerView: View {
             return "waveform.path"
         case .snap:
             return "hand.point.up"
-        case .pop:
-            return "bubble.left"
-        case .tick:
-            return "metronome"
         case .beep:
             return "speaker.wave.2"
         case .blip:
             return "dot.radiowaves.left.and.right"
-        case .wood:
-            return "rectangle.3.group"
-        case .cowbell:
-            return "bell"
         }
     }
 }
