@@ -25,6 +25,12 @@ enum SyntheticSound: String, CaseIterable {
 // MARK: - Metronome Engine with Sample-Accurate Timing
 
 class MetronomeEngine: ObservableObject {
+    
+    @Published var emphasizeFirstBeatOnly: Bool = false
+    
+    @Published var fullScreenFlashOnFirstBeat: Bool = false
+    @Published var isFlashing: Bool = false
+    
     @Published var bpm: Int = 120 {
         didSet { updateTiming() }
     }
@@ -264,7 +270,7 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // MARK: - Updated Real-Time Audio Render Callback with Snap Waveform Support
+    // MARK: - Updated Real-Time Audio Render Callback with Flash Trigger
     private func renderAudio(frameCount: UInt32, audioBufferList: UnsafeMutablePointer<AudioBufferList>) -> OSStatus {
         
         let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
@@ -363,17 +369,33 @@ class MetronomeEngine: ObservableObject {
         
         currentSamplePosition += Int64(frames)
         
+        // Handle beat triggering and visual effects
         if beatTriggeredInThisCycle {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.currentBeat = newBeatNumber
                 self.beatIndicator.toggle()
+                
+                // Trigger flash on first beat if enabled
+                if newBeatNumber == 1 && self.fullScreenFlashOnFirstBeat {
+                    self.triggerFlash()
+                }
             }
         }
         
         return noErr
     }
-    
+
+    // MARK: - Flash Trigger Method
+    func triggerFlash() {
+        guard fullScreenFlashOnFirstBeat else { return }
+        isFlashing = true
+        
+        // Flash duration - adjust as needed (0.1 seconds)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.isFlashing = false
+        }
+    }
     // MARK: - Sound Generation Helpers
     
     private func generateEnvelope(for soundType: SyntheticSound, progress: Float) -> Float {

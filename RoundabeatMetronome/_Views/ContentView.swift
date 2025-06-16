@@ -78,6 +78,20 @@ struct BottomNavigationBar: View {
     }
 }
 
+// MARK: - Flash Overlay View
+struct FlashOverlay: View {
+    let isFlashing: Bool
+    
+    var body: some View {
+        Rectangle()
+            .fill(Color.white)
+            .opacity(isFlashing ? 0.8 : 0.0)
+            .ignoresSafeArea()
+            .allowsHitTesting(false) // Allow touches to pass through
+            .animation(.easeOut(duration: 0.1), value: isFlashing)
+    }
+}
+
 // MARK: - Main Content View
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
@@ -106,6 +120,9 @@ struct ContentView: View {
                     // Bottom navigation - always visible
                     BottomNavigationBar(selectedTab: $selectedTab)
                 }
+                
+                // Flash overlay - appears on top of everything
+                FlashOverlay(isFlashing: metronome.isFlashing)
             }
             .preferredColorScheme(themeManager.colorScheme)
         }

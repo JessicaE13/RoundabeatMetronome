@@ -69,7 +69,7 @@ struct BPMView: View {
                 )
                 .buttonStyle(.bordered)
             }
-            .offset(y: isIPad ? -8 : -16)
+            .offset(y: isIPad ? -16 : -16)
             
             // BPM label
             Text("BEATS PER MINUTE (BPM)")

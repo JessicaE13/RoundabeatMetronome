@@ -3,43 +3,15 @@ import SwiftUI
 // MARK: - Theme Manager
 @Observable
 class ThemeManager {
-    var colorScheme: ColorScheme? = .dark
-    
-    var isSystemDefault: Bool {
-        return colorScheme == nil
-    }
+    var colorScheme: ColorScheme? = .dark // Default to dark mode
     
     var isDarkMode: Bool {
-        return colorScheme == .dark
-    }
-    
-    var isLightMode: Bool {
-        return colorScheme == .light
-    }
-    
-    func setSystemDefault() {
-        colorScheme = nil
-    }
-    
-    func setDarkMode() {
-        colorScheme = .dark
-    }
-    
-    func setLightMode() {
-        colorScheme = .light
+        get { return colorScheme == .dark }
+        set { colorScheme = newValue ? .dark : .light }
     }
     
     var displayName: String {
-        switch colorScheme {
-        case .light:
-            return "Light"
-        case .dark:
-            return "Dark"
-        case nil:
-            return "System"
-        @unknown default:
-            return "System"
-        }
+        return isDarkMode ? "Dark" : "Light"
     }
 }
 
@@ -70,39 +42,59 @@ struct SettingsView: View {
                 
                 // Visual Settings Section
                 Section("Visual Options") {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Appearance")
-                                    .font(.body)
-                                Text("Choose light, dark, or system theme")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            Spacer()
+                    // Dark Mode Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Dark Mode")
+                                .font(.body)
+                            Text("Use dark appearance")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        
-                        // Theme Selection Picker
-                        Picker("Appearance", selection: Binding(
-                            get: {
-                                if themeManager.isSystemDefault { return 0 }
-                                else if themeManager.isLightMode { return 1 }
-                                else { return 2 }
-                            },
-                            set: { value in
-                                switch value {
-                                case 0: themeManager.setSystemDefault()
-                                case 1: themeManager.setLightMode()
-                                case 2: themeManager.setDarkMode()
-                                default: themeManager.setSystemDefault()
-                                }
-                            }
-                        )) {
-                            Text("System").tag(0)
-                            Text("Light").tag(1)
-                            Text("Dark").tag(2)
+                        Spacer()
+                        Toggle("", isOn: $themeManager.isDarkMode)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    // Visual Metronome Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Visual Metronome")
+                                .font(.body)
+                            Text("Show visual beat indicators")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        .pickerStyle(.segmented)
+                        Spacer()
+                        Toggle("", isOn: $metronome.visualMetronome)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    // Emphasize First Beat Only Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Emphasize First Beat Only")
+                                .font(.body)
+                            Text("Only highlight beat 1 visually")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Toggle("", isOn: $metronome.emphasizeFirstBeatOnly)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    // Full Screen Flash Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Full Screen Flash on First Beat")
+                                .font(.body)
+                            Text("Flash entire screen on beat 1")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Toggle("", isOn: $metronome.fullScreenFlashOnFirstBeat)
                     }
                     .padding(.vertical, 4)
                 }
@@ -112,21 +104,24 @@ struct SettingsView: View {
                     Link(destination: URL(string: "mailto:hello@roundabeat.com")!) {
                         SettingsLinkRow(
                             title: "Email",
-                            subtitle: "Get help with the app"
+                            subtitle: "Get help with the app",
+                            iconName: "envelope"
                         )
                     }
 
                     Link(destination: URL(string: "https://roundabeat.com/roundabeat-mobile-app-terms-of-use/")!) {
                         SettingsLinkRow(
                             title: "Terms of Use",
-                            subtitle: "View our terms and conditions"
+                            subtitle: "View our terms and conditions",
+                            iconName: "arrow.up.right"
                         )
                     }
                     
                     Link(destination: URL(string: "https://roundabeat.com/mobile-app-privacy-policy/")!) {
                         SettingsLinkRow(
                             title: "Privacy Policy",
-                            subtitle: "How we handle your data"
+                            subtitle: "How we handle your data",
+                            iconName: "arrow.up.right"
                         )
                     }
                     
@@ -166,6 +161,7 @@ struct SettingsInfoRow: View {
 struct SettingsLinkRow: View {
     let title: String
     let subtitle: String
+    let iconName: String
     
     var body: some View {
         HStack {
@@ -177,7 +173,7 @@ struct SettingsLinkRow: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            Image(systemName: "arrow.up.right")
+            Image(systemName: iconName)
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
