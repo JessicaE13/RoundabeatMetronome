@@ -505,8 +505,11 @@ class MetronomeEngine: ObservableObject {
         guard fullScreenFlashOnFirstBeat else { return }
         isFlashing = true
         
-        // Flash duration - adjust as needed (0.1 seconds)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        // Calculate the duration of one beat in seconds
+        let beatDurationInSeconds = 60.0 / Double(bpm)
+        
+        // Flash duration should last the entire beat
+        DispatchQueue.main.asyncAfter(deadline: .now() + beatDurationInSeconds) { [weak self] in
             self?.isFlashing = false
         }
     }

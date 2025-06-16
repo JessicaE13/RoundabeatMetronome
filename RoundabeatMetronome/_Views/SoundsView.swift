@@ -71,7 +71,7 @@ struct SoundsView: View {
                 .foregroundColor(.accentColor)
                 .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 16)
                         .fill(Color.accentColor.opacity(0.1))
                 )
             
@@ -106,10 +106,10 @@ struct SoundsView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: 16)
                             .fill(isPreviewPlaying ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: 16)
                                     .stroke(isPreviewPlaying ? Color.green.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1)
                             )
                     )
@@ -121,12 +121,12 @@ struct SoundsView: View {
         }
         .padding(cardPadding)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemBackground))
                 .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.accentColor.opacity(0.2), lineWidth: 2)
+                        .stroke(Color.accentColor.opacity(0.2), lineWidth: 1.5)
                 )
         )
     }
@@ -152,7 +152,7 @@ struct SoundsView: View {
                     .foregroundColor(isSelected ? .white : .accentColor)
                     .frame(width: soundIconFrameSize, height: soundIconFrameSize)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 16)
                             .fill(isSelected ? Color.accentColor : Color.accentColor.opacity(0.1))
                     )
                 
@@ -193,10 +193,10 @@ struct SoundsView: View {
             }
             .padding(soundRowPadding)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(Color(.systemGray6).opacity(isSelected ? 1.0 : 0.5))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(
                                 isSelected ? Color.accentColor.opacity(0.3) : Color.clear,
                                 lineWidth: 1
