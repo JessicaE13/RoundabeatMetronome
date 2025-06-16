@@ -88,7 +88,7 @@ struct LogoView: View {
                 startShimmerAnimation()
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private func startShimmerAnimation() {

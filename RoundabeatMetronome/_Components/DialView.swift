@@ -130,7 +130,7 @@ struct BeatArc: View {
                             radius: 0.5, x: 0, y: 0)
             }
         }
-        .frame(width: frameSize, height: frameSize)
+        .frame(width: frameSize, height: frameSize, alignment: .center)
     }
 }
 

@@ -229,7 +229,7 @@ struct UniformButtonsView: View {
                 }
             )
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .center)
         .frame(height: uniformButtonHeight)
     }
     

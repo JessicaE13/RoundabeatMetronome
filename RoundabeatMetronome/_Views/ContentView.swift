@@ -88,7 +88,6 @@ struct FlashOverlay: View {
             .opacity(isFlashing ? 0.8 : 0.0)
             .ignoresSafeArea()
             .allowsHitTesting(false) // Allow touches to pass through
-            .animation(.easeOut(duration: 0.1), value: isFlashing)
     }
 }
 

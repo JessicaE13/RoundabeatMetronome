@@ -81,7 +81,7 @@ struct BPMView: View {
             .frame(maxWidth: .infinity, maxHeight: bpmViewHeight, alignment: .center)
             .offset(y: isIPad ? -10 : 6)
         }
-        .frame(height: bpmViewHeight)
+        .frame(height: bpmViewHeight, alignment: .center)
     }
     
     // MARK: - Improved Calculations
