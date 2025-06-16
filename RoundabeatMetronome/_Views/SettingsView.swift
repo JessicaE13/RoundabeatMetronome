@@ -17,7 +17,9 @@ struct SettingsView: View {
                             Text("Higher pitch on beat 1")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
                         }
+                        
                         Spacer()
                         Toggle("", isOn: $metronome.accentFirstBeat)
                     }
@@ -30,11 +32,12 @@ struct SettingsView: View {
                     // Emphasize First Beat Only Toggle
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Emphasize First Beat Only")
+                            Text("Emphasize First Beat")
                                 .font(.body)
-                            Text("Only highlight beat 1 visually")
+                            Text("Beat 1 is solid, others are outlined")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
                         }
                         Spacer()
                         Toggle("", isOn: $metronome.emphasizeFirstBeatOnly)
@@ -46,9 +49,11 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Full Screen Flash on First Beat")
                                 .font(.body)
+                                .fixedSize(horizontal: true, vertical: false)
                             Text("Flash entire screen on beat 1")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
                         }
                         Spacer()
                         Toggle("", isOn: $metronome.fullScreenFlashOnFirstBeat)
@@ -81,17 +86,7 @@ struct SettingsView: View {
                             iconName: "arrow.up.right"
                         )
                     }
-                    
                 }
-                
-                // System Information Section
-//                Section("System Information") {
-//                    SettingsInfoRow(title: "Audio Engine", value: "AVAudioSourceNode")
-//                    SettingsInfoRow(title: "Timing Method", value: "Sample-accurate")
-//                    SettingsInfoRow(title: "Precision", value: "±1 sample (~0.02ms)")
-//                    SettingsInfoRow(title: "Sample Rate", value: "48 kHz")
-//                    SettingsInfoRow(title: "Buffer Size", value: "2ms target")
-//                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
@@ -128,6 +123,7 @@ struct SettingsLinkRow: View {
                 Text(subtitle)
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
             }
             Spacer()
             Image(systemName: iconName)

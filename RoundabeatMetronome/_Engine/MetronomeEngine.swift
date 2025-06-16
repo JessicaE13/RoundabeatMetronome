@@ -651,7 +651,8 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // MARK: - Alternative Preview Method (More Complex but Safer)
+    // Replace the playSoundPreviewAdvanced method in MetronomeEngine.swift with this improved version
+
     func playSoundPreviewAdvanced(_ soundType: SyntheticSound? = nil) {
         let previewSoundType = soundType ?? selectedSoundType
         
@@ -683,10 +684,9 @@ class MetronomeEngine: ObservableObject {
                 
                 engine.connect(playerNode, to: engine.outputNode, format: format)
                 
-                // Generate preview buffer
-                let estimatedDuration = previewSoundType == .snap ?
-                    (Double(snapWaveform.count) / snapOriginalSampleRate) : 0.1
-                let frameCount = UInt32(format.sampleRate * estimatedDuration)
+                // Generate preview buffer with improved parameters
+                let previewDuration: Double = 0.25 // Longer duration for better audibility
+                let frameCount = UInt32(format.sampleRate * previewDuration)
                 
                 guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
                     DispatchQueue.main.async {
@@ -698,11 +698,11 @@ class MetronomeEngine: ObservableObject {
                 }
                 
                 buffer.frameLength = frameCount
+                let channelData = buffer.floatChannelData![0]
                 
-                // Generate sound data
+                // Generate sound data based on type
                 if previewSoundType == .snap {
                     // Use snap waveform with proper sample rate handling
-                    let channelData = buffer.floatChannelData![0]
                     let sampleRateRatio = snapOriginalSampleRate / format.sampleRate
                     
                     for i in 0..<Int(frameCount) {
@@ -710,28 +710,34 @@ class MetronomeEngine: ObservableObject {
                         let index = Int(adjustedPosition)
                         
                         if index < snapWaveform.count {
-                            channelData[i] = snapWaveform[index] * 0.6 // Preview volume
+                            channelData[i] = snapWaveform[index] * 0.8 // Higher volume for preview
                         } else {
                             channelData[i] = 0.0
                         }
                     }
                 } else {
-                    // Use synthetic generation for other sounds
+                    // Generate synthetic sounds with improved parameters
                     var phase: Float = 0.0
                     let sampleRate = Float(format.sampleRate)
+                    let clickDuration = 0.15 // Longer click duration
+                    let clickDurationSamples = Int(clickDuration * Double(sampleRate))
                     
                     for frame in 0..<Int(frameCount) {
-                        let progress = Float(frame) / Float(frameCount)
-                        let envelope = self.generateEnvelope(for: previewSoundType, progress: progress)
-                        let frequency = self.generateFrequency(for: previewSoundType, isAccent: false, progress: progress)
+                        var sample: Float = 0.0
                         
-                        phase += 2.0 * Float.pi * frequency / sampleRate
-                        if phase >= 2.0 * Float.pi {
-                            phase -= 2.0 * Float.pi
+                        // Generate sound for the initial portion
+                        if frame < clickDurationSamples {
+                            let progress = Float(frame) / Float(clickDurationSamples)
+                            
+                            // Generate envelope and frequency based on sound type
+                            let envelope = self.generatePreviewEnvelope(for: previewSoundType, progress: progress)
+                            let frequency = self.generatePreviewFrequency(for: previewSoundType, progress: progress)
+                            
+                            // Generate the sample
+                            sample = self.generatePreviewSample(for: previewSoundType, frequency: frequency, envelope: envelope, progress: progress, phase: &phase, sampleRate: sampleRate)
                         }
                         
-                        let sample = self.generateSample(for: previewSoundType, frequency: frequency, envelope: envelope, progress: progress)
-                        buffer.floatChannelData?[0][frame] = sample * 0.5 // Reduce volume for preview
+                        channelData[frame] = sample * 0.7 // Adjust volume for preview
                     }
                 }
                 
@@ -739,7 +745,7 @@ class MetronomeEngine: ObservableObject {
                 try engine.start()
                 
                 playerNode.scheduleBuffer(buffer) {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         self.cleanupPreviewEngine()
                     }
                 }
@@ -762,6 +768,83 @@ class MetronomeEngine: ObservableObject {
                 }
                 self.cleanupPreviewEngine()
             }
+        }
+    }
+
+    // MARK: - Preview-specific sound generation methods
+
+    private func generatePreviewEnvelope(for soundType: SyntheticSound, progress: Float) -> Float {
+        let baseAmplitude: Float = 0.6 // Higher base amplitude for preview
+        
+        switch soundType {
+        case .click, .beep:
+            // Exponential decay with longer sustain
+            return exp(-progress * 8.0) * baseAmplitude
+            
+        case .snap:
+            // This won't be used since snap uses the waveform
+            if progress < 0.02 {
+                return baseAmplitude * 2.0
+            } else {
+                return exp(-progress * 12.0) * baseAmplitude * 1.5
+            }
+               
+        case .blip:
+            // Sharp attack, quick decay but more sustained
+            return exp(-progress * 15.0) * (1.0 - progress * 0.5) * baseAmplitude * 1.2
+        }
+    }
+
+    private func generatePreviewFrequency(for soundType: SyntheticSound, progress: Float) -> Float {
+        switch soundType {
+        case .click:
+            return 1200.0 // Slightly higher for better audibility
+            
+        case .snap:
+            // This won't be used since snap uses the waveform
+            let primaryFreq: Float = 900.0
+            let sweep = primaryFreq * (1.0 + (1.0 - progress) * 0.3)
+            return sweep
+            
+        case .beep:
+            return 900.0 // Higher frequency for better audibility
+            
+        case .blip:
+            return 2600.0 // Higher frequency
+        }
+    }
+
+    private func generatePreviewSample(for soundType: SyntheticSound, frequency: Float, envelope: Float, progress: Float, phase: inout Float, sampleRate: Float) -> Float {
+        // Update phase
+        phase += 2.0 * Float.pi * frequency / sampleRate
+        if phase >= 2.0 * Float.pi {
+            phase -= 2.0 * Float.pi
+        }
+        
+        let fundamental = sin(phase) * envelope
+        
+        switch soundType {
+        case .click:
+            // Add some harmonics for richer sound
+            let harmonic2 = sin(phase * 2.0) * envelope * 0.3
+            let harmonic3 = sin(phase * 3.0) * envelope * 0.1
+            return fundamental + harmonic2 + harmonic3
+            
+        case .beep:
+            // Clean sine wave with slight harmonic
+            let harmonic = sin(phase * 2.0) * envelope * 0.2
+            return fundamental + harmonic
+            
+        case .blip:
+            // Multiple harmonics for digital sound
+            let harmonic2 = sin(phase * 2.0) * envelope * 0.4
+            let harmonic3 = sin(phase * 4.0) * envelope * 0.2
+            let harmonic4 = sin(phase * 8.0) * envelope * 0.1
+            return fundamental + harmonic2 + harmonic3 + harmonic4
+            
+        case .snap:
+            // This won't be used since snap uses the waveform
+            return fundamental
         }
     }
     
