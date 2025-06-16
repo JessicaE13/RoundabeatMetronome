@@ -114,7 +114,6 @@ struct CircularBeatIndicator: View {
     let isPlaying: Bool
     let size: CGFloat
     let bpm: Int
-    let showSquareOutline: Bool
     let onTogglePlay: () -> Void
     let onTempoChange: (Int) -> Void
     
@@ -129,12 +128,6 @@ struct CircularBeatIndicator: View {
     
     var body: some View {
         ZStack {
-            // Square outline around the arc segments - now conditional and properly sized
-            if showSquareOutline {
-                Rectangle()
-                    .stroke(Color.blue.opacity(0.5), lineWidth: 2)
-                    .frame(width: arcFrameSize, height: arcFrameSize) // Use actual arc frame size
-            }
             
             // Beat arc segments
             ForEach(1...beatsPerBar, id: \.self) { beatNumber in
@@ -325,7 +318,6 @@ struct DialView: View {
             isPlaying: metronome.isPlaying,
             size: arcSegmentSize,
             bpm: metronome.bpm,
-            showSquareOutline: metronome.showSquareOutline,
             onTogglePlay: {
                 metronome.isPlaying.toggle()
             },
