@@ -22,17 +22,37 @@ enum SyntheticSound: String, CaseIterable {
     }
 }
 
-// MARK: - Metronome Engine with Sample-Accurate Timing
+// MARK: - UserDefaults Keys
+private enum UserDefaultsKeys {
+    static let bpm = "metronome_bpm"
+    static let beatsPerBar = "metronome_beatsPerBar"
+    static let beatUnit = "metronome_beatUnit"
+    static let selectedSoundType = "metronome_selectedSoundType"
+    static let subdivisionMultiplier = "metronome_subdivisionMultiplier"
+    static let accentFirstBeat = "metronome_accentFirstBeat"
+    static let emphasizeFirstBeatOnly = "metronome_emphasizeFirstBeatOnly"
+    static let fullScreenFlashOnFirstBeat = "metronome_fullScreenFlashOnFirstBeat"
+    static let clickVolume = "metronome_clickVolume"
+}
+
+// MARK: - Metronome Engine with Sample-Accurate Timing and Persistent Storage
 
 class MetronomeEngine: ObservableObject {
     
-    @Published var emphasizeFirstBeatOnly: Bool = false
+    @Published var emphasizeFirstBeatOnly: Bool = false {
+        didSet { saveSettings() }
+    }
     
-    @Published var fullScreenFlashOnFirstBeat: Bool = false
+    @Published var fullScreenFlashOnFirstBeat: Bool = false {
+        didSet { saveSettings() }
+    }
     @Published var isFlashing: Bool = false
     
     @Published var bpm: Int = 120 {
-        didSet { updateTiming() }
+        didSet {
+            updateTiming()
+            saveSettings()
+        }
     }
     
     @Published var isPlaying: Bool = false {
@@ -46,12 +66,18 @@ class MetronomeEngine: ObservableObject {
     }
     
     @Published var beatsPerBar: Int = 4 {
-        didSet { resetBeatPosition() }
+        didSet {
+            resetBeatPosition()
+            saveSettings()
+        }
     }
     
     // ADD: Support for beat unit (denominator)
     @Published var beatUnit: Int = 4 {
-        didSet { resetBeatPosition() }
+        didSet {
+            resetBeatPosition()
+            saveSettings()
+        }
     }
     
     // ADD: Computed property for beatsPerMeasure (alias for beatsPerBar for compatibility)
@@ -64,13 +90,20 @@ class MetronomeEngine: ObservableObject {
     @Published var beatIndicator: Bool = false
     
     // ADD: Sound selection property
-    @Published var selectedSoundType: SyntheticSound = .click
+    @Published var selectedSoundType: SyntheticSound = .click {
+        didSet { saveSettings() }
+    }
     
     // Settings
     @Published var clickVolume: Double = 0.5 {
-        didSet { mixerNode.outputVolume = Float(clickVolume) }
+        didSet {
+            mixerNode.outputVolume = Float(clickVolume)
+            saveSettings()
+        }
     }
-    @Published var accentFirstBeat: Bool = true
+    @Published var accentFirstBeat: Bool = true {
+        didSet { saveSettings() }
+    }
 
     
     // Tap tempo functionality
@@ -80,13 +113,18 @@ class MetronomeEngine: ObservableObject {
     
     // Subdivisions
     @Published var subdivision: Int = 1 {
-        didSet { updateTiming() }
+        didSet {
+            updateTiming()
+            saveSettings()
+        }
     }
     
     // ADD: Subdivision multiplier support
     var subdivisionMultiplier: Double {
         get { Double(subdivision) }
-        set { subdivision = Int(newValue) }
+        set {
+            subdivision = Int(newValue)
+        }
     }
     
     // Audio components
@@ -121,6 +159,7 @@ class MetronomeEngine: ObservableObject {
     private var debugMode = false // Turn off debug by default to reduce console spam
     
     init() {
+        loadSettings() // Load saved settings first
         setupAudioSession()
         setupAudioEngine()
         updateTiming()
@@ -129,6 +168,90 @@ class MetronomeEngine: ObservableObject {
     deinit {
         stopMetronome()
         cleanupPreviewEngine()
+    }
+    
+    // MARK: - Persistent Storage Methods
+    
+    private func loadSettings() {
+        let defaults = UserDefaults.standard
+        
+        // Load BPM (with bounds checking)
+        let savedBPM = defaults.integer(forKey: UserDefaultsKeys.bpm)
+        if savedBPM > 0 {
+            bpm = max(40, min(400, savedBPM))
+        }
+        
+        // Load beats per bar
+        let savedBeatsPerBar = defaults.integer(forKey: UserDefaultsKeys.beatsPerBar)
+        if savedBeatsPerBar > 0 {
+            beatsPerBar = savedBeatsPerBar
+        }
+        
+        // Load beat unit
+        let savedBeatUnit = defaults.integer(forKey: UserDefaultsKeys.beatUnit)
+        if savedBeatUnit > 0 {
+            beatUnit = savedBeatUnit
+        }
+        
+        // Load sound type
+        if let savedSoundTypeRawValue = defaults.string(forKey: UserDefaultsKeys.selectedSoundType),
+           let savedSoundType = SyntheticSound(rawValue: savedSoundTypeRawValue) {
+            selectedSoundType = savedSoundType
+        }
+        
+        // Load subdivision multiplier
+        let savedSubdivision = defaults.double(forKey: UserDefaultsKeys.subdivisionMultiplier)
+        if savedSubdivision > 0 {
+            subdivision = Int(savedSubdivision)
+        }
+        
+        // Load boolean settings
+        if defaults.object(forKey: UserDefaultsKeys.accentFirstBeat) != nil {
+            accentFirstBeat = defaults.bool(forKey: UserDefaultsKeys.accentFirstBeat)
+        }
+        
+        if defaults.object(forKey: UserDefaultsKeys.emphasizeFirstBeatOnly) != nil {
+            emphasizeFirstBeatOnly = defaults.bool(forKey: UserDefaultsKeys.emphasizeFirstBeatOnly)
+        }
+        
+        if defaults.object(forKey: UserDefaultsKeys.fullScreenFlashOnFirstBeat) != nil {
+            fullScreenFlashOnFirstBeat = defaults.bool(forKey: UserDefaultsKeys.fullScreenFlashOnFirstBeat)
+        }
+        
+        // Load volume
+        if defaults.object(forKey: UserDefaultsKeys.clickVolume) != nil {
+            clickVolume = defaults.double(forKey: UserDefaultsKeys.clickVolume)
+        }
+        
+        if debugMode {
+            print("✅ Settings loaded from UserDefaults")
+            print("   BPM: \(bpm)")
+            print("   Time Signature: \(beatsPerBar)/\(beatUnit)")
+            print("   Sound: \(selectedSoundType.rawValue)")
+            print("   Subdivision: \(subdivision)")
+            print("   Accent First Beat: \(accentFirstBeat)")
+            print("   Emphasize First Beat Only: \(emphasizeFirstBeatOnly)")
+            print("   Full Screen Flash: \(fullScreenFlashOnFirstBeat)")
+            print("   Volume: \(clickVolume)")
+        }
+    }
+    
+    private func saveSettings() {
+        let defaults = UserDefaults.standard
+        
+        defaults.set(bpm, forKey: UserDefaultsKeys.bpm)
+        defaults.set(beatsPerBar, forKey: UserDefaultsKeys.beatsPerBar)
+        defaults.set(beatUnit, forKey: UserDefaultsKeys.beatUnit)
+        defaults.set(selectedSoundType.rawValue, forKey: UserDefaultsKeys.selectedSoundType)
+        defaults.set(Double(subdivision), forKey: UserDefaultsKeys.subdivisionMultiplier)
+        defaults.set(accentFirstBeat, forKey: UserDefaultsKeys.accentFirstBeat)
+        defaults.set(emphasizeFirstBeatOnly, forKey: UserDefaultsKeys.emphasizeFirstBeatOnly)
+        defaults.set(fullScreenFlashOnFirstBeat, forKey: UserDefaultsKeys.fullScreenFlashOnFirstBeat)
+        defaults.set(clickVolume, forKey: UserDefaultsKeys.clickVolume)
+        
+        if debugMode {
+            print("💾 Settings saved to UserDefaults")
+        }
     }
     
     // ADD: Method to update time signature
