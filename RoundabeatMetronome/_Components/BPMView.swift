@@ -20,72 +20,99 @@ struct BPMView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(alignment: .center, spacing: buttonSpacing) {
-                // Minus button
-                Button("-1") {
-                    let newBPM = metronome.bpm - 1
-                    metronome.bpm = max(40, min(400, newBPM))
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                HStack(alignment: .center, spacing: buttonSpacing) {
+                    // Minus button
+                    Button("-1") {
+                        let newBPM = metronome.bpm - 1
+                        metronome.bpm = max(40, min(400, newBPM))
+                    }
+                    .font(.system(size: buttonFontSize, weight: .medium))
+                    .frame(
+                        width: bpmButtonWidth,
+                        height: bpmButtonHeight
+                    )
+                    .buttonStyle(.bordered)
+                    
+                    // Centered BPM display - properly calculated width
+                    Button(action: {
+                        showingNumberPad = true
+                    }) {
+                        Text("\(metronome.bpm)")
+                            .font(.custom("Kanit-SemiBold", size: bpmFontSize))
+                            .foregroundStyle(Color.primary.opacity(0.9))
+                            .kerning(2.0)
+                            .lineLimit(1)
+                            .frame(
+                                width: calculateBPMDisplayWidth(containerWidth: geometry.size.width),
+                                height: largeFontSize,
+                                alignment: .center
+                            )
+                            .background(Color.clear)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    // Plus button
+                    Button("+1") {
+                        let newBPM = metronome.bpm + 1
+                        metronome.bpm = max(40, min(400, newBPM))
+                    }
+                    .font(.system(size: buttonFontSize, weight: .medium))
+                    .frame(
+                        width: bpmButtonWidth,
+                        height: bpmButtonHeight
+                    )
+                    .buttonStyle(.bordered)
                 }
-                .font(.system(size: buttonFontSize, weight: .medium))
-                .frame(
-                    width: bpmButtonWidth,
-                    height: bpmButtonHeight
-                )
-                .buttonStyle(.bordered)
+                .frame(maxWidth: .infinity)
+                .offset(y: isIPad ? -16 : -16)
                 
-                // Centered BPM display - now tappable and uses actual screen width
-                Button(action: {
-                    showingNumberPad = true
-                }) {
-                    Text("\(metronome.bpm)")
-                        .font(.custom("Kanit-SemiBold",
-                                      size: screenWidth <= 375 ? 70 :
-                                            screenWidth <= 420 ? 90 :
-                                            screenWidth <= 800 ? 100 :
-                                            screenWidth <= 900 ? 140 :
-                                            160))
-                        .foregroundStyle(Color.primary.opacity(0.9))
-                        .kerning(2.0)
-                        .lineLimit(1)
-                        .frame(
-                            minWidth: bpmDisplayMinWidth,
-                            idealHeight: largeFontSize,
-                            maxHeight: largeFontSize
-                        )
-                        .background(Color.clear)
-                }
-                .buttonStyle(.plain)
-                
-                // Plus button
-                Button("+1") {
-                    let newBPM = metronome.bpm + 1
-                    metronome.bpm = max(40, min(400, newBPM))
-                }
-                .font(.system(size: buttonFontSize, weight: .medium))
-                .frame(
-                    width: bpmButtonWidth,
-                    height: bpmButtonHeight
-                )
-                .buttonStyle(.bordered)
+                // BPM label
+                Text("BEATS PER MINUTE (BPM)")
+                    .font(.system(
+                        size: buttonFontSize,
+                        weight: .medium
+                    ))
+                    .foregroundStyle(Color.primary.opacity(0.4))
+                    .kerning(1.2)
+                    .offset(y: isIPad ? 4 : -8)
             }
-            .offset(y: isIPad ? -16 : -16)
-            
-            // BPM label
-            Text("BEATS PER MINUTE (BPM)")
-                .font(.system(
-                    size: buttonFontSize,
-                    weight: .medium
-                ))
-                .foregroundStyle(Color.primary.opacity(0.4))
-                .kerning(1.2)
-                .offset(y: isIPad ? 4 : -8)
+            .frame(maxWidth: .infinity, maxHeight: bpmViewHeight, alignment: .center)
+            .offset(y: isIPad ? -10 : 6)
         }
-        .frame(maxWidth: .infinity, maxHeight: bpmViewHeight, alignment: .center)
-        .offset(y: isIPad ? -10 : 6)
+        .frame(height: bpmViewHeight)
     }
     
-    // MARK: - Responsive Properties
+    // MARK: - Improved Calculations
+    
+    private func calculateBPMDisplayWidth(containerWidth: CGFloat) -> CGFloat {
+        // Calculate available width for BPM display
+        let totalButtonWidth = bpmButtonWidth * 2
+        let totalSpacing = buttonSpacing * 2
+        let availableWidth = containerWidth - totalButtonWidth - totalSpacing
+        
+        // Use minimum required width, but don't exceed available space
+        let minRequiredWidth = bpmDisplayMinWidth
+        return min(availableWidth, max(minRequiredWidth, availableWidth * 0.6))
+    }
+    
+    private var bpmFontSize: CGFloat {
+        // Simplified font size calculation based on display width
+        if isIPad {
+            return screenWidth <= 768 ? 100 :
+                   screenWidth <= 834 ? 120 :
+                   screenWidth <= 1024 ? 130 :
+                   150
+        } else {
+            return screenWidth <= 320 ? 65 :
+                   screenWidth <= 375 ? 75 :
+                   screenWidth <= 393 ? 90 :
+                   95
+        }
+    }
+    
+    // MARK: - Responsive Properties (Cleaned up)
     
     private var largeFontSize: CGFloat {
         if isIPad {

@@ -1,17 +1,17 @@
 import SwiftUI
 
-// MARK: - Individual Beat Arc
+// MARK: - Individual Beat Arc (Fixed multiplier consistency)
 
 struct BeatArc: View {
     let beatNumber: Int
     let totalBeats: Int
     let isActive: Bool
     let size: CGFloat
-    let emphasizeFirstBeatOnly: Bool // Add this parameter
+    let emphasizeFirstBeatOnly: Bool
     
-    // Calculate the actual stroke width for active and inactive states
+    // FIXED: Consistent stroke width calculations
     private var arcWidth: CGFloat { size * 0.1 }
-    private var activeArcWidth: CGFloat { arcWidth * 1.0 }
+    private var activeArcWidth: CGFloat { arcWidth * 1.0 } // Consistent with frame calculation
     
     // The maximum stroke width (for active state) determines the frame size needed
     private var maxStrokeWidth: CGFloat { activeArcWidth }
@@ -35,7 +35,6 @@ struct BeatArc: View {
     }
     
     private var arcAngles: (start: Double, end: Double) {
-
         let fixedGapDegrees: Double = 16.0 // 16 degrees gap between segments
         let gapAsFraction: CGFloat = CGFloat(fixedGapDegrees / 360.0)
         let totalGapFraction = gapAsFraction * CGFloat(totalBeats)
@@ -70,9 +69,9 @@ struct BeatArc: View {
             arcPath
                 .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .stroke(shouldShowNormalActive ?
-                        Color(red: 1/255, green: 1/255, blue: 2/255).opacity(0.3) :  // Much softer when active
+                        Color(red: 1/255, green: 1/255, blue: 2/255).opacity(0.3) :
                         Color(red: 1/255, green: 1/255, blue: 2/255),
-                        lineWidth: shouldShowNormalActive ? 1.0 : 2.75)  // Thinner when active
+                        lineWidth: shouldShowNormalActive ? 1.0 : 2.75)
                 .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.2 : 0.75),
                         radius: 0.5, x: 0, y: 0)
             
@@ -90,9 +89,6 @@ struct BeatArc: View {
                     .shadow(color: Color.white.opacity(shouldShowNormalActive ? 0.3 : 0.6), radius: 4, x: 0, y: 0)
                     .shadow(color: Color.white.opacity(shouldShowNormalActive ? 0.2 : 0.4), radius: 8, x: 0, y: 0)
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.1 : 0.3), radius: 12, x: 0, y: 0)
-
-                
-                
             }
             
             // Normal active state (only for first beat when emphasizeFirstBeatOnly is true, or all beats when false)
@@ -137,6 +133,7 @@ struct BeatArc: View {
         .frame(width: frameSize, height: frameSize)
     }
 }
+
 // MARK: - Circular Beat Indicator View with Tempo Dial
 struct CircularBeatIndicator: View {
     let beatsPerBar: Int
@@ -151,15 +148,14 @@ struct CircularBeatIndicator: View {
     @State private var lastAngle: Double = 0
     @State private var totalRotation: Double = 0
     
-    // Calculate the frame size needed for the arc segments
+    // FIXED: Consistent frame size calculations
     private var arcWidth: CGFloat { size * 0.1 }
-    private var activeArcWidth: CGFloat { arcWidth * 1.2 }
+    private var activeArcWidth: CGFloat { arcWidth * 1.0 } // Match BeatArc
     private var maxStrokeWidth: CGFloat { activeArcWidth }
     private var arcFrameSize: CGFloat { size + maxStrokeWidth }
     
     var body: some View {
         ZStack {
-            
             // Beat arc segments
             ForEach(1...beatsPerBar, id: \.self) { beatNumber in
                 BeatArc(
@@ -181,10 +177,10 @@ struct CircularBeatIndicator: View {
                 ZStack {
                     Circle()
                         .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
-                        .frame(width: size * 0.35, height: size * 0.35) // Increased from 0.3 to 0.35
+                        .frame(width: size * 0.35, height: size * 0.35)
                     
                     Image(systemName: isPlaying ? "stop.fill" : "play.fill")
-                        .font(.system(size: size * 0.12, weight: .bold)) // Increased from 0.12 to 0.14
+                        .font(.system(size: size * 0.12, weight: .bold))
                         .foregroundColor(.white)
                         .offset(x: isPlaying ? 0 : size * 0.006) // Slight offset for play button visual balance
                 }
@@ -195,7 +191,7 @@ struct CircularBeatIndicator: View {
     }
 }
 
-// MARK: - Tempo Dial Component
+// MARK: - Tempo Dial Component (unchanged)
 struct TempoDialView: View {
     let size: CGFloat
     let bpm: Int
@@ -229,9 +225,9 @@ struct TempoDialView: View {
     }
     
     // Dial size variables - make circle fit exactly in the square outline
-    private var totalDialDiameter: CGFloat { size * grayCircleMultiplier } // Use multiplier to control size
-    private var donutHoleDiameter: CGFloat { size * 0.45 } // Bigger inner hole diameter
-    private var dialWidth: CGFloat { (totalDialDiameter - donutHoleDiameter) / 2 } // Calculated ring thickness
+    private var totalDialDiameter: CGFloat { size * grayCircleMultiplier }
+    private var donutHoleDiameter: CGFloat { size * 0.45 }
+    private var dialWidth: CGFloat { (totalDialDiameter - donutHoleDiameter) / 2 }
     
     var body: some View {
         ZStack {
@@ -243,8 +239,8 @@ struct TempoDialView: View {
             // Circle indicator - positioned closer to outer edge and made slightly bigger
             Circle()
                 .fill(Color(red: 43/255, green: 44/255, blue: 44/255).opacity(0.9))
-                .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08) // Increased from 0.06 to 0.08
-                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.1)) // Position closer to outer edge
+                .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
+                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.1))
                 .rotationEffect(.degrees(currentRotation))
         }
         .gesture(
@@ -261,7 +257,7 @@ struct TempoDialView: View {
                     // Initialize lastRotation on first touch to prevent jumping
                     if lastRotation == 0 {
                         lastRotation = normalizedAngle
-                        return // Skip the first frame to avoid jump
+                        return
                     }
                     
                     // Calculate rotation difference
@@ -278,30 +274,21 @@ struct TempoDialView: View {
                     // Check BPM limits before updating rotation
                     let canRotate: Bool
                     if bpm >= 400 && adjustedDifference > 0 {
-                        // At max BPM, don't allow clockwise rotation (positive difference)
                         canRotate = false
                     } else if bpm <= 40 && adjustedDifference < 0 {
-                        // At min BPM, don't allow counterclockwise rotation (negative difference)
                         canRotate = false
                     } else {
                         canRotate = true
                     }
                     
                     if canRotate {
-                        // Update rotation
                         currentRotation += adjustedDifference
-                        
-                        // Clamp rotation to the allowed range (180° to 2000°)
-                        // 180° = min BPM, 1980° = max BPM (180° + 1800°)
                         currentRotation = max(180.0, min(1980.0, currentRotation))
-                        
                         lastRotation = normalizedAngle
                         
-                        // Convert rotation to BPM using new mapping
                         let newBPM = rotationToBpm(currentRotation)
                         onTempoChange(newBPM)
                     } else {
-                        // When blocked, update lastRotation to current angle to prevent accumulation
                         lastRotation = normalizedAngle
                     }
                 }
@@ -310,11 +297,9 @@ struct TempoDialView: View {
                 }
         )
         .onAppear {
-            // Initialize rotation based on current BPM using new mapping
             currentRotation = bpmToRotation(bpm)
         }
         .onChange(of: bpm) { _, newBPM in
-            // Update rotation when BPM changes externally using new mapping
             currentRotation = bpmToRotation(newBPM)
         }
     }
@@ -341,7 +326,7 @@ struct DialView: View {
         // Calculate the arc segment size based on device and available space
         let arcSegmentSize = calculateArcSegmentSize()
         
-        // Calculate the total frame size including stroke width
+        // Calculate the total frame size including stroke width - FIXED
         let frameSize = calculateFrameSize(for: arcSegmentSize)
         
         CircularBeatIndicator(
@@ -374,9 +359,10 @@ struct DialView: View {
         }
     }
     
+    // FIXED: Consistent frame calculation matching BeatArc and CircularBeatIndicator
     private func calculateFrameSize(for arcSize: CGFloat) -> CGFloat {
         let arcWidth = arcSize * 0.1
-        let activeArcWidth = arcWidth * 1.2
+        let activeArcWidth = arcWidth * 1.0  // NOW MATCHES BeatArc multiplier
         let maxStrokeWidth = activeArcWidth
         return arcSize + maxStrokeWidth
     }
