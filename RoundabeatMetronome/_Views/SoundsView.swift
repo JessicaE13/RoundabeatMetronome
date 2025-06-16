@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Sounds View
 struct SoundsView: View {
     @ObservedObject var metronome: MetronomeEngine
+    @State private var isPreviewPlaying = false
     
     // Get screen dimensions directly
     private var screenWidth: CGFloat {
@@ -90,31 +91,29 @@ struct SoundsView: View {
             
             // Preview button
             Button(action: {
-                if !metronome.isPlaying {
-                    metronome.playSoundPreview()
-                }
+                playPreview(metronome.selectedSoundType)
             }) {
                 HStack(spacing: 6) {
-                    Image(systemName: metronome.isPlaying ? "waveform" : "play.fill")
+                    Image(systemName: isPreviewPlaying ? "waveform" : "play.fill")
                         .font(.system(size: previewButtonIconSize, weight: .medium))
                     
-                    Text(metronome.isPlaying ? "PLAYING" : "PREVIEW")
+                    Text(isPreviewPlaying ? "PLAYING" : "PREVIEW")
                         .font(.system(size: previewButtonTextSize, weight: .medium))
                         .kerning(0.5)
                 }
-                .foregroundColor(metronome.isPlaying ? .green : .accentColor)
+                .foregroundColor(isPreviewPlaying ? .green : .accentColor)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(metronome.isPlaying ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1))
+                        .fill(isPreviewPlaying ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1))
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
-                                .stroke(metronome.isPlaying ? Color.green.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1)
+                                .stroke(isPreviewPlaying ? Color.green.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1)
                         )
                 )
             }
-            .disabled(metronome.isPlaying)
+            .disabled(isPreviewPlaying)
         }
         .padding(cardPadding)
         .background(
@@ -139,10 +138,8 @@ struct SoundsView: View {
             // Update the selected sound
             metronome.updateSoundType(to: sound)
             
-            // Play preview if metronome is not currently playing
-            if !metronome.isPlaying {
-                metronome.playSoundPreview(sound)
-            }
+            // Play preview
+            playPreview(sound)
         }) {
             HStack(spacing: 16) {
                 // Sound icon
@@ -174,15 +171,13 @@ struct SoundsView: View {
                     // Preview button
                     if !isSelected {
                         Button(action: {
-                            if !metronome.isPlaying {
-                                metronome.playSoundPreview(sound)
-                            }
+                            playPreview(sound)
                         }) {
                             Image(systemName: "play.circle")
                                 .font(.system(size: actionButtonSize, weight: .medium))
                                 .foregroundColor(.accentColor)
                         }
-                        .disabled(metronome.isPlaying)
+                        .disabled(isPreviewPlaying)
                     }
                     
                     if isSelected {
@@ -206,6 +201,21 @@ struct SoundsView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func playPreview(_ sound: SyntheticSound) {
+        guard !isPreviewPlaying else { return }
+        
+        isPreviewPlaying = true
+        metronome.playSoundPreview(sound)
+        
+        // Reset preview state after a reasonable duration
+        let previewDuration = sound == .snap ? 0.25 : 0.2
+        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration) {
+            isPreviewPlaying = false
+        }
     }
     
     private func soundIcon(for sound: SyntheticSound) -> String {
