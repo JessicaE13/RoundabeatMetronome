@@ -39,13 +39,19 @@ private enum UserDefaultsKeys {
 
 class MetronomeEngine: ObservableObject {
     
-    @Published var emphasizeFirstBeatOnly: Bool = false {
+    // MARK: - Persistent Settings using @AppStorage approach
+    @AppStorage("metronome_accentFirstBeat") var accentFirstBeat: Bool = true {
         didSet { saveSettings() }
     }
     
-    @Published var fullScreenFlashOnFirstBeat: Bool = false {
+    @AppStorage("metronome_emphasizeFirstBeatOnly") var emphasizeFirstBeatOnly: Bool = false {
         didSet { saveSettings() }
     }
+    
+    @AppStorage("metronome_fullScreenFlashOnFirstBeat") var fullScreenFlashOnFirstBeat: Bool = false {
+        didSet { saveSettings() }
+    }
+    
     @Published var isFlashing: Bool = false
     
     @Published var bpm: Int = 120 {
@@ -101,10 +107,6 @@ class MetronomeEngine: ObservableObject {
             saveSettings()
         }
     }
-    @Published var accentFirstBeat: Bool = true {
-        didSet { saveSettings() }
-    }
-
     
     // Tap tempo functionality
     private var tapTimes: [Date] = []
@@ -205,23 +207,13 @@ class MetronomeEngine: ObservableObject {
             subdivision = Int(savedSubdivision)
         }
         
-        // Load boolean settings
-        if defaults.object(forKey: UserDefaultsKeys.accentFirstBeat) != nil {
-            accentFirstBeat = defaults.bool(forKey: UserDefaultsKeys.accentFirstBeat)
-        }
-        
-        if defaults.object(forKey: UserDefaultsKeys.emphasizeFirstBeatOnly) != nil {
-            emphasizeFirstBeatOnly = defaults.bool(forKey: UserDefaultsKeys.emphasizeFirstBeatOnly)
-        }
-        
-        if defaults.object(forKey: UserDefaultsKeys.fullScreenFlashOnFirstBeat) != nil {
-            fullScreenFlashOnFirstBeat = defaults.bool(forKey: UserDefaultsKeys.fullScreenFlashOnFirstBeat)
-        }
-        
         // Load volume
         if defaults.object(forKey: UserDefaultsKeys.clickVolume) != nil {
             clickVolume = defaults.double(forKey: UserDefaultsKeys.clickVolume)
         }
+        
+        // Note: @AppStorage properties (accentFirstBeat, emphasizeFirstBeatOnly, fullScreenFlashOnFirstBeat)
+        // are automatically loaded from UserDefaults, so we don't need to manually load them here
         
         if debugMode {
             print("✅ Settings loaded from UserDefaults")
@@ -244,10 +236,10 @@ class MetronomeEngine: ObservableObject {
         defaults.set(beatUnit, forKey: UserDefaultsKeys.beatUnit)
         defaults.set(selectedSoundType.rawValue, forKey: UserDefaultsKeys.selectedSoundType)
         defaults.set(Double(subdivision), forKey: UserDefaultsKeys.subdivisionMultiplier)
-        defaults.set(accentFirstBeat, forKey: UserDefaultsKeys.accentFirstBeat)
-        defaults.set(emphasizeFirstBeatOnly, forKey: UserDefaultsKeys.emphasizeFirstBeatOnly)
-        defaults.set(fullScreenFlashOnFirstBeat, forKey: UserDefaultsKeys.fullScreenFlashOnFirstBeat)
         defaults.set(clickVolume, forKey: UserDefaultsKeys.clickVolume)
+        
+        // Note: @AppStorage properties are automatically saved to UserDefaults,
+        // so we don't need to manually save them here
         
         if debugMode {
             print("💾 Settings saved to UserDefaults")
@@ -518,6 +510,7 @@ class MetronomeEngine: ObservableObject {
             self?.isFlashing = false
         }
     }
+    
     // MARK: - Sound Generation Helpers
     
     private func generateEnvelope(for soundType: SyntheticSound, progress: Float) -> Float {

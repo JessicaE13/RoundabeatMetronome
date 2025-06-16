@@ -129,7 +129,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color(red: 48/255, green: 48/255, blue: 46/255))
+                    .fill(Color(red: 48/255, green: 48/255, blue: 49/255))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
                             radius: 0.5, x: 0, y: 0)
             }
