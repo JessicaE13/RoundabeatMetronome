@@ -71,8 +71,7 @@ class MetronomeEngine: ObservableObject {
         didSet { mixerNode.outputVolume = Float(clickVolume) }
     }
     @Published var accentFirstBeat: Bool = true
-    @Published var visualMetronome: Bool = true
-    @Published var showSquareOutline: Bool = false
+
     
     // Tap tempo functionality
     private var tapTimes: [Date] = []

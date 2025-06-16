@@ -26,21 +26,6 @@ struct SettingsView: View {
                 
                 // Visual Settings Section
                 Section("Visual Options") {
-              
-                    
-                    // Visual Metronome Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Visual Metronome")
-                                .font(.body)
-                            Text("Show visual beat indicators")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.visualMetronome)
-                    }
-                    .padding(.vertical, 4)
                     
                     // Emphasize First Beat Only Toggle
                     HStack {
