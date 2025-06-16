@@ -1,24 +1,8 @@
 import SwiftUI
 
-// MARK: - Theme Manager
-@Observable
-class ThemeManager {
-    var colorScheme: ColorScheme? = .dark // Default to dark mode
-    
-    var isDarkMode: Bool {
-        get { return colorScheme == .dark }
-        set { colorScheme = newValue ? .dark : .light }
-    }
-    
-    var displayName: String {
-        return isDarkMode ? "Dark" : "Light"
-    }
-}
-
 // MARK: - Settings View
 struct SettingsView: View {
     @ObservedObject var metronome: MetronomeEngine
-    @Bindable var themeManager: ThemeManager
     @Environment(\.colorScheme) var currentColorScheme
     
     var body: some View {
@@ -42,19 +26,7 @@ struct SettingsView: View {
                 
                 // Visual Settings Section
                 Section("Visual Options") {
-                    // Dark Mode Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Dark Mode")
-                                .font(.body)
-                            Text("Use dark appearance")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $themeManager.isDarkMode)
-                    }
-                    .padding(.vertical, 4)
+              
                     
                     // Visual Metronome Toggle
                     HStack {
@@ -181,5 +153,5 @@ struct SettingsLinkRow: View {
 }
 
 #Preview {
-    SettingsView(metronome: MetronomeEngine(), themeManager: ThemeManager())
+    SettingsView(metronome: MetronomeEngine())
 }

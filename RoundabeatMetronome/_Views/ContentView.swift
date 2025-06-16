@@ -96,7 +96,6 @@ struct FlashOverlay: View {
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
     @State private var selectedTab: NavigationTab = .metronome
-    @State private var themeManager = ThemeManager()
     
     var body: some View {
         GeometryReader { geometry in
@@ -112,7 +111,7 @@ struct ContentView: View {
                         case .metronome:
                             MetronomeView(metronome: metronome)
                         case .settings:
-                            SettingsView(metronome: metronome, themeManager: themeManager)
+                            SettingsView(metronome: metronome)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -124,7 +123,7 @@ struct ContentView: View {
                 // Flash overlay - appears on top of everything
                 FlashOverlay(isFlashing: metronome.isFlashing)
             }
-            .preferredColorScheme(themeManager.colorScheme)
+            .preferredColorScheme(.dark)
         }
         .onDisappear {
             metronome.isPlaying = false
