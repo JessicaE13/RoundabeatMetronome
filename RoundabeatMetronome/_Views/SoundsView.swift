@@ -81,43 +81,47 @@ struct SoundsView: View {
                     .font(.system(size: currentSoundTitleSize, weight: .semibold))
                     .foregroundColor(.primary)
                 
-                Text(metronome.selectedSoundType.description)
-                    .font(.system(size: currentSoundDescSize))
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
-            }
-            
-            Spacer()
-            
-            // Preview button
-            Button(action: {
-                playPreview(metronome.selectedSoundType)
-            }) {
-                HStack(spacing: 6) {
-                    Image(systemName: isPreviewPlaying ? "waveform" : "play.fill")
-                        .font(.system(size: previewButtonIconSize, weight: .medium))
+                
+                HStack {
+                    Text(metronome.selectedSoundType.description)
+                        .font(.system(size: currentSoundDescSize))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
                     
-                    Text(isPreviewPlaying ? "PLAYING" : "PREVIEW")
-                        .font(.system(size: previewButtonTextSize, weight: .medium))
-                        .kerning(0.5)
+                    Spacer()
+                    
+                // Preview button
+                Button(action: {
+                    playPreview(metronome.selectedSoundType)
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: isPreviewPlaying ? "waveform" : "play.fill")
+                            .font(.system(size: previewButtonIconSize, weight: .medium))
+                        
+                        Text(isPreviewPlaying ? "PLAYING" : "PREVIEW")
+                            .font(.system(size: previewButtonTextSize, weight: .medium))
+                            .kerning(0.5)
+                    }
+                    .foregroundColor(isPreviewPlaying ? .green : .accentColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(isPreviewPlaying ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(isPreviewPlaying ? Color.green.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1)
+                            )
+                    )
                 }
-                .foregroundColor(isPreviewPlaying ? .green : .accentColor)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(isPreviewPlaying ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(isPreviewPlaying ? Color.green.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1)
-                        )
-                )
+                .disabled(isPreviewPlaying)
+                    
+                }
             }
-            .disabled(isPreviewPlaying)
         }
         .padding(cardPadding)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemBackground))
                 .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                 .overlay(
