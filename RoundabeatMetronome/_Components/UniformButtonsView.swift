@@ -36,10 +36,10 @@ struct UniformButton: View {
         )
         .background(Color(.systemBackground).opacity(0.98))
         .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-        )
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 16)
+//                .stroke(Color.primary.opacity(0.01), lineWidth: 1)
+//        )
     }
     
     // MARK: - Responsive Properties
@@ -122,10 +122,10 @@ struct UniformButtonWithIcon: View {
         )
         .background(Color(.systemBackground).opacity(0.98))
         .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-        )
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 16)
+//                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+//        )
     }
     
     // MARK: - Responsive Properties
