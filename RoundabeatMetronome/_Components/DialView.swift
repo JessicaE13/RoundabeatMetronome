@@ -7,6 +7,7 @@ struct BeatArc: View {
     let totalBeats: Int
     let isActive: Bool
     let size: CGFloat
+    let emphasizeFirstBeatOnly: Bool // Add this parameter
     
     // Calculate the actual stroke width for active and inactive states
     private var arcWidth: CGFloat { size * 0.1 }
@@ -22,6 +23,16 @@ struct BeatArc: View {
     private var center: CGPoint { CGPoint(x: frameSize / 2, y: frameSize / 2) }
     private var radius: CGFloat { size / 2 }
     private var lineWidth: CGFloat { isActive ? activeArcWidth : arcWidth }
+    
+    // Determine if this beat should show the special outline glow
+    private var shouldShowOutlineGlow: Bool {
+        emphasizeFirstBeatOnly && isActive && beatNumber != 1
+    }
+    
+    // Determine if this beat should show the normal active state
+    private var shouldShowNormalActive: Bool {
+        isActive && (!emphasizeFirstBeatOnly || beatNumber == 1)
+    }
     
     private var arcAngles: (start: Double, end: Double) {
         // Fixed spacing between segments (constant gap size regardless of beat count)
@@ -55,17 +66,37 @@ struct BeatArc: View {
                             clockwise: false)
             }
             
-            // Base etched outline (visible mainly when inactive)
+            // Base etched outline
             arcPath
                 .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .stroke(isActive ?
+                .stroke(shouldShowNormalActive ?
                         Color(red: 1/255, green: 1/255, blue: 2/255).opacity(0.3) :  // Much softer when active
                         Color(red: 1/255, green: 1/255, blue: 2/255),
-                        lineWidth: isActive ? 1.0 : 2.75)  // Thinner when active
-                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(isActive ? 0.2 : 0.75),
+                        lineWidth: shouldShowNormalActive ? 1.0 : 2.75)  // Thinner when active
+                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.2 : 0.75),
                         radius: 0.5, x: 0, y: 0)
             
-            if isActive {
+            // Special bright white glowing outline for non-first beats when emphasizeFirstBeatOnly is true
+            if shouldShowOutlineGlow {
+                arcPath
+                    .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
+                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
+                            radius: 0.5, x: 0, y: 0)
+                
+                arcPath
+                    .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .stroke(Color.white, lineWidth: 1.75)
+                    .shadow(color: Color.white.opacity(shouldShowNormalActive ? 0.3 : 0.6), radius: 4, x: 0, y: 0)
+                    .shadow(color: Color.white.opacity(shouldShowNormalActive ? 0.2 : 0.4), radius: 8, x: 0, y: 0)
+                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.1 : 0.3), radius: 12, x: 0, y: 0)
+
+                
+                
+            }
+            
+            // Normal active state (only for first beat when emphasizeFirstBeatOnly is true, or all beats when false)
+            if shouldShowNormalActive {
                 // Inner light core - brightest white
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth * 0.98, lineCap: .round))
@@ -94,7 +125,7 @@ struct BeatArc: View {
                     .strokedPath(StrokeStyle(lineWidth: lineWidth * 1.5, lineCap: .round))
                     .fill(Color.white.opacity(0.15))
                     .blur(radius: 12)
-            } else {
+            } else if !isActive {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
@@ -106,7 +137,6 @@ struct BeatArc: View {
         .frame(width: frameSize, height: frameSize)
     }
 }
-
 // MARK: - Circular Beat Indicator View with Tempo Dial
 struct CircularBeatIndicator: View {
     let beatsPerBar: Int
@@ -114,6 +144,7 @@ struct CircularBeatIndicator: View {
     let isPlaying: Bool
     let size: CGFloat
     let bpm: Int
+    let emphasizeFirstBeatOnly: Bool
     let onTogglePlay: () -> Void
     let onTempoChange: (Int) -> Void
     
@@ -135,7 +166,8 @@ struct CircularBeatIndicator: View {
                     beatNumber: beatNumber,
                     totalBeats: beatsPerBar,
                     isActive: currentBeat == beatNumber && isPlaying,
-                    size: size
+                    size: size,
+                    emphasizeFirstBeatOnly: emphasizeFirstBeatOnly
                 )
             }
             
@@ -318,6 +350,7 @@ struct DialView: View {
             isPlaying: metronome.isPlaying,
             size: arcSegmentSize,
             bpm: metronome.bpm,
+            emphasizeFirstBeatOnly: metronome.emphasizeFirstBeatOnly,
             onTogglePlay: {
                 metronome.isPlaying.toggle()
             },
