@@ -5,12 +5,8 @@ import AVFoundation
 enum SyntheticSound: String, CaseIterable {
     case click = "Synthetic Click"
     case snap = "Snap"
-    case pop = "Pop"
-    case tick = "Tick"
     case beep = "Beep"
     case blip = "Blip"
-    case wood = "Wood Block"
-    case cowbell = "Cowbell"
     
     var description: String {
         switch self {
@@ -18,18 +14,10 @@ enum SyntheticSound: String, CaseIterable {
             return "Classic sine wave click"
         case .snap:
             return "Sharp finger snap sound"
-        case .pop:
-            return "Quick pop sound"
-        case .tick:
-            return "Mechanical tick sound"
         case .beep:
             return "Digital beep tone"
         case .blip:
             return "Short electronic blip"
-        case .wood:
-            return "Wooden block hit"
-        case .cowbell:
-            return "Metallic cowbell ring"
         }
     }
 }
@@ -403,21 +391,9 @@ class MetronomeEngine: ObservableObject {
                 return exp(-progress * 15.0) * baseAmplitude * 1.8
             }
                
-        case .pop, .blip:
+        case .blip:
             // Sharp attack, quick decay
             return exp(-progress * 25.0) * (1.0 - progress) * baseAmplitude * 1.3
-            
-        case .tick:
-            // Medium attack, medium decay
-            return exp(-progress * 15.0) * baseAmplitude
-            
-        case .wood:
-            // Sharp attack, medium decay with resonance
-            return exp(-progress * 8.0) * (1.0 - progress * 0.5) * baseAmplitude * 1.2
-            
-        case .cowbell:
-            // Sharp attack, longer sustain for metallic ring
-            return exp(-progress * 4.0) * baseAmplitude
         }
     }
     
@@ -434,24 +410,11 @@ class MetronomeEngine: ObservableObject {
             let sweep = primaryFreq * (1.0 + (1.0 - progress) * 0.2)
             return sweep * accentMultiplier
             
-        case .pop:
-            // Low frequency with slight sweep
-            return (80.0 + (1.0 - progress) * 40.0) * accentMultiplier
-            
-        case .tick:
-            return 1500.0 * accentMultiplier
-            
         case .beep:
             return 800.0 * accentMultiplier
             
         case .blip:
             return 2400.0 * accentMultiplier
-            
-        case .wood:
-            return 600.0 * accentMultiplier
-            
-        case .cowbell:
-            return 540.0 * accentMultiplier
         }
     }
     
@@ -472,29 +435,6 @@ class MetronomeEngine: ObservableObject {
             let crack = Float.random(in: -0.2...0.2) * envelope * crackIntensity * 0.3
             let crackle = progress < 0.05 ? Float.random(in: -1...1) * envelope * 0.6 : 0.0
             return primary + harmonic + highHarmonic + fingerRes + crack + crackle
-            
-        case .pop:
-            // Add harmonic for pop
-            let harmonic = sin(clickPhase * 3.0) * 0.3 * envelope
-            return fundamental + harmonic
-            
-        case .tick:
-            // Add overtone for metallic tick
-            let overtone = sin(clickPhase * 2.5) * 0.4 * envelope
-            return fundamental + overtone
-            
-        case .wood:
-            // Multiple harmonics for wood resonance
-            let harmonic1 = sin(clickPhase * 2.0) * 0.6 * envelope
-            let harmonic2 = sin(clickPhase * 4.0) * 0.3 * envelope
-            return fundamental + harmonic1 + harmonic2
-            
-        case .cowbell:
-            // Inharmonic frequencies for cowbell
-            let freq2 = sin(clickPhase * 1.5) * 0.8 * envelope
-            let freq3 = sin(clickPhase * 2.44) * 0.6 * envelope
-            let freq4 = sin(clickPhase * 3.33) * 0.4 * envelope
-            return fundamental + freq2 + freq3 + freq4
         }
     }
     
