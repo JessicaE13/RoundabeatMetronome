@@ -55,7 +55,7 @@ struct TempoMarkingView: View {
     
     // Device-responsive width
     private var itemWidth: CGFloat {
-        isIPad ? 180 : 120
+        isIPad ? 160 : 120
     }
     
     // Device-responsive font sizes
@@ -99,10 +99,10 @@ struct TempoMarkingView: View {
             .frame(maxHeight: .infinity) // Content fills available space
         
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(isSelected ? Color.clear : Color.clear)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.primary.opacity(isSelected ? 0.3 : 0), lineWidth: 1)
                     )
             )
@@ -134,11 +134,11 @@ struct TempoScrollView: View {
     
     // Device-responsive item width and spacing
     private var itemWidth: CGFloat {
-        isIPad ? 180 : 100
+        isIPad ? 140 : 100
     }
     
     private var itemSpacing: CGFloat {
-        isIPad ? 12 : 8
+        isIPad ? 8 : 4
     }
     
     // Device-responsive height
