@@ -35,10 +35,10 @@ struct UniformButton: View {
             height: uniformButtonHeight
         )
         .background(Color(.systemBackground).opacity(0.98))
-        .cornerRadius(8)
+        .cornerRadius(12)
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.primary.opacity(0.2), lineWidth: 1)
         )
     }
     
@@ -46,43 +46,43 @@ struct UniformButton: View {
     
     private var buttonFontSize: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 14 :
-            screenWidth <= 834 ? 16 :
-            screenWidth <= 1024 ? 18 :
-            20
+            return screenWidth <= 768 ? 16 :
+            screenWidth <= 834 ? 18 :
+            screenWidth <= 1024 ? 20 :
+            22
         } else {
-            return screenWidth <= 320 ? 10 :
-            screenWidth <= 375 ? 11 :
-            screenWidth <= 393 ? 12 :
-            13
+            return screenWidth <= 320 ? 12 :
+            screenWidth <= 375 ? 13 :
+            screenWidth <= 393 ? 14 :
+            15
         }
     }
     
     private var uniformButtonWidth: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 110 :
-            screenWidth <= 834 ? 120 :
-            screenWidth <= 1024 ? 130 :
-            140
+            return screenWidth <= 768 ? 130 :
+            screenWidth <= 834 ? 140 :
+            screenWidth <= 1024 ? 150 :
+            160
         } else {
-            return screenWidth <= 320 ? 75 :
-            screenWidth <= 375 ? 85 :
-            screenWidth <= 393 ? 95 :
-            105
+            return screenWidth <= 320 ? 90 :
+            screenWidth <= 375 ? 100 :
+            screenWidth <= 393 ? 110 :
+            120
         }
     }
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 40 :
-            screenWidth <= 834 ? 44 :
-            screenWidth <= 1024 ? 48 :
-            52
+            return screenWidth <= 768 ? 50 :
+            screenWidth <= 834 ? 54 :
+            screenWidth <= 1024 ? 58 :
+            62
         } else {
-            return screenWidth <= 320 ? 28 :
-            screenWidth <= 375 ? 32 :
-            screenWidth <= 393 ? 36 :
-            38
+            return screenWidth <= 320 ? 38 :
+            screenWidth <= 375 ? 42 :
+            screenWidth <= 393 ? 46 :
+            48
         }
     }
 }
@@ -121,10 +121,10 @@ struct UniformButtonWithIcon: View {
             height: uniformButtonHeight
         )
         .background(Color(.systemBackground).opacity(0.98))
-        .cornerRadius(8)
+        .cornerRadius(12)
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.primary.opacity(0.2), lineWidth: 1)
         )
     }
     
@@ -132,43 +132,43 @@ struct UniformButtonWithIcon: View {
     
     private var buttonFontSize: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 14 :
-            screenWidth <= 834 ? 16 :
-            screenWidth <= 1024 ? 18 :
-            20
+            return screenWidth <= 768 ? 16 :
+            screenWidth <= 834 ? 18 :
+            screenWidth <= 1024 ? 20 :
+            22
         } else {
-            return screenWidth <= 320 ? 10 :
-            screenWidth <= 375 ? 11 :
-            screenWidth <= 393 ? 12 :
-            13
+            return screenWidth <= 320 ? 12 :
+            screenWidth <= 375 ? 13 :
+            screenWidth <= 393 ? 14 :
+            15
         }
     }
     
     private var uniformButtonWidth: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 110 :
-            screenWidth <= 834 ? 120 :
-            screenWidth <= 1024 ? 130 :
-            140
+            return screenWidth <= 768 ? 130 :
+            screenWidth <= 834 ? 140 :
+            screenWidth <= 1024 ? 150 :
+            160
         } else {
-            return screenWidth <= 320 ? 75 :
-            screenWidth <= 375 ? 85 :
-            screenWidth <= 393 ? 95 :
-            105
+            return screenWidth <= 320 ? 90 :
+            screenWidth <= 375 ? 100 :
+            screenWidth <= 393 ? 110 :
+            120
         }
     }
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 40 :
-            screenWidth <= 834 ? 44 :
-            screenWidth <= 1024 ? 48 :
-            52
+            return screenWidth <= 768 ? 50 :
+            screenWidth <= 834 ? 54 :
+            screenWidth <= 1024 ? 58 :
+            62
         } else {
-            return screenWidth <= 320 ? 28 :
-            screenWidth <= 375 ? 32 :
-            screenWidth <= 393 ? 36 :
-            38
+            return screenWidth <= 320 ? 38 :
+            screenWidth <= 375 ? 42 :
+            screenWidth <= 393 ? 46 :
+            48
         }
     }
 }
@@ -204,7 +204,7 @@ struct UniformButtonsView: View {
         HStack(spacing: buttonSpacing) {
             // Time signature button
             UniformButton(
-                label: "TIME",
+                label: "TIME  ",
                 value: "\(metronome.beatsPerMeasure)/\(metronome.beatUnit)",
                 action: {
                     showingTimeSignaturePicker = true
@@ -222,7 +222,7 @@ struct UniformButtonsView: View {
             
             // Tap tempo button
             UniformButtonWithIcon(
-                text: "TAP",
+                text: "TAP  ",
                 iconName: "hand.tap",
                 action: {
                     metronome.tapTempo()
@@ -251,15 +251,15 @@ struct UniformButtonsView: View {
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 40 :
-            screenWidth <= 834 ? 44 :
-            screenWidth <= 1024 ? 48 :
-            52
+            return screenWidth <= 768 ? 50 :
+            screenWidth <= 834 ? 54 :
+            screenWidth <= 1024 ? 58 :
+            62
         } else {
-            return screenWidth <= 320 ? 28 :
-            screenWidth <= 375 ? 32 :
-            screenWidth <= 393 ? 36 :
-            38
+            return screenWidth <= 320 ? 38 :
+            screenWidth <= 375 ? 42 :
+            screenWidth <= 393 ? 46 :
+            48
         }
     }
 }
