@@ -682,23 +682,37 @@ class MetronomeEngine: ObservableObject {
             // Ensure audio session is active
             try AVAudioSession.sharedInstance().setActive(true)
 
-            // Reset timing and audio state
+            // Reset timing and audio state for immediate first beat
             currentSamplePosition = 0
-            lastBeatSample = -Int64(samplesPerBeat) // Start one beat before to trigger first beat immediately
-            nextBeatSample = 0 // First beat should trigger at sample 0
-            beatCounter = 0 // Will be incremented to 1 when first beat triggers
-            currentBeat = 0 // Will be updated to 1 when first beat triggers
+            lastBeatSample = 0 // First beat starts at sample 0
+            nextBeatSample = Int64(samplesPerBeat) // Second beat scheduled normally
+            beatCounter = 1 // Starting on beat 1
+            currentBeat = 1 // Display beat 1
             clickPhase = 0.0
             snapPlaybackPosition = 0.0
             isPlayingSnap = false
 
-            // Don't prime the first beat here - let the audio callback handle it
-            // This ensures audio and visual are perfectly synchronized
+            // Initialize snap playback for first beat if needed
+            if selectedSoundType == .snap {
+                snapPlaybackPosition = 0.0
+                isPlayingSnap = true
+            }
+
+            // Update UI for first beat
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.currentBeat = 1
+                self.beatIndicator.toggle()
+                
+                if self.fullScreenFlashOnFirstBeat {
+                    self.triggerFlash()
+                }
+            }
 
             try audioEngine.start()
 
             if debugMode {
-                print("🎵 Metronome started at \(bpm) BPM - first beat will trigger at sample 0")
+                print("🎵 Metronome started at \(bpm) BPM on beat 1")
                 print("🎵 Engine running: \(audioEngine.isRunning)")
                 print("🎵 Output node: \(audioEngine.outputNode)")
             }
