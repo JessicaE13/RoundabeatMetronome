@@ -44,7 +44,7 @@ private enum UserDefaultsKeys {
 class MetronomeEngine: ObservableObject {
     
     // MARK: - Persistent Settings using @AppStorage approach
-    @AppStorage("metronome_accentFirstBeat") var accentFirstBeat: Bool = true {
+    @AppStorage("metronome_accentFirstBeat") var accentFirstBeat: Bool = false {
         didSet { saveSettings() }
     }
     
@@ -57,7 +57,7 @@ class MetronomeEngine: ObservableObject {
     }
     
     // MARK: - New Audio Session Settings
-    @AppStorage("metronome_backgroundAudioEnabled") var backgroundAudioEnabled: Bool = false {
+    @AppStorage("metronome_backgroundAudioEnabled") var backgroundAudioEnabled: Bool = true {
         didSet {
             saveSettings()
             updateAudioSessionConfiguration()
