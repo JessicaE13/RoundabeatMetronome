@@ -33,9 +33,12 @@ private enum UserDefaultsKeys {
     static let emphasizeFirstBeatOnly = "metronome_emphasizeFirstBeatOnly"
     static let fullScreenFlashOnFirstBeat = "metronome_fullScreenFlashOnFirstBeat"
     static let clickVolume = "metronome_clickVolume"
+    static let backgroundAudioEnabled = "metronome_backgroundAudioEnabled"
+    static let pauseOnInterruption = "metronome_pauseOnInterruption"
+    static let pauseOnRouteChange = "metronome_pauseOnRouteChange"
 }
 
-// MARK: - Metronome Engine with Sample-Accurate Timing and Persistent Storage
+// MARK: - Metronome Engine with Enhanced Audio Session Handling
 
 class MetronomeEngine: ObservableObject {
     
@@ -49,6 +52,22 @@ class MetronomeEngine: ObservableObject {
     }
     
     @AppStorage("metronome_fullScreenFlashOnFirstBeat") var fullScreenFlashOnFirstBeat: Bool = false {
+        didSet { saveSettings() }
+    }
+    
+    // MARK: - New Audio Session Settings
+    @AppStorage("metronome_backgroundAudioEnabled") var backgroundAudioEnabled: Bool = false {
+        didSet {
+            saveSettings()
+            updateAudioSessionConfiguration()
+        }
+    }
+    
+    @AppStorage("metronome_pauseOnInterruption") var pauseOnInterruption: Bool = true {
+        didSet { saveSettings() }
+    }
+    
+    @AppStorage("metronome_pauseOnRouteChange") var pauseOnRouteChange: Bool = true {
         didSet { saveSettings() }
     }
     
@@ -108,6 +127,12 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
+    // MARK: - Audio Session State Tracking
+    @Published var audioSessionInterrupted: Bool = false
+    @Published var headphonesConnected: Bool = false
+    private var wasPlayingBeforeInterruption: Bool = false
+    private var wasPlayingBeforeBackground: Bool = false
+    
     // Tap tempo functionality
     private var tapTimes: [Date] = []
     private let maxTapCount = 8
@@ -153,23 +178,344 @@ class MetronomeEngine: ObservableObject {
     private let clickDuration: Double = 0.1
     
     // Snap waveform playback state
-    private var snapPlaybackPosition: Double = 0.0  // Use Double for fractional indexing
+    private var snapPlaybackPosition: Double = 0.0
     private var isPlayingSnap: Bool = false
-    private let snapOriginalSampleRate: Double = 24000.0  // Original waveform sample rate
+    private let snapOriginalSampleRate: Double = 24000.0
     
     // Debug flag
-    private var debugMode = false // Turn off debug by default to reduce console spam
+    private var debugMode = false
     
     init() {
-        loadSettings() // Load saved settings first
+        loadSettings()
         setupAudioSession()
+        setupAudioSessionNotifications()
+        setupAppLifecycleNotifications()
         setupAudioEngine()
         updateTiming()
+        checkHeadphonesConnected()
     }
     
     deinit {
         stopMetronome()
         cleanupPreviewEngine()
+        removeAudioSessionNotifications()
+        removeAppLifecycleNotifications()
+    }
+    
+    // MARK: - Enhanced Audio Session Setup
+    
+    private func setupAudioSession() {
+        let audioSession = AVAudioSession.sharedInstance()
+        
+        do {
+            // Configure category based on background audio setting
+            if backgroundAudioEnabled {
+                try audioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            } else {
+                try audioSession.setCategory(.playback, mode: .default, options: [])
+            }
+            
+            try audioSession.setPreferredIOBufferDuration(0.005)
+            try audioSession.setPreferredSampleRate(48000.0)
+            try audioSession.setActive(true)
+            
+            sampleRate = audioSession.sampleRate
+            if debugMode {
+                print("✅ Audio session sample rate: \(sampleRate)")
+                print("✅ Background audio enabled: \(backgroundAudioEnabled)")
+            }
+            
+        } catch {
+            print("❌ Audio session setup failed: \(error)")
+        }
+    }
+    
+    private func updateAudioSessionConfiguration() {
+        let audioSession = AVAudioSession.sharedInstance()
+        
+        do {
+            if backgroundAudioEnabled {
+                try audioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+                try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            } else {
+                // When background audio is disabled, ensure audio stops in background
+                try audioSession.setCategory(.playback, mode: .default, options: [])
+                if UIApplication.shared.applicationState != .active {
+                    try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+                    stopMetronome()
+                } else {
+                    try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+                }
+            }
+            
+            if debugMode {
+                print("✅ Audio session configuration updated - Background: \(backgroundAudioEnabled)")
+            }
+        } catch {
+            print("❌ Failed to update audio session configuration: \(error)")
+        }
+    }
+    
+    // MARK: - App Lifecycle Notifications
+    
+    private func setupAppLifecycleNotifications() {
+        let notificationCenter = NotificationCenter.default
+        
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleAppDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleAppWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+        
+        if debugMode {
+            print("✅ App lifecycle notifications setup complete")
+        }
+    }
+    
+    private func removeAppLifecycleNotifications() {
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+    
+    @objc private func handleAppDidEnterBackground() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if !self.backgroundAudioEnabled {
+                self.wasPlayingBeforeBackground = self.isPlaying
+                self.isPlaying = false
+                do {
+                    try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+                    if self.debugMode {
+                        print("🛑 Audio session deactivated due to backgrounding with background audio disabled")
+                    }
+                } catch {
+                    print("❌ Failed to deactivate audio session on background: \(error)")
+                }
+            }
+            
+            if self.debugMode {
+                print("📴 App entered background, backgroundAudioEnabled: \(self.backgroundAudioEnabled)")
+            }
+        }
+    }
+    
+    @objc private func handleAppWillEnterForeground() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if self.wasPlayingBeforeBackground && !self.backgroundAudioEnabled {
+                do {
+                    try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+                    self.isPlaying = true
+                    if self.debugMode {
+                        print("▶️ Audio session reactivated and playback resumed on foreground")
+                    }
+                } catch {
+                    print("❌ Failed to reactivate audio session on foreground: \(error)")
+                }
+            }
+            
+            if self.debugMode {
+                print("📱 App entering foreground, backgroundAudioEnabled: \(self.backgroundAudioEnabled)")
+            }
+        }
+    }
+    
+    // MARK: - Audio Session Notifications
+    
+    private func setupAudioSessionNotifications() {
+        let notificationCenter = NotificationCenter.default
+        
+        // Interruption handling
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleAudioSessionInterruption(_:)),
+            name: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+        
+        // Route change handling
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleAudioSessionRouteChange(_:)),
+            name: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+        
+        // Media services reset handling
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleMediaServicesReset),
+            name: AVAudioSession.mediaServicesWereResetNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+        
+        if debugMode {
+            print("✅ Audio session notifications setup complete")
+        }
+    }
+    
+    private func removeAudioSessionNotifications() {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func handleAudioSessionInterruption(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            switch type {
+            case .began:
+                if debugMode {
+                    print("🔇 Audio interruption began")
+                }
+                
+                self.audioSessionInterrupted = true
+                
+                if self.isPlaying {
+                    self.wasPlayingBeforeInterruption = true
+                    if self.pauseOnInterruption {
+                        self.isPlaying = false
+                    }
+                }
+                
+            case .ended:
+                if debugMode {
+                    print("🔊 Audio interruption ended")
+                }
+                
+                self.audioSessionInterrupted = false
+                
+                // Check if we should resume
+                if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
+                    let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+                    if options.contains(.shouldResume) && self.wasPlayingBeforeInterruption && !self.pauseOnInterruption {
+                        // Reactivate audio session and resume
+                        do {
+                            try AVAudioSession.sharedInstance().setActive(true)
+                            self.isPlaying = true
+                        } catch {
+                            print("❌ Failed to reactivate audio session: \(error)")
+                        }
+                    }
+                }
+                
+                self.wasPlayingBeforeInterruption = false
+                
+            @unknown default:
+                if debugMode {
+                    print("⚠️ Unknown interruption type")
+                }
+            }
+        }
+    }
+    
+    @objc private func handleAudioSessionRouteChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            switch reason {
+            case .newDeviceAvailable:
+                if debugMode {
+                    print("🎧 New audio device connected")
+                }
+                self.checkHeadphonesConnected()
+                
+            case .oldDeviceUnavailable:
+                if debugMode {
+                    print("🎧 Audio device disconnected")
+                }
+                self.checkHeadphonesConnected()
+                
+                // Pause if configured to do so and headphones were disconnected
+                if let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
+                    let wasUsingHeadphones = previousRoute.outputs.contains { output in
+                        [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE].contains(output.portType)
+                    }
+                    
+                    if wasUsingHeadphones && self.pauseOnRouteChange && self.isPlaying {
+                        self.isPlaying = false
+                        if debugMode {
+                            print("⏸️ Paused due to headphone disconnection")
+                        }
+                    }
+                }
+                
+            case .categoryChange, .override, .wakeFromSleep, .noSuitableRouteForCategory, .routeConfigurationChange:
+                if debugMode {
+                    print("🔄 Audio route changed: \(reason)")
+                }
+                self.checkHeadphonesConnected()
+                
+            case .unknown:
+                if debugMode {
+                    print("⚠️ Route change reason: .unknown")
+                }
+                
+            @unknown default:
+                if debugMode {
+                    print("⚠️ Unknown route change reason: \(reason)")
+                }
+            }
+        }
+    }
+    
+    @objc private func handleMediaServicesReset() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if debugMode {
+                print("🔄 Media services reset - reinitializing audio")
+            }
+            
+            // Stop current playback
+            let wasPlaying = self.isPlaying
+            self.isPlaying = false
+            
+            // Reinitialize audio session and engine
+            self.setupAudioSession()
+            self.setupAudioEngine()
+            
+            // Resume if was playing
+            if wasPlaying && !self.pauseOnInterruption {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.isPlaying = true
+                }
+            }
+        }
+    }
+    
+    private func checkHeadphonesConnected() {
+        let currentRoute = AVAudioSession.sharedInstance().currentRoute
+        let wasConnected = headphonesConnected
+        
+        headphonesConnected = currentRoute.outputs.contains { output in
+            [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE].contains(output.portType)
+        }
+        
+        if debugMode && wasConnected != headphonesConnected {
+            print("🎧 Headphones connected status changed: \(headphonesConnected)")
+        }
     }
     
     // MARK: - Persistent Storage Methods
@@ -212,9 +558,6 @@ class MetronomeEngine: ObservableObject {
             clickVolume = defaults.double(forKey: UserDefaultsKeys.clickVolume)
         }
         
-        // Note: @AppStorage properties (accentFirstBeat, emphasizeFirstBeatOnly, fullScreenFlashOnFirstBeat)
-        // are automatically loaded from UserDefaults, so we don't need to manually load them here
-        
         if debugMode {
             print("✅ Settings loaded from UserDefaults")
             print("   BPM: \(bpm)")
@@ -225,6 +568,9 @@ class MetronomeEngine: ObservableObject {
             print("   Emphasize First Beat Only: \(emphasizeFirstBeatOnly)")
             print("   Full Screen Flash: \(fullScreenFlashOnFirstBeat)")
             print("   Volume: \(clickVolume)")
+            print("   Background Audio: \(backgroundAudioEnabled)")
+            print("   Pause on Interruption: \(pauseOnInterruption)")
+            print("   Pause on Route Change: \(pauseOnRouteChange)")
         }
     }
     
@@ -237,9 +583,6 @@ class MetronomeEngine: ObservableObject {
         defaults.set(selectedSoundType.rawValue, forKey: UserDefaultsKeys.selectedSoundType)
         defaults.set(Double(subdivision), forKey: UserDefaultsKeys.subdivisionMultiplier)
         defaults.set(clickVolume, forKey: UserDefaultsKeys.clickVolume)
-        
-        // Note: @AppStorage properties are automatically saved to UserDefaults,
-        // so we don't need to manually save them here
         
         if debugMode {
             print("💾 Settings saved to UserDefaults")
@@ -268,25 +611,6 @@ class MetronomeEngine: ObservableObject {
         selectedSoundType = soundType
         if debugMode {
             print("🔊 Sound updated to: \(soundType.rawValue)")
-        }
-    }
-    
-    private func setupAudioSession() {
-        let audioSession = AVAudioSession.sharedInstance()
-        
-        do {
-            try audioSession.setCategory(.playback, mode: .default, options: [])
-            try audioSession.setPreferredIOBufferDuration(0.005)
-            try audioSession.setPreferredSampleRate(48000.0)
-            try audioSession.setActive(true)
-            
-            sampleRate = audioSession.sampleRate
-            if debugMode {
-                print("✅ Audio session sample rate: \(sampleRate)")
-            }
-            
-        } catch {
-            print("❌ Audio session setup failed: \(error)")
         }
     }
     
@@ -337,25 +661,46 @@ class MetronomeEngine: ObservableObject {
             }
             return
         }
-        
+
         do {
+            // Ensure audio session is active
+            try AVAudioSession.sharedInstance().setActive(true)
+
+            // Reset timing and audio state
             currentSamplePosition = 0
-            nextBeatSample = 0
             lastBeatSample = 0
-            beatCounter = 0
+            nextBeatSample = Int64(samplesPerBeat) // Schedule beat 2
+            beatCounter = 1 // Already priming beat 1
             currentBeat = 1
             clickPhase = 0.0
             snapPlaybackPosition = 0.0
             isPlayingSnap = false
-            
+
+            // Prime first beat audio
+            if selectedSoundType == .snap {
+                snapPlaybackPosition = 0.0
+                isPlayingSnap = true
+            }
+
+            // Prime first beat visuals
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.currentBeat = 1
+                self.beatIndicator.toggle()
+
+                if self.fullScreenFlashOnFirstBeat {
+                    self.triggerFlash()
+                }
+            }
+
             try audioEngine.start()
-            
+
             if debugMode {
                 print("🎵 Metronome started at \(bpm) BPM on beat 1")
                 print("🎵 Engine running: \(audioEngine.isRunning)")
                 print("🎵 Output node: \(audioEngine.outputNode)")
             }
-            
+
         } catch {
             print("❌ Failed to start audio engine: \(error)")
             DispatchQueue.main.async { [weak self] in
@@ -651,8 +996,6 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // Replace the playSoundPreviewAdvanced method in MetronomeEngine.swift with this improved version
-
     func playSoundPreviewAdvanced(_ soundType: SyntheticSound? = nil) {
         let previewSoundType = soundType ?? selectedSoundType
         
@@ -853,5 +1196,37 @@ class MetronomeEngine: ObservableObject {
         previewEngine?.stop()
         previewPlayerNode = nil
         previewEngine = nil
+    }
+    
+    // MARK: - Public Audio Session Status Methods
+    
+    /// Returns true if headphones or bluetooth audio devices are connected
+    var isUsingExternalAudio: Bool {
+        return headphonesConnected
+    }
+    
+    /// Returns true if audio session is currently interrupted
+    var isAudioInterrupted: Bool {
+        return audioSessionInterrupted
+    }
+    
+    /// Manually resume playback after interruption (useful for UI controls)
+    func resumeAfterInterruption() {
+        guard audioSessionInterrupted == false else {
+            if debugMode {
+                print("⚠️ Cannot resume - audio session still interrupted")
+            }
+            return
+        }
+        
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+            isPlaying = true
+            if debugMode {
+                print("▶️ Manually resumed after interruption")
+            }
+        } catch {
+            print("❌ appraisers to resume after interruption: \(error)")
+        }
     }
 }
