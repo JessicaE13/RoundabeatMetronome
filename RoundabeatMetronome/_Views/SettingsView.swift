@@ -110,6 +110,21 @@ struct SettingsView: View {
                         Toggle("", isOn: $metronome.fullScreenFlashOnFirstBeat)
                     }
                     .padding(.vertical, 4)
+                    
+                    // Keep Screen Awake Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Keep Screen Awake")
+                                .font(.body)
+                            Text("Prevent screen from dimming while playing")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
+                        }
+                        Spacer()
+                        Toggle("", isOn: $metronome.keepScreenAwake)
+                    }
+                    .padding(.vertical, 4)
                 }
                 
                 // Legal & Support Section
@@ -212,6 +227,19 @@ struct AudioStatusInfoView: View {
                         .font(.caption)
                     
                     Text(metronome.backgroundAudioEnabled ? "Background Audio Enabled" : "Foreground Only")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                }
+                
+                // Screen Awake Status
+                HStack {
+                    Image(systemName: metronome.keepScreenAwake ? "sun.max" : "moon")
+                        .foregroundColor(metronome.keepScreenAwake ? .yellow : .secondary)
+                        .font(.caption)
+                    
+                    Text(metronome.keepScreenAwake ? "Screen Stays Awake While Playing" : "Normal Sleep Behavior")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     

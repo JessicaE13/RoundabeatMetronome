@@ -36,6 +36,7 @@ private enum UserDefaultsKeys {
     static let backgroundAudioEnabled = "metronome_backgroundAudioEnabled"
     static let pauseOnInterruption = "metronome_pauseOnInterruption"
     static let pauseOnRouteChange = "metronome_pauseOnRouteChange"
+    static let keepScreenAwake = "metronome_keepScreenAwake"
 }
 
 // MARK: - Metronome Engine with Enhanced Audio Session Handling
@@ -71,6 +72,13 @@ class MetronomeEngine: ObservableObject {
         didSet { saveSettings() }
     }
     
+    @AppStorage("metronome_keepScreenAwake") var keepScreenAwake: Bool = true {
+        didSet {
+            saveSettings()
+            updateScreenIdleTimer()
+        }
+    }
+    
     @Published var isFlashing: Bool = false
     
     @Published var bpm: Int = 120 {
@@ -87,6 +95,7 @@ class MetronomeEngine: ObservableObject {
             } else {
                 stopMetronome()
             }
+            updateScreenIdleTimer()
         }
     }
     
@@ -193,6 +202,7 @@ class MetronomeEngine: ObservableObject {
         setupAudioEngine()
         updateTiming()
         checkHeadphonesConnected()
+        updateScreenIdleTimer()
     }
     
     deinit {
@@ -200,6 +210,7 @@ class MetronomeEngine: ObservableObject {
         cleanupPreviewEngine()
         removeAudioSessionNotifications()
         removeAppLifecycleNotifications()
+        UIApplication.shared.isIdleTimerDisabled = false
     }
     
     // MARK: - Enhanced Audio Session Setup
@@ -302,6 +313,8 @@ class MetronomeEngine: ObservableObject {
                 }
             }
             
+            UIApplication.shared.isIdleTimerDisabled = false
+            
             if self.debugMode {
                 print("📴 App entered background, backgroundAudioEnabled: \(self.backgroundAudioEnabled)")
             }
@@ -323,6 +336,8 @@ class MetronomeEngine: ObservableObject {
                     print("❌ Failed to reactivate audio session on foreground: \(error)")
                 }
             }
+            
+            self.updateScreenIdleTimer()
             
             if self.debugMode {
                 print("📱 App entering foreground, backgroundAudioEnabled: \(self.backgroundAudioEnabled)")
@@ -571,6 +586,7 @@ class MetronomeEngine: ObservableObject {
             print("   Background Audio: \(backgroundAudioEnabled)")
             print("   Pause on Interruption: \(pauseOnInterruption)")
             print("   Pause on Route Change: \(pauseOnRouteChange)")
+            print("   Keep Screen Awake: \(keepScreenAwake)")
         }
     }
     
@@ -858,6 +874,19 @@ class MetronomeEngine: ObservableObject {
             self?.isFlashing = false
         }
     }
+    
+    private func updateScreenIdleTimer() {
+        DispatchQueue.main.async {
+            // Keep screen awake when playing AND the setting is enabled
+            UIApplication.shared.isIdleTimerDisabled = self.isPlaying && self.keepScreenAwake
+            
+            if self.debugMode {
+                let status = UIApplication.shared.isIdleTimerDisabled ? "DISABLED" : "ENABLED"
+                print("📱 Screen idle timer: \(status) (playing: \(self.isPlaying), keepAwake: \(self.keepScreenAwake))")
+            }
+        }
+    }
+
     
     // MARK: - Sound Generation Helpers
     
