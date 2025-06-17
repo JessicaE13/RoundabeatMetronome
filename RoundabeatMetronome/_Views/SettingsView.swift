@@ -26,58 +26,7 @@ struct SettingsView: View {
                     .padding(.vertical, 4)
                 }
                 
-                // Audio Session Settings Section
-                Section("Audio Behavior") {
-                    // Background Audio Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Background Audio")
-                                .font(.body)
-                            Text("Continue playing when app is in background")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.backgroundAudioEnabled)
-                    }
-                    .padding(.vertical, 4)
-                    
-                    // Pause on Interruption Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Pause on Interruption")
-                                .font(.body)
-                            Text("Stop when phone calls or other apps interrupt")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.pauseOnInterruption)
-                    }
-                    .padding(.vertical, 4)
-                    
-                    // Pause on Route Change Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Pause when Headphones Disconnect")
-                                .font(.body)
-                            Text("Stop when headphones or bluetooth audio disconnects")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.pauseOnRouteChange)
-                    }
-                    .padding(.vertical, 4)
-                    
-                    // Audio Status Information (Read-only)
-                    AudioStatusInfoView(metronome: metronome)
-                }
-                
-                // Visual Settings Section
+                // Visual Settings Section - Moved up
                 Section("Visual Options") {
                     
                     // Emphasize First Beat Only Toggle
@@ -111,12 +60,47 @@ struct SettingsView: View {
                     }
                     .padding(.vertical, 4)
                     
+
+                }
+                
+                // Audio Session Settings Section - Title changed and headphones disconnect section removed
+                Section("App Settings") {
+                    // Background Audio Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Background Audio")
+                                .font(.body)
+                            Text("Continue playing when app is in background")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: true, vertical: false)
+                        }
+                        Spacer()
+                        Toggle("", isOn: $metronome.backgroundAudioEnabled)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    // Pause on Interruption Toggle
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Pause on Interruption")
+                                .font(.body)
+                            Text("Stop when phone calls or other apps interrupt")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: true, vertical: false)
+                        }
+                        Spacer()
+                        Toggle("", isOn: $metronome.pauseOnInterruption)
+                    }
+                    .padding(.vertical, 4)
+                    
                     // Keep Screen Awake Toggle
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Keep Screen Awake")
+                            Text("Stay Awake")
                                 .font(.body)
-                            Text("Prevent screen from dimming while playing")
+                            Text("Prevent phone from sleeping while playing")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
@@ -125,14 +109,17 @@ struct SettingsView: View {
                         Toggle("", isOn: $metronome.keepScreenAwake)
                     }
                     .padding(.vertical, 4)
+                    
+                    // Audio Status Information (Read-only)
+                  //  AudioStatusInfoView(metronome: metronome)
                 }
                 
                 // Legal & Support Section
-                Section("About") {
+                Section("SUPPORT") {
                     Link(destination: URL(string: "mailto:hello@roundabeat.com")!) {
                         SettingsLinkRow(
-                            title: "Email",
-                            subtitle: "Get help with the app",
+                            title: "Feedback",
+                            subtitle: "Suggest features & ask questions",
                             iconName: "envelope"
                         )
                     }

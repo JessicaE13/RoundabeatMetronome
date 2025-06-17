@@ -1,37 +1,33 @@
-//  BackgroundView.swift
-
 import SwiftUI
 
 struct BackgroundView: View {
     @Environment(\.colorScheme) var colorScheme
-    
+
     var body: some View {
-        
-        
         ZStack {
+            // Base gradient
             LinearGradient(
                 colors: colorScheme == .dark ? [
-                    // Dark mode colors
-                    Color(red: 24/255, green: 24/255, blue: 25/255),
-                    Color(red: 20/255, green: 20/255, blue: 21/255)
+                    Color(red: 28/255, green: 28/255, blue: 29/255),
+                    Color(red: 22/255, green: 22/255, blue: 23/255)
                 ] : [
-                    // Light mode colors
-                    Color(red: 248/255, green: 248/255, blue: 249/255),
-                    Color(red: 240/255, green: 240/255, blue: 242/255)
+                    Color(red: 245/255, green: 245/255, blue: 246/255),
+                    Color(red: 235/255, green: 235/255, blue: 237/255)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-            
-            
+
+            // Matte soft-light haze
+            Color.black
+                .opacity(colorScheme == .dark ? 0.06 : 0.03)
+                .blendMode(.softLight)
+                .ignoresSafeArea()
+
         }
-        
     }
-    
 }
-
-
 
 #Preview {
     BackgroundView()
