@@ -110,9 +110,9 @@ struct SettingsView: View {
                     }
                     .padding(.vertical, 4)
                     
-                    // Audio Status Information (Read-only)
-                  //  AudioStatusInfoView(metronome: metronome)
+                
                 }
+   
                 
                 // Legal & Support Section
                 Section("SUPPORT") {
@@ -140,13 +140,37 @@ struct SettingsView: View {
                         )
                     }
                 }
+                
+                // App Info Section
+                Section("App Info") {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("App Version")
+                                .font(.body)
+                            Text("Roundabeat \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        
+                    }
+                    .padding(.vertical, 4)
+                    // Audio Status Information (Read-only)
+                    AudioStatusInfoView(metronome: metronome)
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
+
+
         }
         .navigationViewStyle(StackNavigationViewStyle()) // Prevents split view on iPad
+
+
     }
+    
 }
+
 
 // MARK: - Audio Status Information View
 struct AudioStatusInfoView: View {
