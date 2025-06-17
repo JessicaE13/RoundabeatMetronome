@@ -18,7 +18,7 @@ struct SubdivisionPickerView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Binding var isShowingPicker: Bool
     
-    // Available subdivision options
+    // Available subdivision options - removed dotted eighth note
     static let subdivisionOptions: [SubdivisionOption] = [
         SubdivisionOption(
             name: "Quarter Note",
@@ -43,14 +43,7 @@ struct SubdivisionPickerView: View {
             symbol: "♬",
             multiplier: 4.0,
             description: "Four clicks per beat"
-        ),
-        SubdivisionOption(
-            name: "Dotted Eighth",
-            symbol: "♪.",
-            multiplier: 1.5,
-            description: "One and a half clicks per beat"
-        ),
-
+        )
     ]
     
     var body: some View {
@@ -75,7 +68,7 @@ struct SubdivisionPickerView: View {
             }
             .padding(30)
         }
-        .frame(width: 340, height: 520) // Fixed size instead of maxWidth/maxHeight
+        .frame(width: 340, height: 480) // Reduced height since we have fewer options
         .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
     }
     
