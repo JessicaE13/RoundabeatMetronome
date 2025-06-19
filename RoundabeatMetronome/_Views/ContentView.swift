@@ -5,7 +5,6 @@ import AVFoundation
 enum NavigationTab: String, CaseIterable {
     case sounds = "Sounds"
     case metronome = "Metronome"
-    case setlists = "Setlists"
     case settings = "Settings"
     
     var iconName: String {
@@ -14,8 +13,6 @@ enum NavigationTab: String, CaseIterable {
             return "speaker.wave.3"
         case .metronome:
             return "metronome"
-        case .setlists:
-            return "music.note.list"
         case .settings:
             return "gear"
         }
@@ -112,8 +109,6 @@ struct ContentView: View {
                             SoundsView(metronome: metronome)
                         case .metronome:
                             MetronomeView(metronome: metronome)
-                        case .setlists:
-                            SetlistsListView(metronome: metronome)
                         case .settings:
                             SettingsView(metronome: metronome)
                         }
