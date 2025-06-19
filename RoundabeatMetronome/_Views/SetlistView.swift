@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - Create Setlist View
-struct CreateSetlistView: View {
+struct SetlistView: View {
     @ObservedObject var setlistManager: SetlistManager
     @Environment(\.presentationMode) var presentationMode
     
@@ -407,5 +407,5 @@ struct CreateSetlistView: View {
 }
 
 #Preview {
-    CreateSetlistView(setlistManager: SetlistManager())
+    SetlistView(setlistManager: SetlistManager())
 }

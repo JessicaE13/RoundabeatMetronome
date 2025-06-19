@@ -67,7 +67,7 @@ struct SetlistDetailView: View {
         }
         .environment(\.editMode, $editMode)
         .sheet(isPresented: $showingAddSong) {
-            AddSongView(setlist: setlist, setlistManager: setlistManager, metronome: metronome)
+            EditSongView(setlist: setlist, setlistManager: setlistManager, metronome: metronome)
         }
         .sheet(isPresented: $showingEditSetlist) {
             EditSetlistView(setlist: setlist, setlistManager: setlistManager)
