@@ -35,29 +35,29 @@ struct SetlistDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
-                    Button(action: { showingAddSong = true }) {
-                        Label("Add Song", systemImage: "plus")
+                    Button("Add Song") {
+                        showingAddSong = true
                     }
                     
-                    Button(action: { editMode = editMode == .active ? .inactive : .active }) {
-                        Label(editMode == .active ? "Done" : "Edit Songs", systemImage: "pencil")
+                    Button(editMode == .active ? "Done" : "Edit Songs") {
+                        editMode = editMode == .active ? .inactive : .active
                     }
                     
                     Divider()
                     
-                    Button(action: { setlistManager.setCurrentSetlist(setlist) }) {
-                        Label("Set as Current", systemImage: "music.note.list")
+                    Button("Set as Current") {
+                        setlistManager.setCurrentSetlist(setlist)
                     }
                     .disabled(setlistManager.currentSetlist?.id == setlist.id)
                     
-                    Button(action: { setlistManager.duplicateSetlist(setlist) }) {
-                        Label("Duplicate", systemImage: "doc.on.doc")
+                    Button("Duplicate") {
+                        let _ = setlistManager.duplicateSetlist(setlist)
                     }
                     
                     Divider()
                     
-                    Button(action: { showingDeleteAlert = true }, role: .destructive) {
-                        Label("Delete Setlist", systemImage: "trash")
+                    Button("Delete Setlist", role: .destructive) {
+                        showingDeleteAlert = true
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -67,10 +67,19 @@ struct SetlistDetailView: View {
         }
         .environment(\.editMode, $editMode)
         .sheet(isPresented: $showingAddSong) {
-            EditSongView(setlist: setlist, setlistManager: setlistManager, metronome: metronome)
+            NavigationView {
+                EditSongView(
+                    song: Song(), // Create empty song for adding new
+                    setlist: setlist,
+                    setlistManager: setlistManager,
+                    metronome: metronome
+                )
+            }
         }
         .sheet(isPresented: $showingEditSetlist) {
-            EditSetlistView(setlist: setlist, setlistManager: setlistManager)
+            NavigationView {
+                EditSetlistView(setlist: setlist, setlistManager: setlistManager)
+            }
         }
         .alert("Delete Setlist", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
@@ -194,7 +203,9 @@ struct SetlistDetailView: View {
                 Spacer()
                 
                 if !setlist.songs.isEmpty {
-                    Button(action: { setlistManager.setCurrentSetlist(setlist) }) {
+                    Button {
+                        setlistManager.setCurrentSetlist(setlist)
+                    } label: {
                         HStack(spacing: 6) {
                             Image(systemName: setlistManager.currentSetlist?.id == setlist.id ? "checkmark" : "play.fill")
                                 .font(.system(size: actionButtonIconSize, weight: .medium))
@@ -293,12 +304,12 @@ struct SetlistDetailView: View {
                 }
                 
                 // Load button
-                Button(action: {
+                Button {
                     setlistManager.applySongToMetronome(song, metronome: metronome)
                     if #available(iOS 10.0, *) {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     }
-                }) {
+                } label: {
                     Image(systemName: "arrow.down.circle")
                         .font(.system(size: loadButtonSize, weight: .medium))
                         .foregroundColor(.accentColor)
@@ -640,6 +651,120 @@ struct SetlistDetailView: View {
                    screenWidth <= 393 ? 20 :
                    22
         }
+    }
+}
+
+// MARK: - Edit Setlist View (Missing implementation)
+struct EditSetlistView: View {
+    let setlist: Setlist
+    @ObservedObject var setlistManager: SetlistManager
+    @Environment(\.presentationMode) var presentationMode
+    
+    @State private var editedName: String
+    @State private var editedDescription: String
+    @State private var showingDeleteAlert = false
+    @State private var showingDiscardAlert = false
+    @State private var hasUnsavedChanges = false
+    
+    init(setlist: Setlist, setlistManager: SetlistManager) {
+        self.setlist = setlist
+        self.setlistManager = setlistManager
+        self._editedName = State(initialValue: setlist.name)
+        self._editedDescription = State(initialValue: setlist.description)
+    }
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section("Setlist Details") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Name")
+                            .font(.headline)
+                        
+                        TextField("Setlist name", text: $editedName)
+                            .onChange(of: editedName) { _, _ in
+                                checkForChanges()
+                            }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Description")
+                            .font(.headline)
+                        
+                        TextField("Optional description", text: $editedDescription, axis: .vertical)
+                            .lineLimit(3...6)
+                            .onChange(of: editedDescription) { _, _ in
+                                checkForChanges()
+                            }
+                    }
+                }
+                
+                Section("Actions") {
+                    Button("Delete Setlist", role: .destructive) {
+                        showingDeleteAlert = true
+                    }
+                }
+            }
+            .navigationTitle("Edit Setlist")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(hasUnsavedChanges)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if hasUnsavedChanges {
+                        Button("Cancel") {
+                            showingDiscardAlert = true
+                        }
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        saveSetlist()
+                    }
+                    .disabled(!canSave)
+                }
+            }
+            .alert("Delete Setlist", isPresented: $showingDeleteAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
+                    setlistManager.deleteSetlist(setlist)
+                    presentationMode.wrappedValue.dismiss()
+                }
+            } message: {
+                Text("Are you sure you want to delete \"\(setlist.name)\"? This action cannot be undone.")
+            }
+            .alert("Discard Changes", isPresented: $showingDiscardAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Discard", role: .destructive) {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            } message: {
+                Text("You have unsaved changes. Are you sure you want to discard them?")
+            }
+            .onAppear {
+                checkForChanges()
+            }
+        }
+    }
+    
+    private var canSave: Bool {
+        !editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && hasUnsavedChanges
+    }
+    
+    private func checkForChanges() {
+        hasUnsavedChanges = editedName != setlist.name || editedDescription != setlist.description
+    }
+    
+    private func saveSetlist() {
+        guard canSave else { return }
+        
+        var updatedSetlist = setlist
+        updatedSetlist.name = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
+        updatedSetlist.description = editedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+        updatedSetlist.updateLastModified()
+        
+        setlistManager.updateSetlist(updatedSetlist)
+        presentationMode.wrappedValue.dismiss()
     }
 }
 
