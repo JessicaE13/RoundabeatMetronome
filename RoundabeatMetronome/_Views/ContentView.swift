@@ -113,7 +113,7 @@ struct ContentView: View {
                         case .metronome:
                             MetronomeView(metronome: metronome)
                         case .setlists:
-                            SetlistView(metronome: metronome)
+                            SetlistsListView(metronome: metronome)
                         case .settings:
                             SettingsView(metronome: metronome)
                         }
@@ -135,8 +135,6 @@ struct ContentView: View {
         .ignoresSafeArea(.container, edges: .bottom)
     }
 }
-
-
 
 // MARK: - SwiftUI Preview
 #Preview {
