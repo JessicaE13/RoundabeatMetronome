@@ -187,10 +187,7 @@ struct SongsView: View {
         }
     }
 }
-    
-    
-    
-    
+
 #Preview {
-    SongsView(metronome: metronome)
+    SongsView(metronome: MetronomeEngine())
 }
