@@ -1,9 +1,8 @@
 import Foundation
 import SwiftUI
 
-// MARK: - Song Model
 struct Song: Identifiable, Codable, Equatable {
-    let id = UUID()
+    let id: UUID
     var title: String
     var artist: String
     var bpm: Int
@@ -16,6 +15,7 @@ struct Song: Identifiable, Codable, Equatable {
     var lastModified: Date = Date()
     
     init(title: String = "", artist: String = "", bpm: Int = 120, timeSignatureNumerator: Int = 4, timeSignatureDenominator: Int = 4, subdivisionMultiplier: Double = 1.0, notes: String = "") {
+        self.id = UUID() // Initialize id here instead of as default value
         self.title = title
         self.artist = artist
         self.bpm = max(40, min(400, bpm))
@@ -52,6 +52,7 @@ struct Song: Identifiable, Codable, Equatable {
         lastModified = try container.decodeIfPresent(Date.self, forKey: .lastModified) ?? Date()
     }
     
+    // Rest of your Song struct methods remain the same...
     mutating func updateLastModified() {
         lastModified = Date()
     }
@@ -86,7 +87,7 @@ struct Song: Identifiable, Codable, Equatable {
 
 // MARK: - Setlist Model
 struct Setlist: Identifiable, Codable, Equatable {
-    let id = UUID()
+    let id: UUID
     var name: String
     var songs: [Song]
     var createdDate: Date
@@ -95,6 +96,7 @@ struct Setlist: Identifiable, Codable, Equatable {
     var color: String // Store color as string for serialization
     
     init(name: String = "", songs: [Song] = [], description: String = "", color: String = "blue") {
+        self.id = UUID() // Initialize id here instead of as default value
         self.name = name
         self.songs = songs
         self.description = description
@@ -122,6 +124,7 @@ struct Setlist: Identifiable, Codable, Equatable {
         color = try container.decodeIfPresent(String.self, forKey: .color) ?? "blue"
     }
     
+    // Rest of your Setlist struct methods remain the same...
     mutating func updateLastModified() {
         lastModified = Date()
     }
@@ -613,11 +616,14 @@ class SetlistManager: ObservableObject {
             }
         }
         
-        guard let mostCommon = timeSignatureCounts.max(by: { $0.value < $1.value }),
-              let components = mostCommon.key.split(separator: "/").map({ Int($0) }),
-              components.count == 2,
-              let numerator = components[0],
-              let denominator = components[1] else {
+        guard let mostCommon = timeSignatureCounts.max(by: { $0.value < $1.value }) else {
+            return nil
+        }
+        
+        let components = mostCommon.key.split(separator: "/")
+        guard components.count == 2,
+              let numerator = Int(components[0]),
+              let denominator = Int(components[1]) else {
             return nil
         }
         
