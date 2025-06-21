@@ -125,9 +125,9 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color(red: 38/255, green: 38/255, blue: 39/255))
-                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
-                            radius: 0.5, x: 0, y: 0)
+                    .fill(Color(red: 58/255, green: 58/255, blue: 59/255))
+                    //.shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
+                      //      radius: 0.5, x: 0, y: 0)
             }
         }
         .frame(width: frameSize, height: frameSize, alignment: .center)
@@ -177,6 +177,10 @@ struct CircularBeatIndicator: View {
                 ZStack {
                     Circle()
                         .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
+                        .frame(width: size * 0.35, height: size * 0.35)
+              
+                    Circle()
+                        .stroke(Color(red: 4/255, green: 4/255, blue: 4/255))
                         .frame(width: size * 0.35, height: size * 0.35)
                     
                     Image(systemName: isPlaying ? "stop.fill" : "play.fill")
@@ -232,9 +236,48 @@ struct TempoDialView: View {
     var body: some View {
         ZStack {
             // Full filled circle (no hole)
+ 
             Circle()
-                .fill(Color.black.opacity(0.95))
+                       .fill(
+                           LinearGradient(
+                               gradient: Gradient(colors: [
+                                   Color(red: 3/255, green: 3/255, blue: 3/255),
+                                   Color(red: 1/255, green: 1/255, blue: 2/255)
+                               ]),
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing
+                           )
+                       )
+                       .frame(width: totalDialDiameter + 10, height: totalDialDiameter + 10)
+                   
+                   Circle()
+                       .fill(
+                           LinearGradient(
+                               gradient: Gradient(colors: [
+                                    Color(red: 4/255, green: 4/255, blue: 5/255),
+                                   Color(red: 2/255, green: 2/255, blue: 3/255)
+                               ]),
+                               startPoint: .topLeading,
+                               endPoint: .bottomTrailing
+                           )
+                       )
+                       .frame(width: totalDialDiameter, height: totalDialDiameter)
+            
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 20/255, green: 20/255, blue: 20/255).opacity(0.5),
+                            Color(red: 18/255, green: 18/255, blue: 18/255).opacity(0.5)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 8
+                )
                 .frame(width: totalDialDiameter, height: totalDialDiameter)
+                .blur(radius: 0.5)
+
             
             // Circle indicator - positioned closer to outer edge and made slightly bigger
             Circle()
