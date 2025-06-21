@@ -16,22 +16,11 @@ struct SongsView: View {
     @State private var showingEditSong = false
     @State private var showingFilterSheet = false
     
-    // Get screen dimensions directly
-    private var screenWidth: CGFloat {
-        UIScreen.main.bounds.width
-    }
-    
-    // Check if device is iPad
-    private var isIPad: Bool {
-        UIDevice.current.userInterfaceIdiom == .pad
-    }
-    
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Search and Filter Bar
-                HStack(spacing: 12) {
-                    // Search field
+            Form {
+                // Search and Filter Section
+                Section {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
@@ -40,62 +29,59 @@ struct SongsView: View {
                         TextField("Search songs...", text: $songManager.searchText)
                             .textFieldStyle(.plain)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemGray6))
-                    )
+                    .padding(.vertical, 4)
                     
-                    // Filter button
-                    Button(action: {
-                        showingFilterSheet = true
-                    }) {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                            .font(.system(size: 20))
-                            .foregroundColor(.accentColor)
-                    }
-                    
-                    // Add button
-                    Button(action: {
-                        showingAddSong = true
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.accentColor)
-                    }
-                }
-                .padding(.horizontal, horizontalPadding)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
-                
-                // Songs List
-                if songManager.filteredSongs.isEmpty {
-                    emptySongsView
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(songManager.filteredSongs) { song in
-                                SongRowView(
-                                    song: song,
-                                    onTap: {
-                                        applySongToMetronome(song)
-                                    },
-                                    onEdit: {
-                                        selectedSong = song
-                                        showingEditSong = true
-                                    },
-                                    onDelete: {
-                                        songManager.deleteSong(song)
-                                    },
-                                    onToggleFavorite: {
-                                        songManager.toggleFavorite(song)
-                                    }
-                                )
+                    HStack {
+                        Button(action: {
+                            showingFilterSheet = true
+                        }) {
+                            HStack {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                Text("Filter & Sort")
                             }
+                            .foregroundColor(.accentColor)
                         }
-                        .padding(.horizontal, horizontalPadding)
-                        .padding(.bottom, 100) // Space for navigation bar
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showingAddSong = true
+                        }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                Text("Add Song")
+                            }
+                            .foregroundColor(.accentColor)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                // Songs List Section
+                if songManager.filteredSongs.isEmpty {
+                    Section {
+                        emptySongsView
+                    }
+                } else {
+                    Section("My Songs") {
+                        ForEach(songManager.filteredSongs) { song in
+                            SongFormRowView(
+                                song: song,
+                                onTap: {
+                                    applySongToMetronome(song)
+                                },
+                                onEdit: {
+                                    selectedSong = song
+                                    showingEditSong = true
+                                },
+                                onDelete: {
+                                    songManager.deleteSong(song)
+                                },
+                                onToggleFavorite: {
+                                    songManager.toggleFavorite(song)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -122,42 +108,31 @@ struct SongsView: View {
     }
     
     private var emptySongsView: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            
+        VStack(spacing: 16) {
             Image(systemName: "music.note.list")
-                .font(.system(size: 60))
+                .font(.system(size: 40))
                 .foregroundColor(.secondary)
+                .padding(.top, 20)
             
-            VStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("No Songs Yet")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                
-                Text("Add songs with their BPM to quickly set your metronome tempo")
                     .font(.body)
+                Text("Add songs with their BPM to quickly set your metronome tempo")
+                    .font(.caption)
                     .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             Button(action: {
                 showingAddSong = true
             }) {
-                HStack {
-                    Image(systemName: "plus")
-                    Text("Add Your First Song")
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(Color.accentColor)
-                .cornerRadius(25)
+                Text("Add Your First Song")
+                    .foregroundColor(.accentColor)
             }
-            
-            Spacer()
+            .padding(.bottom, 20)
         }
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
     }
     
     private func applySongToMetronome(_ song: Song) {
@@ -170,20 +145,83 @@ struct SongsView: View {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
     }
+}
+
+// MARK: - Song Form Row View (matching SettingsView aesthetic)
+struct SongFormRowView: View {
+    let song: Song
+    let onTap: () -> Void
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    let onToggleFavorite: () -> Void
     
-    // MARK: - Responsive Properties
-    
-    private var horizontalPadding: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 48 :
-                   screenWidth <= 834 ? 60 :
-                   screenWidth <= 1024 ? 72 :
-                   84
-        } else {
-            return screenWidth <= 320 ? 12 :
-                   screenWidth <= 375 ? 16 :
-                   screenWidth <= 393 ? 20 :
-                   24
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text(song.title)
+                        .font(.body)
+                        .lineLimit(1)
+                    
+                    if song.isFavorite {
+                        Image(systemName: "heart.fill")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                }
+                
+                HStack(spacing: 8) {
+                    Text("\(song.bpm) BPM")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("•")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    if !song.artist.isEmpty {
+                        Text("•")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Text(song.artist)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            // Action buttons
+            HStack(spacing: 8) {
+                Button(action: onToggleFavorite) {
+                    Image(systemName: song.isFavorite ? "heart.fill" : "heart")
+                        .font(.caption)
+                        .foregroundColor(song.isFavorite ? .red : .secondary)
+                }
+                .buttonStyle(.plain)
+                
+                Menu {
+                    Button("Edit", action: onEdit)
+                    Button("Delete", role: .destructive, action: onDelete)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, 4)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap()
         }
     }
 }
