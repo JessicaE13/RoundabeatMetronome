@@ -85,7 +85,7 @@ struct SongsView: View {
                     }
                 }
             }
-            .navigationTitle("Songs")
+            .navigationTitle("Song Library")
             .navigationBarTitleDisplayMode(.large)
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -157,19 +157,33 @@ struct SongFormRowView: View {
     
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text(song.title)
-                        .font(.body)
+            // Heart icon on the left with equal padding
+            Button(action: onToggleFavorite) {
+                Image(systemName: song.isFavorite ? "heart.fill" : "heart")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(song.isFavorite ? .red : .secondary)
+                    .frame(width: 20, height: 20)
+            }
+            .buttonStyle(.plain)
+            
+            Spacer()
+                .frame(width: 22)
+            
+            VStack(alignment: .leading) {
+                // Song title
+                Text(song.title)
+                    .font(.body)
+                    .lineLimit(1)
+                
+                // Artist name first (if available)
+                if !song.artist.isEmpty {
+                    Text(song.artist)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                         .lineLimit(1)
-                    
-                    if song.isFavorite {
-                        Image(systemName: "heart.fill")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
                 }
                 
+                // BPM and time signature
                 HStack(spacing: 8) {
                     Text("\(song.bpm) BPM")
                         .font(.caption)
@@ -182,41 +196,21 @@ struct SongFormRowView: View {
                     Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
-                    if !song.artist.isEmpty {
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Text(song.artist)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
                 }
             }
             
             Spacer()
             
             // Action buttons
-            HStack(spacing: 8) {
-                Button(action: onToggleFavorite) {
-                    Image(systemName: song.isFavorite ? "heart.fill" : "heart")
-                        .font(.caption)
-                        .foregroundColor(song.isFavorite ? .red : .secondary)
-                }
-                .buttonStyle(.plain)
-                
-                Menu {
-                    Button("Edit", action: onEdit)
-                    Button("Delete", role: .destructive, action: onDelete)
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
+            Menu {
+                Button("Edit", action: onEdit)
+                Button("Delete", role: .destructive, action: onDelete)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.body)
+                    .foregroundColor(.secondary)
             }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
