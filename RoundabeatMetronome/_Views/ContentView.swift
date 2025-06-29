@@ -103,7 +103,7 @@ struct ContentView: View {
         GeometryReader { geometry in
             ZStack {
                 BackgroundView()
-                
+          
                 VStack(spacing: 0) {
                     // Main content area - this will now always leave space for the navigation bar
                     Group {

@@ -10,7 +10,7 @@ struct BeatArc: View {
     let emphasizeFirstBeatOnly: Bool
     
     // FIXED: Consistent stroke width calculations
-    private var arcWidth: CGFloat { size * 0.09 }
+    private var arcWidth: CGFloat { size * 0.08 }
     private var activeArcWidth: CGFloat { arcWidth * 1.0 } // Consistent with frame calculation
     
     // The maximum stroke width (for active state) determines the frame size needed
@@ -70,10 +70,10 @@ struct BeatArc: View {
                 .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .stroke(shouldShowNormalActive ?
                         Color(red: 1/255, green: 1/255, blue: 2/255).opacity(0.3) :
-                        Color(red: 1/255, green: 1/255, blue: 2/255),
-                        lineWidth: shouldShowNormalActive ? 1.0 : 2.75)
-                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.2 : 0.75),
-                        radius: 0.5, x: 0, y: 0)
+                            Color.primary.opacity(0.1),
+                        lineWidth: shouldShowNormalActive ? 1.0 : 1.0)
+//                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.2 : 0.75),
+//                        radius: 0.5, x: 0, y: 0)
             
             // Special bright white glowing outline for non-first beats when emphasizeFirstBeatOnly is true
             if shouldShowOutlineGlow {
@@ -125,9 +125,10 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color(red: 24/255, green: 24/255, blue: 25/255))
-                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
-                            radius: 0.5, x: 0, y: 0)
+                    .fill(Color.clear)
+                    .fill(Color(red: 44/255, green: 44/255, blue: 45/255))
+                   // .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
+                     //       radius: 0.5, x: 0, y: 0)
             }
         }
         .frame(width: frameSize, height: frameSize, alignment: .center)
