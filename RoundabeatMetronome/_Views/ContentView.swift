@@ -4,8 +4,7 @@ import AVFoundation
 // MARK: - Navigation State (Updated)
 enum NavigationTab: String, CaseIterable {
     case sounds = "Sounds"
-    case songs = "Songs"
-    case setlists = "Setlists"  // New tab
+    case library = "Library"  // Combined Songs + Setlists
     case metronome = "Metronome"
     case settings = "Settings"
     
@@ -13,10 +12,8 @@ enum NavigationTab: String, CaseIterable {
         switch self {
         case .sounds:
             return "speaker.wave.3"
-        case .songs:
-            return "music.note.list"
-        case .setlists:
-            return "list.bullet.rectangle"  // New icon
+        case .library:
+            return "books.vertical"  // New icon for combined library
         case .metronome:
             return "metronome"
         case .settings:
@@ -101,7 +98,7 @@ struct FlashOverlay: View {
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
     @StateObject private var songManager = SongManager()
-    @StateObject private var setlistManager = SetlistManager()  // New manager
+    @StateObject private var setlistManager = SetlistManager()
     @State private var selectedTab: NavigationTab = .metronome
     
     var body: some View {
@@ -115,17 +112,11 @@ struct ContentView: View {
                         switch selectedTab {
                         case .sounds:
                             SoundsView(metronome: metronome)
-                        case .songs:
-                            SongsView(
+                        case .library:  // Updated case
+                            LibraryView(
                                 metronome: metronome,
                                 songManager: songManager,
-                                setlistManager: setlistManager  // Pass setlist manager
-                            )
-                        case .setlists:  // New case
-                            SetlistsView(
-                                setlistManager: setlistManager,
-                                songManager: songManager,
-                                metronome: metronome
+                                setlistManager: setlistManager
                             )
                         case .metronome:
                             MetronomeView(metronome: metronome, songManager: songManager)
