@@ -1,16 +1,16 @@
 //
-//  SongsView.swift
+//  SongsView.swift (Fixed)
 //  RoundabeatMetronome
-//
-//  Created by Jessica Estes on 6/19/25.
 //
 
 import SwiftUI
 
-// MARK: - Songs View
+// MARK: - Songs View (Fixed)
 struct SongsView: View {
     @ObservedObject var metronome: MetronomeEngine
     @ObservedObject var songManager: SongManager
+    @ObservedObject var setlistManager: SetlistManager
+    
     @State private var showingAddSong = false
     @State private var selectedSong: Song? = nil
     @State private var showingEditSong = false
@@ -80,16 +80,15 @@ struct SongsView: View {
                 } else {
                     Section("My Songs") {
                         ForEach(songManager.filteredSongs) { song in
-                            SongFormRowView(
+                            EnhancedSongFormRowView(
                                 song: song,
                                 isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
+                                setlistManager: setlistManager,
                                 onTap: {
                                     if metronome.isPlaying {
-                                        // If metronome is playing, show confirmation dialog
                                         songToApply = song
                                         showingApplyConfirmation = true
                                     } else {
-                                        // Apply immediately if metronome is not playing
                                         songManager.applySongToMetronome(song, metronome: metronome)
                                     }
                                 },
@@ -176,7 +175,7 @@ struct SongsView: View {
     }
 }
 
-// MARK: - Currently Applied Song View
+// MARK: - Currently Applied Song View (Unchanged)
 struct CurrentlyAppliedSongView: View {
     let song: Song
     @ObservedObject var metronome: MetronomeEngine
@@ -253,19 +252,24 @@ struct CurrentlyAppliedSongView: View {
     }
 }
 
-// MARK: - Enhanced Song Form Row View
-struct SongFormRowView: View {
+// MARK: - Enhanced Song Form Row View (Fixed)
+struct EnhancedSongFormRowView: View {
     let song: Song
     let isCurrentlyApplied: Bool
+    @ObservedObject var setlistManager: SetlistManager
     let onTap: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
     let onToggleFavorite: () -> Void
     
+    @State private var showingSetlistPicker = false
+    
     var body: some View {
         HStack {
-            // Heart icon on the left with equal padding
-            Button(action: onToggleFavorite) {
+            // Heart icon on the left
+            Button {
+                onToggleFavorite()
+            } label: {
                 Image(systemName: song.isFavorite ? "heart.fill" : "heart")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(song.isFavorite ? .red : .secondary)
@@ -277,7 +281,7 @@ struct SongFormRowView: View {
                 .frame(width: 22)
             
             VStack(alignment: .leading) {
-                // Song title with applied indicator
+                // Song title with applied indicator and setlist badge
                 HStack {
                     Text(song.title)
                         .font(.body)
@@ -290,9 +294,15 @@ struct SongFormRowView: View {
                             .font(.system(size: 12))
                             .foregroundColor(.white)
                     }
+                    
+                    // Setlist badge
+                    SongSetlistBadgeView(
+                        song: song,
+                        setlistManager: setlistManager
+                    )
                 }
                 
-                // Artist name first (if available)
+                // Artist name (if available)
                 if !song.artist.isEmpty {
                     Text(song.artist)
                         .font(.caption)
@@ -324,7 +334,9 @@ struct SongFormRowView: View {
             HStack(spacing: 12) {
                 // Apply button (only show if not currently applied)
                 if !isCurrentlyApplied {
-                    Button(action: onTap) {
+                    Button {
+                        onTap()
+                    } label: {
                         Text("Apply")
                             .font(.caption)
                             .fontWeight(.medium)
@@ -343,9 +355,43 @@ struct SongFormRowView: View {
                     .buttonStyle(.plain)
                 }
                 
+                // Enhanced menu with setlist options
                 Menu {
-                    Button("Edit", action: onEdit)
-                    Button("Delete", role: .destructive, action: onDelete)
+                    Button {
+                        showingSetlistPicker = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "music.note.list")
+                            Text("Add to Setlists")
+                        }
+                    }
+                    
+                    Button {
+                        onToggleFavorite()
+                    } label: {
+                        HStack {
+                            Image(systemName: song.isFavorite ? "heart.slash" : "heart")
+                            Text(song.isFavorite ? "Remove from Favorites" : "Add to Favorites")
+                        }
+                    }
+                    
+                    Button {
+                        onEdit()
+                    } label: {
+                        HStack {
+                            Image(systemName: "pencil")
+                            Text("Edit Song")
+                        }
+                    }
+                    
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        HStack {
+                            Image(systemName: "trash")
+                            Text("Delete Song")
+                        }
+                    }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .font(.body)
@@ -363,11 +409,22 @@ struct SongFormRowView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(isCurrentlyApplied ? Color.white.opacity(0.2) : Color.clear, lineWidth: 1)
         )
+        .sheet(isPresented: $showingSetlistPicker) {
+            SongSetlistPickerView(
+                song: song,
+                setlistManager: setlistManager
+            )
+        }
     }
 }
 
 #Preview {
     let metronome = MetronomeEngine()
     let songManager = SongManager()
-    return SongsView(metronome: metronome, songManager: songManager)
+    let setlistManager = SetlistManager()
+    return SongsView(
+        metronome: metronome,
+        songManager: songManager,
+        setlistManager: setlistManager
+    )
 }

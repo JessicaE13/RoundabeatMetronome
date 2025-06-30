@@ -1,10 +1,11 @@
 import SwiftUI
 import AVFoundation
 
-// MARK: - Navigation State
+// MARK: - Navigation State (Updated)
 enum NavigationTab: String, CaseIterable {
     case sounds = "Sounds"
     case songs = "Songs"
+    case setlists = "Setlists"  // New tab
     case metronome = "Metronome"
     case settings = "Settings"
     
@@ -14,6 +15,8 @@ enum NavigationTab: String, CaseIterable {
             return "speaker.wave.3"
         case .songs:
             return "music.note.list"
+        case .setlists:
+            return "list.bullet.rectangle"  // New icon
         case .metronome:
             return "metronome"
         case .settings:
@@ -22,7 +25,7 @@ enum NavigationTab: String, CaseIterable {
     }
 }
 
-// MARK: - Bottom Navigation Bar
+// MARK: - Bottom Navigation Bar (Updated)
 struct BottomNavigationBar: View {
     @Binding var selectedTab: NavigationTab
     
@@ -42,13 +45,13 @@ struct BottomNavigationBar: View {
                 Button(action: {
                     selectedTab = tab
                 }) {
-                    VStack(spacing: isIPad ? 8 : 6) {
+                    VStack(spacing: isIPad ? 6 : 4) {
                         Image(systemName: tab.iconName)
-                            .font(.system(size: isIPad ? 22 : 20, weight: .medium))
+                            .font(.system(size: isIPad ? 20 : 18, weight: .medium))
                             .foregroundColor(selectedTab == tab ? .accentColor : .secondary)
                         
                         Text(tab.rawValue)
-                            .font(.system(size: isIPad ? 12 : 10, weight: .medium))
+                            .font(.system(size: isIPad ? 11 : 9, weight: .medium))
                             .foregroundColor(selectedTab == tab ? .accentColor : .secondary)
                     }
                 }
@@ -56,7 +59,7 @@ struct BottomNavigationBar: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, isIPad ? 20 : 16)
+        .padding(.vertical, isIPad ? 18 : 14)
         .padding(.horizontal, sectionPadding)
         .background(
             Color(.systemBackground)
@@ -81,7 +84,7 @@ struct BottomNavigationBar: View {
     }
 }
 
-// MARK: - Flash Overlay View
+// MARK: - Flash Overlay View (Unchanged)
 struct FlashOverlay: View {
     let isFlashing: Bool
     
@@ -94,10 +97,11 @@ struct FlashOverlay: View {
     }
 }
 
-// MARK: - Main Content View
+// MARK: - Main Content View (Updated)
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
     @StateObject private var songManager = SongManager()
+    @StateObject private var setlistManager = SetlistManager()  // New manager
     @State private var selectedTab: NavigationTab = .metronome
     
     var body: some View {
@@ -112,7 +116,17 @@ struct ContentView: View {
                         case .sounds:
                             SoundsView(metronome: metronome)
                         case .songs:
-                            SongsView(metronome: metronome, songManager: songManager)
+                            SongsView(
+                                metronome: metronome,
+                                songManager: songManager,
+                                setlistManager: setlistManager  // Pass setlist manager
+                            )
+                        case .setlists:  // New case
+                            SetlistsView(
+                                setlistManager: setlistManager,
+                                songManager: songManager,
+                                metronome: metronome
+                            )
                         case .metronome:
                             MetronomeView(metronome: metronome, songManager: songManager)
                         case .settings:
@@ -135,9 +149,12 @@ struct ContentView: View {
         }
         .ignoresSafeArea(.container, edges: .bottom)
         .onAppear {
-            // Initialize sample songs if none exist
+            // Initialize sample data if none exists
             if songManager.songs.isEmpty {
                 songManager.addSampleSongs()
+            }
+            if setlistManager.setlists.isEmpty {
+                setlistManager.createSampleSetlists(with: songManager)
             }
         }
         // Monitor metronome changes and validate selected song
