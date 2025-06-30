@@ -15,6 +15,9 @@ struct SongsView: View {
     @State private var selectedSong: Song? = nil
     @State private var showingEditSong = false
     @State private var showingFilterSheet = false
+    @State private var currentlySelectedSongId: UUID? = nil
+    @State private var showingApplyConfirmation = false
+    @State private var songToApply: Song? = nil
     
     var body: some View {
         NavigationView {
@@ -57,6 +60,19 @@ struct SongsView: View {
                     .padding(.vertical, 4)
                 }
                 
+                // Current Metronome Settings Section
+                if let currentSong = currentlyAppliedSong {
+                    Section("Currently Applied") {
+                        CurrentlyAppliedSongView(
+                            song: currentSong,
+                            metronome: metronome,
+                            onClearSelection: {
+                                currentlySelectedSongId = nil
+                            }
+                        )
+                    }
+                }
+                
                 // Songs List Section
                 if songManager.filteredSongs.isEmpty {
                     Section {
@@ -67,14 +83,26 @@ struct SongsView: View {
                         ForEach(songManager.filteredSongs) { song in
                             SongFormRowView(
                                 song: song,
+                                isCurrentlyApplied: currentlySelectedSongId == song.id,
                                 onTap: {
-                                    applySongToMetronome(song)
+                                    if metronome.isPlaying {
+                                        // If metronome is playing, show confirmation dialog
+                                        songToApply = song
+                                        showingApplyConfirmation = true
+                                    } else {
+                                        // Apply immediately if metronome is not playing
+                                        applySongToMetronome(song)
+                                    }
                                 },
                                 onEdit: {
                                     selectedSong = song
                                     showingEditSong = true
                                 },
                                 onDelete: {
+                                    // If deleting the currently applied song, clear the selection
+                                    if currentlySelectedSongId == song.id {
+                                        currentlySelectedSongId = nil
+                                    }
                                     songManager.deleteSong(song)
                                 },
                                 onToggleFavorite: {
@@ -99,6 +127,28 @@ struct SongsView: View {
         }
         .sheet(isPresented: $showingFilterSheet) {
             FilterSortSheet(songManager: songManager)
+        }
+        .alert("Apply Song Settings?", isPresented: $showingApplyConfirmation) {
+            Button("Cancel", role: .cancel) {
+                songToApply = nil
+            }
+            Button("Stop & Apply") {
+                if let song = songToApply {
+                    metronome.isPlaying = false
+                    applySongToMetronome(song)
+                }
+                songToApply = nil
+            }
+            Button("Apply Without Stopping") {
+                if let song = songToApply {
+                    applySongToMetronome(song)
+                }
+                songToApply = nil
+            }
+        } message: {
+            if let song = songToApply {
+                Text("The metronome is currently playing. Do you want to stop it and apply \"\(song.title)\" settings, or apply the settings while continuing to play?")
+            }
         }
         .onAppear {
             if songManager.songs.isEmpty {
@@ -135,7 +185,18 @@ struct SongsView: View {
         .multilineTextAlignment(.center)
     }
     
+    // Find the currently applied song based on matching BPM and time signature
+    private var currentlyAppliedSong: Song? {
+        if let songId = currentlySelectedSongId {
+            return songManager.songs.first { $0.id == songId }
+        }
+        return nil
+    }
+    
     private func applySongToMetronome(_ song: Song) {
+        // Store the currently selected song ID
+        currentlySelectedSongId = song.id
+        
         // Apply song settings to metronome
         metronome.bpm = song.bpm
         metronome.updateTimeSignature(numerator: song.timeSignature.numerator, denominator: song.timeSignature.denominator)
@@ -144,12 +205,95 @@ struct SongsView: View {
         if #available(iOS 10.0, *) {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
+        
+        // Show brief success feedback
+        withAnimation(.easeInOut(duration: 0.2)) {
+            // Could add a success indicator here if desired
+        }
     }
 }
 
-// MARK: - Song Form Row View (matching SettingsView aesthetic)
+// MARK: - Currently Applied Song View
+struct CurrentlyAppliedSongView: View {
+    let song: Song
+    @ObservedObject var metronome: MetronomeEngine
+    let onClearSelection: () -> Void
+    
+    var body: some View {
+        HStack {
+            // Music note icon
+            Image(systemName: "music.note")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.green)
+                .frame(width: 30, height: 30)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.green.opacity(0.15))
+                )
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(song.title)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                
+                if !song.artist.isEmpty {
+                    Text(song.artist)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+                
+                HStack(spacing: 8) {
+                    Text("\(song.bpm) BPM")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                        .fontWeight(.medium)
+                    
+                    Text("•")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                        .fontWeight(.medium)
+                }
+            }
+            
+            Spacer()
+            
+            // Status indicator
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("APPLIED")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.green)
+                    .kerning(0.5)
+                
+                Button("Clear") {
+                    onClearSelection()
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+        }
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.green.opacity(0.05))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.green.opacity(0.2), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 4)
+    }
+}
+
+// MARK: - Enhanced Song Form Row View
 struct SongFormRowView: View {
     let song: Song
+    let isCurrentlyApplied: Bool
     let onTap: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
@@ -170,16 +314,26 @@ struct SongFormRowView: View {
                 .frame(width: 22)
             
             VStack(alignment: .leading) {
-                // Song title
-                Text(song.title)
-                    .font(.body)
-                    .lineLimit(1)
+                // Song title with applied indicator
+                HStack {
+                    Text(song.title)
+                        .font(.body)
+                        .fontWeight(isCurrentlyApplied ? .semibold : .regular)
+                        .foregroundColor(isCurrentlyApplied ? .green : .primary)
+                        .lineLimit(1)
+                    
+                    if isCurrentlyApplied {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(.green)
+                    }
+                }
                 
                 // Artist name first (if available)
                 if !song.artist.isEmpty {
                     Text(song.artist)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(isCurrentlyApplied ? .green.opacity(0.8) : .secondary)
                         .lineLimit(1)
                 }
                 
@@ -187,7 +341,8 @@ struct SongFormRowView: View {
                 HStack(spacing: 8) {
                     Text("\(song.bpm) BPM")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(isCurrentlyApplied ? .green : .secondary)
+                        .fontWeight(isCurrentlyApplied ? .medium : .regular)
                     
                     Text("•")
                         .font(.caption)
@@ -195,28 +350,56 @@ struct SongFormRowView: View {
                     
                     Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(isCurrentlyApplied ? .green : .secondary)
+                        .fontWeight(isCurrentlyApplied ? .medium : .regular)
                 }
             }
             
             Spacer()
             
             // Action buttons
-            Menu {
-                Button("Edit", action: onEdit)
-                Button("Delete", role: .destructive, action: onDelete)
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.body)
-                    .foregroundColor(.secondary)
+            HStack(spacing: 12) {
+                // Apply button (only show if not currently applied)
+                if !isCurrentlyApplied {
+                    Button(action: onTap) {
+                        Text("Apply")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.accentColor)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.accentColor.opacity(0.1))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                Menu {
+                    Button("Edit", action: onEdit)
+                    Button("Delete", role: .destructive, action: onDelete)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
-        }
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isCurrentlyApplied ? Color.green.opacity(0.05) : Color.clear)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isCurrentlyApplied ? Color.green.opacity(0.2) : Color.clear, lineWidth: 1)
+        )
     }
 }
 
