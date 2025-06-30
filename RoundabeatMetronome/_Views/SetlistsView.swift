@@ -63,31 +63,37 @@ struct SetlistsView: View {
                         emptySetlistsView
                     }
                 } else {
-                    Section("My Setlists") {
-                        ForEach(setlistManager.filteredSetlists) { setlist in
-                            NavigationLink(destination: SetlistDetailView(
-                                setlist: setlist,
-                                setlistManager: setlistManager,
-                                songManager: songManager,
-                                metronome: metronome
-                            )) {
-                                SetlistRowView(
+                    List {
+                        Section("My Setlists") {
+                            ForEach(setlistManager.filteredSetlists) { setlist in
+                                NavigationLink(destination: SetlistDetailView(
                                     setlist: setlist,
-                                    songCount: setlist.songIds.count,
-                                    onEdit: {
-                                        selectedSetlist = setlist
-                                        showingEditSetlist = true
-                                    },
-                                    onDelete: {
-                                        setlistManager.deleteSetlist(setlist)
-                                    },
-                                    onDuplicate: {
-                                        setlistManager.duplicateSetlist(setlist)
-                                    }
-                                )
+                                    setlistManager: setlistManager,
+                                    songManager: songManager,
+                                    metronome: metronome
+                                )) {
+                                    SetlistRowView(
+                                        setlist: setlist,
+                                        songCount: setlist.songIds.count,
+                                        onEdit: {
+                                            selectedSetlist = setlist
+                                            showingEditSetlist = true
+                                        },
+                                        onDelete: {
+                                            setlistManager.deleteSetlist(setlist)
+                                        },
+                                        onDuplicate: {
+                                            setlistManager.duplicateSetlist(setlist)
+                                        }
+                                    )
+                                }
                             }
+                            .onMove(perform: moveSetlist)
                         }
                     }
+                    .environment(\.editMode, .constant(.active)) // Always editable (or manage with a toggle)
+                    // You can remove the surrounding Form for this part
+                    
                 }
             }
             .navigationTitle("Setlists")
@@ -141,6 +147,11 @@ struct SetlistsView: View {
         .multilineTextAlignment(.center)
     }
 }
+
+private func moveSetlist(from source: IndexSet, to destination: Int) {
+    setlistManager.moveSetlist(from: source, to: destination)
+}
+
 
 // MARK: - Setlist Row View
 struct SetlistRowView: View {

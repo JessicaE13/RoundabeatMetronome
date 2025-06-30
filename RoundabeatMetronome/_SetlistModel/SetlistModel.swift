@@ -75,6 +75,12 @@ class SetlistManager: ObservableObject {
         loadSetlists()
     }
     
+    
+    func moveSetlist(from source: IndexSet, to destination: Int) {
+        filteredSetlists.move(fromOffsets: source, toOffset: destination)
+        // And update your underlying storage so the changes persist
+    }
+
     // MARK: - Core CRUD Operations
     
     func createSetlist(_ setlist: Setlist) {

@@ -17,6 +17,7 @@ struct SetlistDetailView: View {
     @State private var showingApplyConfirmation = false
     @State private var songToApply: Song? = nil
     @State private var currentSetlist: Setlist
+    @State private var isEditMode = false // New state for edit mode
     
     init(setlist: Setlist, setlistManager: SetlistManager, songManager: SongManager, metronome: MetronomeEngine) {
         self.setlist = setlist
@@ -95,6 +96,7 @@ struct SetlistDetailView: View {
                             song: song,
                             position: index + 1,
                             isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
+                            isEditMode: isEditMode,
                             onTap: {
                                 if metronome.isPlaying {
                                     songToApply = song
@@ -109,7 +111,8 @@ struct SetlistDetailView: View {
                             }
                         )
                     }
-                    .onMove(perform: moveItems)
+                    .onMove(perform: isEditMode ? moveItems : nil)
+                    .onDelete(perform: isEditMode ? deleteItems : nil)
                 }
             }
         }
@@ -117,9 +120,19 @@ struct SetlistDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                EditButton()
+                HStack {
+                    if !songsInSetlist.isEmpty {
+                        Button(isEditMode ? "Done" : "Edit") {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                isEditMode.toggle()
+                            }
+                        }
+                        .foregroundColor(.accentColor)
+                    }
+                }
             }
         }
+        .environment(\.editMode, .constant(isEditMode ? EditMode.active : EditMode.inactive))
         .sheet(isPresented: $showingAddSongs) {
             AddSongsToSetlistView(
                 setlist: currentSetlist,
@@ -187,11 +200,32 @@ struct SetlistDetailView: View {
     
     private func moveItems(from source: IndexSet, to destination: Int) {
         guard let sourceIndex = source.first else { return }
+        
+        // Add haptic feedback for move operation
+        if #available(iOS 10.0, *) {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+        
         setlistManager.reorderSongsInSetlist(
             setlistId: currentSetlist.id,
             from: sourceIndex,
             to: destination
         )
+        refreshCurrentSetlist()
+    }
+    
+    private func deleteItems(at offsets: IndexSet) {
+        // Add haptic feedback for delete operation
+        if #available(iOS 10.0, *) {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+        
+        for index in offsets {
+            if index < songsInSetlist.count {
+                let song = songsInSetlist[index]
+                setlistManager.removeSongFromSetlist(songId: song.id, setlistId: currentSetlist.id)
+            }
+        }
         refreshCurrentSetlist()
     }
     
@@ -208,21 +242,24 @@ struct SetlistDetailView: View {
     }
 }
 
-// MARK: - Setlist Song Row View
+// MARK: - Setlist Song Row View (Updated)
 struct SetlistSongRowView: View {
     let song: Song
     let position: Int
     let isCurrentlyApplied: Bool
+    let isEditMode: Bool // New parameter
     let onTap: () -> Void
     let onRemove: () -> Void
     
     var body: some View {
         HStack(spacing: 16) {
-            // Position number
-            Text("\(position)")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(.secondary)
-                .frame(width: 24, alignment: .trailing)
+            // Position number (hidden in edit mode since drag handle replaces it)
+            if !isEditMode {
+                Text("\(position)")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .frame(width: 24, alignment: .trailing)
+            }
             
             // Song info
             VStack(alignment: .leading, spacing: 2) {
@@ -266,8 +303,8 @@ struct SetlistSongRowView: View {
             
             Spacer()
             
-            // Apply button (only show if not currently applied)
-            if !isCurrentlyApplied {
+            // Apply button (only show if not currently applied and not in edit mode)
+            if !isCurrentlyApplied && !isEditMode {
                 Button(action: onTap) {
                     Text("Apply")
                         .font(.caption)
@@ -287,13 +324,15 @@ struct SetlistSongRowView: View {
                 .buttonStyle(.plain)
             }
             
-            // Remove button
-            Button(action: onRemove) {
-                Image(systemName: "minus.circle.fill")
-                    .font(.system(size: 18))
-                    .foregroundColor(.red)
+            // Remove button (only show when not in edit mode, since edit mode has swipe-to-delete)
+            if !isEditMode {
+                Button(action: onRemove) {
+                    Image(systemName: "minus.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.red)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
         .background(
@@ -304,10 +343,17 @@ struct SetlistSongRowView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(isCurrentlyApplied ? Color.white.opacity(0.2) : Color.clear, lineWidth: 1)
         )
+        .contentShape(Rectangle()) // Makes the entire row tappable
+        .onTapGesture {
+            // Only allow tap when not in edit mode
+            if !isEditMode {
+                onTap()
+            }
+        }
     }
 }
 
-// MARK: - Add Songs to Setlist View
+// MARK: - Add Songs to Setlist View (Unchanged)
 struct AddSongsToSetlistView: View {
     let setlist: Setlist
     @ObservedObject var setlistManager: SetlistManager
