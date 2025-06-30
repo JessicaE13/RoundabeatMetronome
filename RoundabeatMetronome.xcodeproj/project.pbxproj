@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		052B39D52E10C31000E3278E /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 052B39D42E10C31000E3278E /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		05628A5E2DAC430900277140 /* RoundabeatMetronome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoundabeatMetronome.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				052B39D52E10C31000E3278E /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = RoundabeatMetronome;
 			packageProductDependencies = (
+				052B39D42E10C31000E3278E /* GoogleMobileAds */,
 			);
 			productName = RoundabeatMetronome;
 			productReference = 05628A5E2DAC430900277140 /* RoundabeatMetronome.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = 05628A552DAC430900277140;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				052B39D32E10C31000E3278E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 05628A5F2DAC430900277140 /* Products */;
 			projectDirPath = "";
@@ -361,6 +370,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		052B39D32E10C31000E3278E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		052B39D42E10C31000E3278E /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 052B39D32E10C31000E3278E /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 05628A562DAC430900277140 /* Project object */;
 }

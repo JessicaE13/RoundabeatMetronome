@@ -131,6 +131,8 @@ struct SoundsView: View {
         )
     }
     
+
+
     private func soundRowView(sound: SyntheticSound) -> some View {
         let isSelected = sound == metronome.selectedSoundType
         
@@ -142,8 +144,10 @@ struct SoundsView: View {
             // Update the selected sound
             metronome.updateSoundType(to: sound)
             
-            // Play preview
-            playPreview(sound)
+            // Only play preview if metronome is NOT playing
+            if !metronome.isPlaying {
+                playPreview(sound)
+            }
         }) {
             HStack(spacing: 16) {
                 // Sound icon
@@ -172,8 +176,8 @@ struct SoundsView: View {
                 Spacer()
                 
                 HStack(spacing: 8) {
-                    // Preview button
-                    if !isSelected {
+                    // Preview button - only show if not selected AND metronome is not playing
+                    if !isSelected && !metronome.isPlaying {
                         Button(action: {
                             playPreview(sound)
                         }) {
@@ -182,6 +186,13 @@ struct SoundsView: View {
                                 .foregroundColor(.accentColor)
                         }
                         .disabled(isPreviewPlaying)
+                    }
+                    
+                    // Show a different icon when metronome is playing to indicate preview is disabled
+                    if !isSelected && metronome.isPlaying {
+                        Image(systemName: "speaker.slash.circle")
+                            .font(.system(size: actionButtonSize, weight: .medium))
+                            .foregroundColor(.secondary)
                     }
                     
                     if isSelected {
