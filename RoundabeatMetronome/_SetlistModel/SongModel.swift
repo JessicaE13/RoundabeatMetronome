@@ -83,14 +83,16 @@ struct TimeSignature: Codable, Equatable {
     }
 }
 
-// MARK: - Song Manager
+// MARK: - Enhanced Song Manager with Selection State
 class SongManager: ObservableObject {
     @Published var songs: [Song] = []
     @Published var searchText: String = ""
     @Published var sortBy: SortOption = .dateAdded
     @Published var sortAscending: Bool = false
+    @Published var currentlySelectedSongId: UUID? = nil
     
     private let userDefaultsKey = "SavedSongs"
+    private let selectedSongKey = "CurrentlySelectedSongId"
     
     enum SortOption: String, CaseIterable {
         case title = "Title"
@@ -101,6 +103,38 @@ class SongManager: ObservableObject {
     
     init() {
         loadSongs()
+        loadSelectedSong()
+    }
+    
+    // MARK: - Selected Song Management
+    
+    var currentlySelectedSong: Song? {
+        guard let songId = currentlySelectedSongId else { return nil }
+        return songs.first { $0.id == songId }
+    }
+    
+    func setCurrentlySelectedSong(_ song: Song) {
+        currentlySelectedSongId = song.id
+        saveSelectedSong()
+    }
+    
+    func clearCurrentlySelectedSong() {
+        currentlySelectedSongId = nil
+        saveSelectedSong()
+    }
+    
+    func applySongToMetronome(_ song: Song, metronome: MetronomeEngine) {
+        // Set as currently selected
+        setCurrentlySelectedSong(song)
+        
+        // Apply settings to metronome
+        metronome.bpm = song.bpm
+        metronome.updateTimeSignature(numerator: song.timeSignature.numerator, denominator: song.timeSignature.denominator)
+        
+        // Haptic feedback
+        if #available(iOS 10.0, *) {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
     }
     
     // MARK: - Core CRUD Operations
@@ -114,10 +148,22 @@ class SongManager: ObservableObject {
         if let index = songs.firstIndex(where: { $0.id == song.id }) {
             songs[index] = song
             saveSongs()
+            
+            // If this was the currently selected song, update the selection to reflect changes
+            if currentlySelectedSongId == song.id {
+                // The song is still selected, but its properties may have changed
+                // We don't need to do anything special here as the currentlySelectedSong computed property
+                // will automatically return the updated song
+            }
         }
     }
     
     func deleteSong(_ song: Song) {
+        // If deleting the currently selected song, clear the selection
+        if currentlySelectedSongId == song.id {
+            clearCurrentlySelectedSong()
+        }
+        
         songs.removeAll { $0.id == song.id }
         saveSongs()
     }
@@ -173,6 +219,39 @@ class SongManager: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let decoded = try? JSONDecoder().decode([Song].self, from: data) {
             songs = decoded
+        }
+    }
+    
+    private func saveSelectedSong() {
+        if let songId = currentlySelectedSongId {
+            UserDefaults.standard.set(songId.uuidString, forKey: selectedSongKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: selectedSongKey)
+        }
+    }
+    
+    private func loadSelectedSong() {
+        if let uuidString = UserDefaults.standard.string(forKey: selectedSongKey),
+           let uuid = UUID(uuidString: uuidString) {
+            currentlySelectedSongId = uuid
+        }
+    }
+    
+    // MARK: - Validation Methods
+    
+    /// Check if the current metronome settings match the selected song
+    func doesMetronomeMatchSelectedSong(metronome: MetronomeEngine) -> Bool {
+        guard let selectedSong = currentlySelectedSong else { return true }
+        
+        return selectedSong.bpm == metronome.bpm &&
+               selectedSong.timeSignature.numerator == metronome.beatsPerMeasure &&
+               selectedSong.timeSignature.denominator == metronome.beatUnit
+    }
+    
+    /// Clear selection if metronome settings no longer match
+    func validateSelectedSongAgainstMetronome(metronome: MetronomeEngine) {
+        if !doesMetronomeMatchSelectedSong(metronome: metronome) {
+            clearCurrentlySelectedSong()
         }
     }
     

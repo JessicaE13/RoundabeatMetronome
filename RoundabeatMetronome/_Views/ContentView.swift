@@ -97,6 +97,7 @@ struct FlashOverlay: View {
 // MARK: - Main Content View
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
+    @StateObject private var songManager = SongManager()
     @State private var selectedTab: NavigationTab = .metronome
     
     var body: some View {
@@ -111,9 +112,9 @@ struct ContentView: View {
                         case .sounds:
                             SoundsView(metronome: metronome)
                         case .songs:
-                            SongsView(metronome: metronome)
+                            SongsView(metronome: metronome, songManager: songManager)
                         case .metronome:
-                            MetronomeView(metronome: metronome)
+                            MetronomeView(metronome: metronome, songManager: songManager)
                         case .settings:
                             SettingsView(metronome: metronome)
                         }
@@ -133,6 +134,22 @@ struct ContentView: View {
             metronome.isPlaying = false
         }
         .ignoresSafeArea(.container, edges: .bottom)
+        .onAppear {
+            // Initialize sample songs if none exist
+            if songManager.songs.isEmpty {
+                songManager.addSampleSongs()
+            }
+        }
+        // Monitor metronome changes and validate selected song
+        .onChange(of: metronome.bpm) { oldValue, newValue in
+            songManager.validateSelectedSongAgainstMetronome(metronome: metronome)
+        }
+        .onChange(of: metronome.beatsPerMeasure) { oldValue, newValue in
+            songManager.validateSelectedSongAgainstMetronome(metronome: metronome)
+        }
+        .onChange(of: metronome.beatUnit) { oldValue, newValue in
+            songManager.validateSelectedSongAgainstMetronome(metronome: metronome)
+        }
     }
 }
 
