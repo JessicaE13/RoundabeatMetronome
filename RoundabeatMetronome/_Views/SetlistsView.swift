@@ -63,6 +63,8 @@ struct SetlistsView: View {
                         emptySetlistsView
                     }
                 } else {
+                    // In SetlistsView.swift, find this section and replace it:
+
                     List {
                         Section("My Setlists") {
                             ForEach(setlistManager.filteredSetlists) { setlist in
@@ -88,11 +90,14 @@ struct SetlistsView: View {
                                     )
                                 }
                             }
-                            .onMove(perform: moveSetlist)
+                            .onMove(perform: setlistManager.moveSetlist) // Fixed: use the manager method directly
                         }
                     }
-                    .environment(\.editMode, .constant(.active)) // Always editable (or manage with a toggle)
-                    // You can remove the surrounding Form for this part
+
+                    // Remove this standalone function completely:
+                    // private func moveSetlist(from source: IndexSet, to destination: Int) {
+                    //     setlistManager.moveSetlist(from: source, to: destination)
+                    // }
                     
                 }
             }
@@ -148,9 +153,7 @@ struct SetlistsView: View {
     }
 }
 
-private func moveSetlist(from source: IndexSet, to destination: Int) {
-    setlistManager.moveSetlist(from: source, to: destination)
-}
+
 
 
 // MARK: - Setlist Row View

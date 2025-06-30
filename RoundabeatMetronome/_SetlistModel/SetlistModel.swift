@@ -76,9 +76,49 @@ class SetlistManager: ObservableObject {
     }
     
     
+    // Replace the moveSetlist method in SetlistManager with this improved version:
+
     func moveSetlist(from source: IndexSet, to destination: Int) {
-        filteredSetlists.move(fromOffsets: source, toOffset: destination)
-        // And update your underlying storage so the changes persist
+        // If we're working with filtered results, we need to map indices back to the original array
+        let filteredSetlists = self.filteredSetlists
+        
+        guard let sourceIndex = source.first,
+              sourceIndex < filteredSetlists.count,
+              destination <= filteredSetlists.count else {
+            return
+        }
+        
+        // Get the setlist being moved
+        let setlistToMove = filteredSetlists[sourceIndex]
+        
+        // Find the original indices in the main setlists array
+        guard let originalSourceIndex = setlists.firstIndex(where: { $0.id == setlistToMove.id }) else {
+            return
+        }
+        
+        // If there are filters applied, we need to handle this differently
+        if searchText.isEmpty && sortBy == .dateModified && !sortAscending {
+            // No filtering/sorting applied, direct move
+            setlists.move(fromOffsets: source, toOffset: destination)
+        } else {
+            // Filtering/sorting is applied, we need to reorder based on the filtered view
+            let destinationSetlist = destination < filteredSetlists.count ? filteredSetlists[destination] : nil
+            
+            // Remove from original position
+            setlists.remove(at: originalSourceIndex)
+            
+            // Find where to insert in the original array
+            var insertIndex = setlists.count
+            if let destinationSetlist = destinationSetlist,
+               let originalDestinationIndex = setlists.firstIndex(where: { $0.id == destinationSetlist.id }) {
+                insertIndex = destination < sourceIndex ? originalDestinationIndex : originalDestinationIndex
+            }
+            
+            // Insert at new position
+            setlists.insert(setlistToMove, at: min(insertIndex, setlists.count))
+        }
+        
+        saveSetlists()
     }
 
     // MARK: - Core CRUD Operations
