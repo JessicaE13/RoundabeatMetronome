@@ -14,7 +14,6 @@ struct SetlistsView: View {
     @State private var showingCreateSetlist = false
     @State private var selectedSetlist: Setlist? = nil
     @State private var showingEditSetlist = false
-    @State private var showingFilterSheet = false
     
     var body: some View {
         NavigationView {
@@ -32,16 +31,6 @@ struct SetlistsView: View {
                     .padding(.vertical, 4)
                     
                     HStack {
-                        Button(action: {
-                            showingFilterSheet = true
-                        }) {
-                            HStack {
-                                Image(systemName: "line.3.horizontal.decrease.circle")
-                                Text("Filter & Sort")
-                            }
-                            .foregroundColor(.accentColor)
-                        }
-                        
                         Spacer()
                         
                         Button(action: {
@@ -63,8 +52,6 @@ struct SetlistsView: View {
                         emptySetlistsView
                     }
                 } else {
-                    // In SetlistsView.swift, find this section and replace it:
-
                     List {
                         Section("My Setlists") {
                             ForEach(setlistManager.filteredSetlists) { setlist in
@@ -90,15 +77,9 @@ struct SetlistsView: View {
                                     )
                                 }
                             }
-                            .onMove(perform: setlistManager.moveSetlist) // Fixed: use the manager method directly
+                            .onMove(perform: setlistManager.moveSetlist)
                         }
                     }
-
-                    // Remove this standalone function completely:
-                    // private func moveSetlist(from source: IndexSet, to destination: Int) {
-                    //     setlistManager.moveSetlist(from: source, to: destination)
-                    // }
-                    
                 }
             }
             .navigationTitle("Setlists")
@@ -118,9 +99,6 @@ struct SetlistsView: View {
                     editingSetlist: setlist
                 )
             }
-        }
-        .sheet(isPresented: $showingFilterSheet) {
-            SetlistFilterSortSheet(setlistManager: setlistManager)
         }
     }
     
@@ -152,9 +130,6 @@ struct SetlistsView: View {
         .multilineTextAlignment(.center)
     }
 }
-
-
-
 
 // MARK: - Setlist Row View
 struct SetlistRowView: View {
@@ -308,45 +283,5 @@ struct CreateEditSetlistView: View {
         }
         
         dismiss()
-    }
-}
-
-// MARK: - Setlist Filter/Sort Sheet
-struct SetlistFilterSortSheet: View {
-    @ObservedObject var setlistManager: SetlistManager
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section("Sort By") {
-                    Picker("Sort Option", selection: $setlistManager.sortBy) {
-                        ForEach(SetlistManager.SortOption.allCases, id: \.self) { option in
-                            Text(option.rawValue).tag(option)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    
-                    Toggle("Ascending Order", isOn: $setlistManager.sortAscending)
-                }
-                
-                Section {
-                    Button("Clear All Filters") {
-                        setlistManager.searchText = ""
-                        setlistManager.sortBy = .dateModified
-                        setlistManager.sortAscending = false
-                    }
-                }
-            }
-            .navigationTitle("Filter & Sort")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
     }
 }
