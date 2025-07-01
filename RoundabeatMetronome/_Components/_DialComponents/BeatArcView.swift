@@ -141,11 +141,45 @@ struct BeatArcView: View {
 }
 
 #Preview {
-    BeatArcView(
-        beatNumber: 1,
-        totalBeats: 4,
-        isActive: true,
-        size: size,
-        emphasizeFirstBeatOnly: emphasizeFirstBeatOnly
-    )
+    ZStack {
+        
+        BackgroundView()
+        // Active first beat with emphasis
+        BeatArcView(
+            beatNumber: 1,
+            totalBeats: 4,
+            isActive: true,
+            size: 300,
+            emphasizeFirstBeatOnly: true
+        )
+        
+        // Active non-first beat with emphasis (should show outline glow)
+        BeatArcView(
+            beatNumber: 2,
+            totalBeats: 4,
+            isActive: true,
+            size: 300,
+            emphasizeFirstBeatOnly: true
+        )
+        
+        // Inactive beat
+        BeatArcView(
+            beatNumber: 3,
+            totalBeats: 4,
+            isActive: false,
+            size: 300,
+            emphasizeFirstBeatOnly: false
+        )
+        
+        // Active beat without emphasis
+        BeatArcView(
+            beatNumber: 4,
+            totalBeats: 4,
+            isActive: true,
+            size: 300,
+            emphasizeFirstBeatOnly: false
+        )
+    }
+    .padding()
+    .background(Color.black)
 }
