@@ -197,7 +197,7 @@ struct CircularBeatIndicator: View {
 }
 
 
-// MARK: - Tempo Dial Component with DJ-style appearance
+// MARK: - Tempo Dial Component with DJ-style appearance and rotating beveled edges
 struct TempoDialView: View {
     let size: CGFloat
     let bpm: Int
@@ -234,112 +234,136 @@ struct TempoDialView: View {
     
     var body: some View {
         ZStack {
-            // DJ-style dial with beveled concentric rings
+            // DJ-style dial with static lighting and rotating bevels
             ZStack {
-                // Outermost dark ring (base shadow)
-                Circle()
-                    .fill(Color(red: 20/255, green: 20/255, blue: 22/255))
-                    .frame(width: totalDialDiameter * 1.08, height: totalDialDiameter * 1.08)
-                    .shadow(color: Color.black.opacity(0.6), radius: 8, x: 3, y: 3)
-                
-                // Outer beveled ring
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color(red: 80/255, green: 80/255, blue: 85/255),
-                                Color(red: 25/255, green: 25/255, blue: 28/255)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: totalDialDiameter * 0.04
-                    )
-                    .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
-                
-                // Middle beveled ring
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color(red: 90/255, green: 90/255, blue: 95/255),
-                                Color(red: 35/255, green: 35/255, blue: 38/255)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: totalDialDiameter * 0.02
-                    )
-                    .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
-                    .blur(radius: 3)
-                
-                // Inner main dial surface
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color(red: 60/255, green: 60/255, blue: 65/255),
-                                Color(red: 40/255, green: 40/255, blue: 45/255),
-                                Color(red: 25/255, green: 25/255, blue: 28/255)
-                            ]),
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: totalDialDiameter * 0.5
-                        )
-                    )
-                    .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
-                
-                // Center highlight for 3D effect
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color.white.opacity(0.15),
-                                Color.clear
-                            ]),
-                            center: .topLeading,
-                            startRadius: 5,
-                            endRadius: totalDialDiameter * 0.3
-                        )
-                    )
-                    .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
-                
-                // Elliptical notches around the outer edge
-                ForEach(0..<notchCount, id: \.self) { index in
-                    Ellipse()
-                        .fill(
+                // STATIC LIGHTING/GRADIENT LAYER - These provide the lighting effects and don't rotate
+                ZStack {
+                    // Outermost dark ring (base shadow) - STATIC
+                    Circle()
+                        .fill(Color(red: 20/255, green: 20/255, blue: 22/255))
+                        .frame(width: totalDialDiameter * 1.08, height: totalDialDiameter * 1.08)
+                        .shadow(color: Color.black.opacity(0.6), radius: 8, x: 3, y: 3)
+                    
+                    // Static beveled ring gradients - LIGHTING STAYS FIXED
+                    Circle()
+                        .stroke(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    Color(red: 30/255, green: 30/255, blue: 32/255),
-                                    Color(red: 15/255, green: 15/255, blue: 18/255)
+                                    Color(red: 80/255, green: 80/255, blue: 85/255),
+                                    Color(red: 25/255, green: 25/255, blue: 28/255)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
+                            ),
+                            lineWidth: totalDialDiameter * 0.04
+                        )
+                        .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
+                    
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 90/255, green: 90/255, blue: 95/255),
+                                    Color(red: 35/255, green: 35/255, blue: 38/255)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: totalDialDiameter * 0.02
+                        )
+                        .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
+                        .blur(radius: 3)
+                    
+                    // Static dial surface lighting
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 60/255, green: 60/255, blue: 65/255),
+                                    Color(red: 40/255, green: 40/255, blue: 45/255),
+                                    Color(red: 25/255, green: 25/255, blue: 28/255)
+                                ]),
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: totalDialDiameter * 0.5
                             )
                         )
-                        .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
-                        .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0.5, y: 0.5)
-                        .shadow(color: Color.white.opacity(0.1), radius: 1, x: -0.5, y: -0.5)
-                        .offset(y: -(totalDialDiameter / 2)) // Moved further out to the outer edge
-                        .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
+                        .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                    
+                    // Static center highlight
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white.opacity(0.15),
+                                    Color.clear
+                                ]),
+                                center: .topLeading,
+                                startRadius: 5,
+                                endRadius: totalDialDiameter * 0.3
+                            )
+                        )
+                        .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                    
+                    // Static notch shadows
+                    ForEach(0..<notchCount, id: \.self) { index in
+                        Ellipse()
+                            .fill(Color.clear)
+                            .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
+                            .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0.5, y: 0.5)
+                            .shadow(color: Color.white.opacity(0.1), radius: 1, x: -0.5, y: -0.5)
+                            .offset(y: -(totalDialDiameter / 2))
+                            .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
+                    }
+                    
+                    // Static circle indicator shadow
+                    Circle()
+                        .fill(Color.clear)
+                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
+                        .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
+                        .rotationEffect(.degrees(bpmToRotation(bpm)))
                 }
                 
-                // Circle indicator with enhanced styling
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color(red: 15/255, green: 15/255, blue: 18/255),
-                                Color(red: 45/255, green: 45/255, blue: 50/255)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
-                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
-                    .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
-                    .rotationEffect(.degrees(currentRotation))
+                // ROTATING PHYSICAL ELEMENTS - Only the physical structure rotates
+                ZStack {
+                    // Rotating dial base (solid color) - moved up to be behind bevels
+                    Circle()
+                        .fill(Color(red: 45/255, green: 45/255, blue: 50/255))
+                        .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                        .opacity(0.2) // More transparent to blend better
+                    
+                    // Rotating beveled ring structures (solid color, no gradients) - softer blending
+                    Circle()
+                        .stroke(Color(red: 50/255, green: 50/255, blue: 55/255), lineWidth: totalDialDiameter * 0.04)
+                        .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
+                        .opacity(0.15) // More subtle
+                        .blendMode(.multiply) // Blend mode for smoother integration
+                    
+                    Circle()
+                        .stroke(Color(red: 60/255, green: 60/255, blue: 65/255), lineWidth: totalDialDiameter * 0.02)
+                        .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
+                        .opacity(0.1) // Very subtle
+                        .blendMode(.multiply)
+                    
+                    // Rotating notches (softer appearance)
+                    ForEach(0..<notchCount, id: \.self) { index in
+                        Ellipse()
+                            .fill(Color(red: 20/255, green: 20/255, blue: 25/255))
+                            .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
+                            .opacity(0.6) // More transparent for smoother look
+                            .offset(y: -(totalDialDiameter / 2))
+                            .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
+                    }
+                    
+                    // Rotating circle indicator (more prominent)
+                    Circle()
+                        .fill(Color(red: 30/255, green: 30/255, blue: 35/255))
+                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
+                        .opacity(0.8) // Keep this more visible
+                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
+                }
+                .rotationEffect(.degrees(currentRotation)) // Only the physical elements rotate
             }
         }
         .gesture(
