@@ -197,7 +197,7 @@ struct CircularBeatIndicator: View {
 }
 
 
-// MARK: - Tempo Dial Component with DJ-style appearance and rotating beveled edges
+// MARK: - Tempo Dial Component with DJ-style appearance and tapered beveled edges
 struct TempoDialView: View {
     let size: CGFloat
     let bpm: Int
@@ -244,51 +244,54 @@ struct TempoDialView: View {
                         .frame(width: totalDialDiameter * 1.08, height: totalDialDiameter * 1.08)
                         .shadow(color: Color.black.opacity(0.6), radius: 8, x: 3, y: 3)
                     
-                    // Static beveled ring gradients - LIGHTING STAYS FIXED
+                    // Static beveled ring gradients with wider raised outer edge - LIGHTING STAYS FIXED
+                    // Outer bevel edge - wider to appear more raised
                     Circle()
                         .stroke(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    Color(red: 80/255, green: 80/255, blue: 85/255),
-                                    Color(red: 25/255, green: 25/255, blue: 28/255)
+                                    Color(red: 85/255, green: 85/255, blue: 90/255),
+                                    Color(red: 45/255, green: 45/255, blue: 46/255),
+                                    Color(red: 25/255, green: 25/255, blue: 26/255)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: totalDialDiameter * 0.04
+                            lineWidth: totalDialDiameter * 0.05
                         )
-                        .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
+                        .frame(width: totalDialDiameter , height: totalDialDiameter )
                     
+                    // Inner bevel highlight - keep thin for contrast
                     Circle()
                         .stroke(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    Color(red: 90/255, green: 90/255, blue: 95/255),
-                                    Color(red: 35/255, green: 35/255, blue: 38/255)
+                                    Color(red: 95/255, green: 95/255, blue: 97/255),
+                                    Color(red: 40/255, green: 40/255, blue: 42/255)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: totalDialDiameter * 0.02
+                            lineWidth: totalDialDiameter * 0.025
                         )
-                        .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
-                        .blur(radius: 3)
+                        .frame(width: totalDialDiameter * 0.93, height: totalDialDiameter * 0.93)
+                        .blur(radius: 1)
                     
                     // Static dial surface lighting
                     Circle()
                         .fill(
                             RadialGradient(
                                 gradient: Gradient(colors: [
-                                    Color(red: 60/255, green: 60/255, blue: 65/255),
-                                    Color(red: 40/255, green: 40/255, blue: 45/255),
-                                    Color(red: 25/255, green: 25/255, blue: 28/255)
+                                    Color(red: 200/255, green: 60/255, blue: 65/255),
+                                    Color(red: 200/255, green: 40/255, blue: 45/255),
+                                    Color(red: 200/255, green: 25/255, blue: 28/255)
                                 ]),
                                 center: .center,
                                 startRadius: 0,
                                 endRadius: totalDialDiameter * 0.5
                             )
                         )
-                        .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                        .frame(width: totalDialDiameter * 0.9, height: totalDialDiameter * 0.9)
                     
                     // Static center highlight
                     Circle()
@@ -330,20 +333,22 @@ struct TempoDialView: View {
                     // Rotating dial base (solid color) - moved up to be behind bevels
                     Circle()
                         .fill(Color(red: 45/255, green: 45/255, blue: 50/255))
-                        .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                        .frame(width: totalDialDiameter * 0.9, height: totalDialDiameter * 0.9)
                         .opacity(0.2) // More transparent to blend better
                     
-                    // Rotating beveled ring structures (solid color, no gradients) - softer blending
+                    // Rotating beveled ring structures with wider raised outer edge - softer blending
+                    // Outer rotating bevel edge - wider to match raised appearance
                     Circle()
-                        .stroke(Color(red: 50/255, green: 50/255, blue: 55/255), lineWidth: totalDialDiameter * 0.04)
+                        .stroke(Color(red: 50/255, green: 50/255, blue: 55/255), lineWidth: totalDialDiameter * 0.045)
                         .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
-                        .opacity(0.15) // More subtle
-                        .blendMode(.multiply) // Blend mode for smoother integration
+                        .opacity(0.12)
+                        .blendMode(.multiply)
                     
+                    // Inner rotating bevel highlight - keep thin for contrast
                     Circle()
-                        .stroke(Color(red: 60/255, green: 60/255, blue: 65/255), lineWidth: totalDialDiameter * 0.02)
+                        .stroke(Color(red: 60/255, green: 60/255, blue: 65/255), lineWidth: totalDialDiameter * 0.012)
                         .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
-                        .opacity(0.1) // Very subtle
+                        .opacity(0.08)
                         .blendMode(.multiply)
                     
                     // Rotating notches (softer appearance)
