@@ -2,8 +2,6 @@ import SwiftUI
 
 // MARK: - Individual Beat Arc (Fixed multiplier consistency)
 
-
-// MARK: - Circular Beat Indicator View with Tempo Dial
 struct CircularBeatIndicator: View {
     let beatsPerBar: Int
     let currentBeat: Int
@@ -113,7 +111,7 @@ struct TempoDialView: View {
                         .shadow(color: Color.black.opacity(0.6), radius: 8, x: 3, y: 3)
                     
                     // Static beveled ring gradients with wider raised outer edge - LIGHTING STAYS FIXED
-                    // Outer bevel edge - wider to appear more raised
+                    // Outer bevel edge - made wider to compensate for smaller red dial
                     Circle()
                         .stroke(
                             LinearGradient(
@@ -125,11 +123,11 @@ struct TempoDialView: View {
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: totalDialDiameter * 0.05
+                            lineWidth: totalDialDiameter * 0.08
                         )
                         .frame(width: totalDialDiameter , height: totalDialDiameter )
                     
-                    // Inner bevel highlight - keep thin for contrast
+                    // Inner bevel highlight - made wider to compensate
                     Circle()
                         .stroke(
                             LinearGradient(
@@ -140,12 +138,12 @@ struct TempoDialView: View {
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: totalDialDiameter * 0.025
+                            lineWidth: totalDialDiameter * 0.04
                         )
-                        .frame(width: totalDialDiameter * 0.93, height: totalDialDiameter * 0.93)
+                        .frame(width: totalDialDiameter * 0.88, height: totalDialDiameter * 0.88)
                         .blur(radius: 1)
                     
-                    // Static dial surface lighting
+                    // Static dial surface lighting - made 15% smaller
                     Circle()
                         .fill(
                             RadialGradient(
@@ -156,12 +154,12 @@ struct TempoDialView: View {
                                 ]),
                                 center: .center,
                                 startRadius: 0,
-                                endRadius: totalDialDiameter * 0.5
+                                endRadius: totalDialDiameter * 0.425
                             )
                         )
-                        .frame(width: totalDialDiameter * 0.9, height: totalDialDiameter * 0.9)
+                        .frame(width: totalDialDiameter * 0.765, height: totalDialDiameter * 0.765)
                     
-                    // Static center highlight
+                    // Static center highlight - adjusted for smaller red dial
                     Circle()
                         .fill(
                             RadialGradient(
@@ -171,70 +169,55 @@ struct TempoDialView: View {
                                 ]),
                                 center: .topLeading,
                                 startRadius: 5,
-                                endRadius: totalDialDiameter * 0.3
+                                endRadius: totalDialDiameter * 0.25
                             )
                         )
-                        .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                        .frame(width: totalDialDiameter * 0.8, height: totalDialDiameter * 0.8)
                     
-                    // Static notch shadows - FIXED: Moved inward slightly to prevent clipping
+                    // Static notch shadows - FIXED: Moved outward slightly
                     ForEach(0..<notchCount, id: \.self) { index in
                         Circle()
                             .fill(Color.clear)
                             .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
                             .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0.5, y: 0.5)
                             .shadow(color: Color.white.opacity(0.1), radius: 1, x: -0.5, y: -0.5)
-                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.04)) // Moved inward slightly
+                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.02)) // Moved outward slightly
                             .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
                     }
-                    
-                    // Static circle indicator shadow - FIXED: Moved inward slightly to prevent clipping
-                    Circle()
-                        .fill(Color.clear)
-                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
-                        .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
-                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.08)) // Moved inward slightly
-                        .rotationEffect(.degrees(bpmToRotation(bpm)))
                 }
                 
                 // ROTATING PHYSICAL ELEMENTS - Only the physical structure rotates
                 ZStack {
-                    // Rotating dial base (solid color) - moved up to be behind bevels
+                    // Rotating dial base (solid color) - adjusted for smaller red dial
                     Circle()
                         .fill(Color(red: 45/255, green: 45/255, blue: 50/255))
-                        .frame(width: totalDialDiameter * 0.9, height: totalDialDiameter * 0.9)
+                        .frame(width: totalDialDiameter * 0.765, height: totalDialDiameter * 0.765)
                         .opacity(0.2) // More transparent to blend better
                     
-                    // Rotating beveled ring structures with wider raised outer edge - softer blending
-                    // Outer rotating bevel edge - wider to match raised appearance
+                    // Rotating beveled ring structures with wider raised outer edge - made wider
+                    // Outer rotating bevel edge - made wider to compensate for smaller red dial
                     Circle()
-                        .stroke(Color(red: 50/255, green: 50/255, blue: 55/255), lineWidth: totalDialDiameter * 0.045)
+                        .stroke(Color(red: 50/255, green: 50/255, blue: 55/255), lineWidth: totalDialDiameter * 0.072)
                         .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
                         .opacity(0.12)
                         .blendMode(.multiply)
                     
-                    // Inner rotating bevel highlight - keep thin for contrast
+                    // Inner rotating bevel highlight - made wider to compensate
                     Circle()
-                        .stroke(Color(red: 60/255, green: 60/255, blue: 65/255), lineWidth: totalDialDiameter * 0.012)
-                        .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
+                        .stroke(Color(red: 60/255, green: 60/255, blue: 65/255), lineWidth: totalDialDiameter * 0.024)
+                        .frame(width: totalDialDiameter * 0.92, height: totalDialDiameter * 0.92)
                         .opacity(0.08)
                         .blendMode(.multiply)
                     
-                    // Rotating notches (softer appearance) - FIXED: Moved inward slightly to prevent clipping
+                    // Rotating notches (softer appearance) - FIXED: Moved outward slightly
                     ForEach(0..<notchCount, id: \.self) { index in
                         Circle()
                             .fill(Color(red: 20/255, green: 20/255, blue: 25/255))
                             .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
                             .opacity(0.6) // More transparent for smoother look
-                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.04)) // Moved inward slightly
+                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.02)) // Moved outward slightly
                             .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
                     }
-                    
-                    // Rotating circle indicator (more prominent) - FIXED: Moved inward slightly to prevent clipping
-                    Circle()
-                        .fill(Color(red: 30/255, green: 30/255, blue: 35/255))
-                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
-                        .opacity(0.8) // Keep this more visible
-                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.08)) // Moved inward slightly
                 }
                 .rotationEffect(.degrees(currentRotation)) // Only the physical elements rotate
             }
@@ -292,6 +275,7 @@ struct TempoDialView: View {
         }
     }
 }
+
 // MARK: - Dial View
 
 struct DialView: View {
