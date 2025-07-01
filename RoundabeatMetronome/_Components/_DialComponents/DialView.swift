@@ -75,9 +75,9 @@ struct TempoDialView: View {
     @State private var lastRotation: Double = 0
     
     private let grayCircleMultiplier: CGFloat = 0.72
-    private let notchCount: Int = 24 // Number of notches around the dial
-    private let notchWidth: CGFloat = 0.06 // Relative width of each notch
-    private let notchHeight: CGFloat = 0.03 // Relative height of each notch
+    private let notchCount: Int = 25 // Number of notches around the dial
+    private let notchWidth: CGFloat = 0.08 // Relative width of each notch
+    private let notchHeight: CGFloat = 0.08 // Relative height of each notch
     
     private func bpmToRotation(_ bpm: Int) -> Double {
         let bpmRange = 400.0 - 40.0
@@ -178,7 +178,7 @@ struct TempoDialView: View {
                     
                     // Static notch shadows
                     ForEach(0..<notchCount, id: \.self) { index in
-                        Ellipse()
+                        Circle()
                             .fill(Color.clear)
                             .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
                             .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0.5, y: 0.5)
@@ -221,7 +221,7 @@ struct TempoDialView: View {
                     
                     // Rotating notches (softer appearance)
                     ForEach(0..<notchCount, id: \.self) { index in
-                        Ellipse()
+                        Circle()
                             .fill(Color(red: 20/255, green: 20/255, blue: 25/255))
                             .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
                             .opacity(0.6) // More transparent for smoother look
