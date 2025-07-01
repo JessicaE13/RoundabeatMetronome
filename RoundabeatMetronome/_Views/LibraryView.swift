@@ -61,29 +61,58 @@ struct LibraryView: View {
     
     private var libraryTabBar: some View {
         HStack {
-            ForEach(LibraryTab.allCases, id: \.self) { tab in
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        selectedTab = tab
-                    }
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: tab.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                        
-                        Text(tab.rawValue)
-                            .font(.system(size: 16, weight: .medium))
-                    }
-                    .foregroundColor(selectedTab == tab ? .white : .secondary)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
+            Spacer()
+            
+            // Segmented control style selector with sliding animation
+            ZStack {
+                // Background container
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(selectedTab == tab ? Color.accentColor : Color.clear)
+                            .fill(Color.white.opacity(0.08))
                     )
+                
+                // Sliding background pill
+                HStack {
+                    if selectedTab == .setlists {
+                        Spacer()
+                    }
+                    
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(Color.white)
+                        .frame(width: 136) // Slightly smaller to account for padding
+                    
+                    if selectedTab == .songs {
+                        Spacer()
+                    }
                 }
-                .buttonStyle(.plain)
+                .animation(.easeInOut(duration: 0.3), value: selectedTab)
+                .padding(4)
+                
+                // Button content
+                HStack(spacing: 0) {
+                    ForEach(LibraryTab.allCases, id: \.self) { tab in
+                        Button(action: {
+                            selectedTab = tab
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: tab.iconName)
+                                    .font(.system(size: 16, weight: .medium))
+                                
+                                Text(tab.rawValue)
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .foregroundColor(selectedTab == tab ? .black : .secondary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
+            .frame(width: 280, height: 48)
             
             Spacer()
         }
@@ -159,6 +188,15 @@ struct SongsTabView: View {
                             songManager.clearCurrentlySelectedSong()
                         }
                     )
+                    .listRowBackground(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.05))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            )
+                            .padding(.vertical, 2)
+                    )
                 }
             }
             
@@ -192,6 +230,15 @@ struct SongsTabView: View {
                             onToggleFavorite: {
                                 songManager.toggleFavorite(song)
                             }
+                        )
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(songManager.currentlySelectedSongId == song.id ? Color.white.opacity(0.05) : Color.clear)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(songManager.currentlySelectedSongId == song.id ? Color.white.opacity(0.2) : Color.clear, lineWidth: 1)
+                                )
+                                .padding(.vertical, 2)
                         )
                     }
                 }
@@ -404,18 +451,22 @@ struct CurrentlyAppliedSongView: View {
                     .fontWeight(.medium)
                     .lineLimit(1)
                 
-                if !song.artist.isEmpty {
-                    Text(song.artist)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-                
                 HStack(spacing: 8) {
+                    // Artist name first (if available)
+                    if !song.artist.isEmpty {
+                        Text(song.artist)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        
+                        Text("•")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
                     Text("\(song.bpm) BPM")
                         .font(.caption)
-                        .foregroundColor(.white)
-                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
                     
                     Text("•")
                         .font(.caption)
@@ -423,8 +474,7 @@ struct CurrentlyAppliedSongView: View {
                     
                     Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
                         .font(.caption)
-                        .foregroundColor(.white)
-                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
                 }
             }
             
@@ -444,16 +494,7 @@ struct CurrentlyAppliedSongView: View {
                 .foregroundColor(.secondary)
             }
         }
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                )
-        )
-        .padding(.horizontal, 4)
+        .padding(.vertical, 12)
     }
 }
 
@@ -486,7 +527,7 @@ struct EnhancedSongFormRowView: View {
                 .frame(width: 22)
             
             VStack(alignment: .leading) {
-                // Song title with applied indicator and setlist badge
+                // Song title with setlist badge
                 HStack {
                     Text(song.title)
                         .font(.body)
@@ -494,29 +535,27 @@ struct EnhancedSongFormRowView: View {
                         .foregroundColor(isCurrentlyApplied ? .white : .primary)
                         .lineLimit(1)
                     
-                    if isCurrentlyApplied {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 12))
-                            .foregroundColor(.white)
-                    }
-                    
-                    // Setlist badge
-                    SongSetlistBadgeView(
+                    // Setlist badge with improved contrast
+                    FixedSongSetlistBadgeView(
                         song: song,
                         setlistManager: setlistManager
                     )
                 }
                 
-                // Artist name (if available)
-                if !song.artist.isEmpty {
-                    Text(song.artist)
-                        .font(.caption)
-                        .foregroundColor(isCurrentlyApplied ? .white.opacity(0.8) : .secondary)
-                        .lineLimit(1)
-                }
-                
-                // BPM and time signature
+                // Artist, BPM, and time signature on same line
                 HStack(spacing: 8) {
+                    // Artist name first (if available)
+                    if !song.artist.isEmpty {
+                        Text(song.artist)
+                            .font(.caption)
+                            .foregroundColor(isCurrentlyApplied ? .white.opacity(0.8) : .secondary)
+                            .lineLimit(1)
+                        
+                        Text("•")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
                     Text("\(song.bpm) BPM")
                         .font(.caption)
                         .foregroundColor(isCurrentlyApplied ? .white : .secondary)
@@ -535,31 +574,8 @@ struct EnhancedSongFormRowView: View {
             
             Spacer()
             
-            // Action buttons
+            // Action buttons - Only show menu button, no apply button
             HStack(spacing: 12) {
-                // Apply button (only show if not currently applied)
-                if !isCurrentlyApplied {
-                    Button {
-                        onTap()
-                    } label: {
-                        Text("Apply")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.accentColor)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.accentColor.opacity(0.1))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
-                                    )
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
-                
                 // Enhanced menu with setlist options
                 Menu {
                     Button {
@@ -605,20 +621,57 @@ struct EnhancedSongFormRowView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, 4)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isCurrentlyApplied ? Color.white.opacity(0.05) : Color.clear)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isCurrentlyApplied ? Color.white.opacity(0.2) : Color.clear, lineWidth: 1)
-        )
+        .contentShape(Rectangle()) // Makes the entire row tappable
+        .onTapGesture {
+            onTap() // Apply song when tapping anywhere on the row
+        }
+        .padding(.vertical, isCurrentlyApplied ? 12 : 4)
         .sheet(isPresented: $showingSetlistPicker) {
             SongSetlistPickerView(
                 song: song,
                 setlistManager: setlistManager
             )
+        }
+    }
+}
+
+// MARK: - Fixed Song Setlist Badge View with better contrast
+struct FixedSongSetlistBadgeView: View {
+    let song: Song
+    @ObservedObject var setlistManager: SetlistManager
+    
+    private var setlistsContainingSong: [Setlist] {
+        setlistManager.getSetlistsContainingSong(song.id)
+    }
+    
+    var body: some View {
+        if !setlistsContainingSong.isEmpty {
+            Menu {
+                ForEach(setlistsContainingSong) { setlist in
+                    Button(action: {
+                        // Optional: Add navigation to setlist if needed
+                    }) {
+                        HStack {
+                            Image(systemName: "list.bullet.rectangle")
+                            Text(setlist.name)
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "list.bullet.rectangle")
+                        .font(.system(size: 10))
+                    Text("\(setlistsContainingSong.count)")
+                        .font(.system(size: 10, weight: .medium))
+                }
+                .foregroundColor(.black)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.white)
+                )
+            }
         }
     }
 }
