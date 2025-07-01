@@ -207,6 +207,9 @@ struct TempoDialView: View {
     @State private var lastRotation: Double = 0
     
     private let grayCircleMultiplier: CGFloat = 0.72
+    private let notchCount: Int = 24 // Number of notches around the dial
+    private let notchWidth: CGFloat = 0.06 // Relative width of each notch
+    private let notchHeight: CGFloat = 0.03 // Relative height of each notch
     
     private func bpmToRotation(_ bpm: Int) -> Double {
         let bpmRange = 400.0 - 40.0
@@ -268,7 +271,7 @@ struct TempoDialView: View {
                         lineWidth: totalDialDiameter * 0.02
                     )
                     .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
-             
+                    .blur(radius: 3)
                 
                 // Inner main dial surface
                 Circle()
@@ -286,8 +289,6 @@ struct TempoDialView: View {
                     )
                     .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
                 
-
-                
                 // Center highlight for 3D effect
                 Circle()
                     .fill(
@@ -302,6 +303,26 @@ struct TempoDialView: View {
                         )
                     )
                     .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                
+                // Elliptical notches around the outer edge
+                ForEach(0..<notchCount, id: \.self) { index in
+                    Ellipse()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 30/255, green: 30/255, blue: 32/255),
+                                    Color(red: 15/255, green: 15/255, blue: 18/255)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
+                        .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0.5, y: 0.5)
+                        .shadow(color: Color.white.opacity(0.1), radius: 1, x: -0.5, y: -0.5)
+                        .offset(y: -(totalDialDiameter / 2)) // Moved further out to the outer edge
+                        .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
+                }
                 
                 // Circle indicator with enhanced styling
                 Circle()
@@ -374,7 +395,6 @@ struct TempoDialView: View {
         }
     }
 }
-
 
 // MARK: - Dial View
 
