@@ -268,6 +268,7 @@ struct TempoDialView: View {
                         lineWidth: totalDialDiameter * 0.02
                     )
                     .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
+             
                 
                 // Inner main dial surface
                 Circle()
