@@ -13,7 +13,7 @@ enum NavigationTab: String, CaseIterable {
         case .sounds:
             return "speaker.wave.3"
         case .library:
-            return "books.vertical"  // New icon for combined library
+            return "rectangle.stack.badge.play.fill"  // New icon for combined library
         case .metronome:
             return "metronome"
         case .settings:
