@@ -196,7 +196,8 @@ struct CircularBeatIndicator: View {
     }
 }
 
-// MARK: - Tempo Dial Component (unchanged)
+
+// MARK: - Tempo Dial Component with DJ-style appearance
 struct TempoDialView: View {
     let size: CGFloat
     let bpm: Int
@@ -230,91 +231,94 @@ struct TempoDialView: View {
     
     var body: some View {
         ZStack {
-            // Inner dark base circle with enhanced shadow
-            Circle()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(red: 4/255, green: 4/255, blue: 5/255),
-                            Color(red: 0/255, green: 0/255, blue: 1/255)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            // DJ-style dial with beveled concentric rings
+            ZStack {
+                // Outermost dark ring (base shadow)
+                Circle()
+                    .fill(Color(red: 20/255, green: 20/255, blue: 22/255))
+                    .frame(width: totalDialDiameter * 1.08, height: totalDialDiameter * 1.08)
+                    .shadow(color: Color.black.opacity(0.6), radius: 8, x: 3, y: 3)
+                
+                // Outer beveled ring
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(red: 80/255, green: 80/255, blue: 85/255),
+                                Color(red: 25/255, green: 25/255, blue: 28/255)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: totalDialDiameter * 0.04
                     )
-                )
-                .frame(width: totalDialDiameter, height: totalDialDiameter)
-                .shadow(color: Color.black.opacity(0.4), radius: 10, x: 5, y: 5) // Enhanced shadow
-            
-            // Shiny highlight overlay
-            Circle()
-                .fill(
-                    RadialGradient(
-                        gradient: Gradient(colors: [
-                            Color.gray.opacity(0.1),
-                            Color.clear
-                        ]),
-                        center: .topLeading,
-                        startRadius: 3,
-                        endRadius: totalDialDiameter * 0.8
+                    .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
+                
+                // Middle beveled ring
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(red: 90/255, green: 90/255, blue: 95/255),
+                                Color(red: 35/255, green: 35/255, blue: 38/255)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: totalDialDiameter * 0.02
                     )
-                )
-                .frame(width: totalDialDiameter, height: totalDialDiameter)
-            
-            // Glossy streak highlight
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.white.opacity(0.1),
-                            Color.clear,
-                            Color.white.opacity(0.04)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 2
-                )
-                .blur(radius: 0.25)
-                .frame(width: totalDialDiameter - 2, height: totalDialDiameter - 2)
-            
-            // Bevel effect overlay
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.white.opacity(0.3),
-                            Color.black.opacity(0.3)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 2
-                )
-                .frame(width: totalDialDiameter, height: totalDialDiameter)
-            
-            // Specular highlight
-            Circle()
-                .fill(Color.white)
-                .frame(width: totalDialDiameter * 0.15, height: totalDialDiameter * 0.15)
-                .offset(x: -totalDialDiameter * 0.25, y: -totalDialDiameter * 0.25)
-                .blur(radius: 40)
-                .opacity(0.4)
-            
-            // Circle indicator with linear gradient
-            Circle()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(red: 10/255, green: 10/255, blue: 11/255),
-                            Color(red: 40/255, green: 40/255, blue: 41/255)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                    .frame(width: totalDialDiameter * 0.98, height: totalDialDiameter * 0.98)
+                
+                // Inner main dial surface
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color(red: 60/255, green: 60/255, blue: 65/255),
+                                Color(red: 40/255, green: 40/255, blue: 45/255),
+                                Color(red: 25/255, green: 25/255, blue: 28/255)
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: totalDialDiameter * 0.5
+                        )
                     )
-                )
-                .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
-                .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
-                .rotationEffect(.degrees(currentRotation))
+                    .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                
+
+                
+                // Center highlight for 3D effect
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color.white.opacity(0.15),
+                                Color.clear
+                            ]),
+                            center: .topLeading,
+                            startRadius: 5,
+                            endRadius: totalDialDiameter * 0.3
+                        )
+                    )
+                    .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
+                
+                // Circle indicator with enhanced styling
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(red: 15/255, green: 15/255, blue: 18/255),
+                                Color(red: 45/255, green: 45/255, blue: 50/255)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                    .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
+                    .rotationEffect(.degrees(currentRotation))
+            }
         }
         .gesture(
             DragGesture()
@@ -371,6 +375,7 @@ struct TempoDialView: View {
 }
 
 
+// MARK: - Dial View
 
 struct DialView: View {
     @ObservedObject var metronome: MetronomeEngine
