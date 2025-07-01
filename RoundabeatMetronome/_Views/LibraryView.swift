@@ -139,108 +139,111 @@ struct SongsTabView: View {
     @State private var songToApply: Song? = nil
     
     var body: some View {
-        Form {
-            // Search and Filter Section
-            Section {
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 16))
-                    
-                    TextField("Search songs...", text: $songManager.searchText)
-                        .textFieldStyle(.plain)
-                }
-                .padding(.vertical, 4)
-                
-                HStack {
-                    Button(action: {
-                        showingFilterSheet = true
-                    }) {
-                        HStack {
-                            Image(systemName: "line.3.horizontal.decrease.circle")
-                            Text("Filter & Sort")
-                        }
-                        .foregroundColor(.accentColor)
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        showingAddSong = true
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                            Text("Add Song")
-                        }
-                        .foregroundColor(.accentColor)
-                    }
-                }
-                .padding(.vertical, 4)
-            }
-            
-            // Current Metronome Settings Section
-            if let currentSong = songManager.currentlySelectedSong {
-                Section("Currently Applied") {
-                    CurrentlyAppliedSongView(
-                        song: currentSong,
-                        metronome: metronome,
-                        onClearSelection: {
-                            songManager.clearCurrentlySelectedSong()
-                        }
-                    )
-                    .listRowBackground(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white.opacity(0.05))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            )
-                            .padding(.vertical, 2)
-                    )
-                }
-            }
-            
-            // Songs List Section
-            if songManager.filteredSongs.isEmpty {
+        VStack(spacing: 0) {
+            Form {
+                // Search and Filter Section
                 Section {
-                    emptySongsView
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 16))
+                        
+                        TextField("Search songs...", text: $songManager.searchText)
+                            .textFieldStyle(.plain)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    HStack {
+                        Button(action: {
+                            showingFilterSheet = true
+                        }) {
+                            HStack {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                Text("Filter & Sort")
+                            }
+                            .foregroundColor(.accentColor)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showingAddSong = true
+                        }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                Text("Add Song")
+                            }
+                            .foregroundColor(.accentColor)
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
-            } else {
-                Section("My Songs") {
-                    ForEach(songManager.filteredSongs) { song in
-                        EnhancedSongFormRowView(
-                            song: song,
-                            isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
-                            setlistManager: setlistManager,
-                            onTap: {
-                                if metronome.isPlaying {
-                                    songToApply = song
-                                    showingApplyConfirmation = true
-                                } else {
-                                    songManager.applySongToMetronome(song, metronome: metronome)
+                
+                // Songs List Section
+                if songManager.filteredSongs.isEmpty {
+                    Section {
+                        emptySongsView
+                    }
+                } else {
+                    Section("My Songs") {
+                        ForEach(songManager.filteredSongs) { song in
+                            EnhancedSongFormRowView(
+                                song: song,
+                                isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
+                                setlistManager: setlistManager,
+                                onTap: {
+                                    if metronome.isPlaying {
+                                        songToApply = song
+                                        showingApplyConfirmation = true
+                                    } else {
+                                        songManager.applySongToMetronome(song, metronome: metronome)
+                                    }
+                                },
+                                onEdit: {
+                                    selectedSong = song
+                                    showingEditSong = true
+                                },
+                                onDelete: {
+                                    songManager.deleteSong(song)
+                                },
+                                onToggleFavorite: {
+                                    songManager.toggleFavorite(song)
                                 }
-                            },
-                            onEdit: {
-                                selectedSong = song
-                                showingEditSong = true
-                            },
-                            onDelete: {
-                                songManager.deleteSong(song)
-                            },
-                            onToggleFavorite: {
-                                songManager.toggleFavorite(song)
+                            )
+                            .listRowBackground(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(songManager.currentlySelectedSongId == song.id ? Color(.systemGray6) : Color.clear)
+                                    .padding(.vertical, 2)
+                            )
+                            .listRowSeparator(.hidden) // Hide separator lines
+                        }
+                    }
+                }
+            }
+            
+            // Fixed "Currently Applied" section at bottom - Always visible
+            if let currentSong = songManager.currentlySelectedSong {
+                VStack(spacing: 0) {
+                    Divider()
+                        .background(Color.white.opacity(0.2))
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Currently Applied")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        CurrentlyAppliedSongView(
+                            song: currentSong,
+                            metronome: metronome,
+                            onClearSelection: {
+                                songManager.clearCurrentlySelectedSong()
                             }
                         )
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(songManager.currentlySelectedSongId == song.id ? Color.white.opacity(0.05) : Color.clear)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(songManager.currentlySelectedSongId == song.id ? Color.white.opacity(0.2) : Color.clear, lineWidth: 1)
-                                )
-                                .padding(.vertical, 2)
-                        )
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color(.systemBackground))
                 }
             }
         }
@@ -377,6 +380,7 @@ struct SetlistsTabView: View {
                                 }
                             )
                         }
+                        .listRowSeparator(.hidden) // Hide separator lines
                     }
                     .onMove(perform: setlistManager.moveSetlist)
                 }
@@ -481,18 +485,14 @@ struct CurrentlyAppliedSongView: View {
             Spacer()
             
             // Status indicator
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("APPLIED")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.white)
-                    .kerning(0.5)
-                
-                Button("Clear") {
-                    onClearSelection()
-                }
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Button(action: {
+                metronome.isPlaying.toggle()
+            }) {
+                Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(.accentColor)
             }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 12)
     }
@@ -531,8 +531,8 @@ struct EnhancedSongFormRowView: View {
                 HStack {
                     Text(song.title)
                         .font(.body)
-                        .fontWeight(isCurrentlyApplied ? .semibold : .regular)
                         .foregroundColor(isCurrentlyApplied ? .white : .primary)
+                        .brightness(isCurrentlyApplied ? 0.3 : -0.3) // Brighter for selected, much duller for unselected
                         .lineLimit(1)
                     
                     // Setlist badge with improved contrast
@@ -549,6 +549,7 @@ struct EnhancedSongFormRowView: View {
                         Text(song.artist)
                             .font(.caption)
                             .foregroundColor(isCurrentlyApplied ? .white.opacity(0.8) : .secondary)
+                            .brightness(isCurrentlyApplied ? 0.3 : -0.3) // Brighter for selected, much duller for unselected
                             .lineLimit(1)
                         
                         Text("•")
@@ -559,7 +560,7 @@ struct EnhancedSongFormRowView: View {
                     Text("\(song.bpm) BPM")
                         .font(.caption)
                         .foregroundColor(isCurrentlyApplied ? .white : .secondary)
-                        .fontWeight(isCurrentlyApplied ? .medium : .regular)
+                        .brightness(isCurrentlyApplied ? 0.3 : -0.3) // Brighter for selected, much duller for unselected
                     
                     Text("•")
                         .font(.caption)
@@ -568,7 +569,7 @@ struct EnhancedSongFormRowView: View {
                     Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
                         .font(.caption)
                         .foregroundColor(isCurrentlyApplied ? .white : .secondary)
-                        .fontWeight(isCurrentlyApplied ? .medium : .regular)
+                        .brightness(isCurrentlyApplied ? 0.3 : -0.3) // Brighter for selected, much duller for unselected
                 }
             }
             
@@ -625,7 +626,7 @@ struct EnhancedSongFormRowView: View {
         .onTapGesture {
             onTap() // Apply song when tapping anywhere on the row
         }
-        .padding(.vertical, isCurrentlyApplied ? 12 : 4)
+        .padding(.vertical, 8) // Add padding to make rows taller
         .sheet(isPresented: $showingSetlistPicker) {
             SongSetlistPickerView(
                 song: song,
