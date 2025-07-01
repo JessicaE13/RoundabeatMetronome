@@ -205,22 +205,17 @@ struct TempoDialView: View {
     @State private var currentRotation: Double = 0
     @State private var lastRotation: Double = 0
     
-    // Gray circle size multiplier - increased to make dial bigger
     private let grayCircleMultiplier: CGFloat = 0.72
     
-    // BPM to rotation mapping - bottom center (180°) for both min/max, 5 rotations total
     private func bpmToRotation(_ bpm: Int) -> Double {
-        // Map BPM range (40-400) to 5 full rotations (1800°)
-        // Both min and max BPM at bottom center (180°)
-        let bpmRange = 400.0 - 40.0  // 360 BPM range
-        let totalRotations = 5.0     // 5 full rotations
-        let rotationRange = totalRotations * 360.0  // 1800° total range
+        let bpmRange = 400.0 - 40.0
+        let totalRotations = 5.0
+        let rotationRange = totalRotations * 360.0
         let bpmProgress = (Double(bpm) - 40.0) / bpmRange
-        return 180.0 + (bpmProgress * rotationRange) // Start at 180° (bottom center)
+        return 180.0 + (bpmProgress * rotationRange)
     }
     
     private func rotationToBpm(_ rotation: Double) -> Int {
-        // Convert rotation back to BPM
         let totalRotations = 5.0
         let rotationRange = totalRotations * 360.0
         let bpmRange = 400.0 - 40.0
@@ -229,69 +224,82 @@ struct TempoDialView: View {
         return max(40, min(400, Int(bpm.rounded())))
     }
     
-    // Dial size variables - make circle fit exactly in the square outline
     private var totalDialDiameter: CGFloat { size * grayCircleMultiplier }
     private var donutHoleDiameter: CGFloat { size * 0.45 }
     private var dialWidth: CGFloat { (totalDialDiameter - donutHoleDiameter) / 2 }
     
     var body: some View {
         ZStack {
-            // Full filled circle (no hole)
- 
-            ZStack {
-              
-
-                // Inner dark base circle
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color(red: 4/255, green: 4/255, blue: 5/255),
-                                Color(red: 0/255, green: 0/255, blue: 1/255)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+            // Inner dark base circle with enhanced shadow
+            Circle()
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 4/255, green: 4/255, blue: 5/255),
+                            Color(red: 0/255, green: 0/255, blue: 1/255)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     )
-                    .frame(width: totalDialDiameter, height: totalDialDiameter)
-                    .shadow(radius: 18)
-                
-                // Shiny highlight overlay
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color.gray.opacity(0.1),
-                                Color.clear
-                            ]),
-                            center: .topLeading,
-                            startRadius: 3,
-                            endRadius: totalDialDiameter * 0.8
-                        )
+                )
+                .frame(width: totalDialDiameter, height: totalDialDiameter)
+                .shadow(color: Color.black.opacity(0.4), radius: 10, x: 5, y: 5) // Enhanced shadow
+            
+            // Shiny highlight overlay
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color.gray.opacity(0.1),
+                            Color.clear
+                        ]),
+                        center: .topLeading,
+                        startRadius: 3,
+                        endRadius: totalDialDiameter * 0.8
                     )
-                    .frame(width: totalDialDiameter, height: totalDialDiameter)
-           
-
-                // Glossy streak highlight
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.white.opacity(0.1),
-                                Color.clear,
-                                Color.white.opacity(0.04)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 2
-                    )
-                    .blur(radius: 0.25)
-                    .frame(width: totalDialDiameter - 2, height: totalDialDiameter - 2)
-
-     
-            }
-
+                )
+                .frame(width: totalDialDiameter, height: totalDialDiameter)
+            
+            // Glossy streak highlight
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.1),
+                            Color.clear,
+                            Color.white.opacity(0.04)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
+                )
+                .blur(radius: 0.25)
+                .frame(width: totalDialDiameter - 2, height: totalDialDiameter - 2)
+            
+            // Bevel effect overlay
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.3),
+                            Color.black.opacity(0.3)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
+                )
+                .frame(width: totalDialDiameter, height: totalDialDiameter)
+            
+            // Specular highlight
+            Circle()
+                .fill(Color.white)
+                .frame(width: totalDialDiameter * 0.15, height: totalDialDiameter * 0.15)
+                .offset(x: -totalDialDiameter * 0.25, y: -totalDialDiameter * 0.25)
+                .blur(radius: 40)
+                .opacity(0.4)
+            
             // Circle indicator with linear gradient
             Circle()
                 .fill(
@@ -299,7 +307,6 @@ struct TempoDialView: View {
                         gradient: Gradient(colors: [
                             Color(red: 10/255, green: 10/255, blue: 11/255),
                             Color(red: 40/255, green: 40/255, blue: 41/255)
-                            
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -308,40 +315,29 @@ struct TempoDialView: View {
                 .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
                 .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
                 .rotationEffect(.degrees(currentRotation))
-
-            
-            
-            
         }
         .gesture(
             DragGesture()
                 .onChanged { value in
-                    // Calculate angle from center to current touch point
                     let center = CGPoint(x: totalDialDiameter/2, y: totalDialDiameter/2)
                     let vector = CGPoint(x: value.location.x - center.x, y: value.location.y - center.y)
                     let angle = atan2(vector.y, vector.x) * 180 / .pi
-                    
-                    // Convert to 0-360 range
                     let normalizedAngle = angle < 0 ? angle + 360 : angle
                     
-                    // Initialize lastRotation on first touch to prevent jumping
                     if lastRotation == 0 {
                         lastRotation = normalizedAngle
                         return
                     }
                     
-                    // Calculate rotation difference
                     let angleDifference = normalizedAngle - lastRotation
                     var adjustedDifference = angleDifference
                     
-                    // Handle angle wrapping (crossing 0/360 boundary)
                     if adjustedDifference > 180 {
                         adjustedDifference -= 360
                     } else if adjustedDifference < -180 {
                         adjustedDifference += 360
                     }
                     
-                    // Check BPM limits before updating rotation
                     let canRotate: Bool
                     if bpm >= 400 && adjustedDifference > 0 {
                         canRotate = false
@@ -355,7 +351,6 @@ struct TempoDialView: View {
                         currentRotation += adjustedDifference
                         currentRotation = max(180.0, min(1980.0, currentRotation))
                         lastRotation = normalizedAngle
-                        
                         let newBPM = rotationToBpm(currentRotation)
                         onTempoChange(newBPM)
                     } else {
@@ -374,6 +369,8 @@ struct TempoDialView: View {
         }
     }
 }
+
+
 
 struct DialView: View {
     @ObservedObject var metronome: MetronomeEngine
@@ -414,6 +411,7 @@ struct DialView: View {
             }
         )
         .frame(width: frameSize, height: frameSize)
+        .shadow(color: Color.black.opacity(0.3), radius: 15, x: 5, y: 5)
     }
     
     // Helper function to calculate the arc segment size
