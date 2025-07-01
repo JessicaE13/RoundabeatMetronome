@@ -176,23 +176,23 @@ struct TempoDialView: View {
                         )
                         .frame(width: totalDialDiameter * 0.94, height: totalDialDiameter * 0.94)
                     
-                    // Static notch shadows
+                    // Static notch shadows - FIXED: Moved inward slightly to prevent clipping
                     ForEach(0..<notchCount, id: \.self) { index in
                         Circle()
                             .fill(Color.clear)
                             .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
                             .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0.5, y: 0.5)
                             .shadow(color: Color.white.opacity(0.1), radius: 1, x: -0.5, y: -0.5)
-                            .offset(y: -(totalDialDiameter / 2))
+                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.04)) // Moved inward slightly
                             .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
                     }
                     
-                    // Static circle indicator shadow
+                    // Static circle indicator shadow - FIXED: Moved inward slightly to prevent clipping
                     Circle()
                         .fill(Color.clear)
                         .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
                         .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
-                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
+                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.08)) // Moved inward slightly
                         .rotationEffect(.degrees(bpmToRotation(bpm)))
                 }
                 
@@ -219,22 +219,22 @@ struct TempoDialView: View {
                         .opacity(0.08)
                         .blendMode(.multiply)
                     
-                    // Rotating notches (softer appearance)
+                    // Rotating notches (softer appearance) - FIXED: Moved inward slightly to prevent clipping
                     ForEach(0..<notchCount, id: \.self) { index in
                         Circle()
                             .fill(Color(red: 20/255, green: 20/255, blue: 25/255))
                             .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
                             .opacity(0.6) // More transparent for smoother look
-                            .offset(y: -(totalDialDiameter / 2))
+                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.04)) // Moved inward slightly
                             .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
                     }
                     
-                    // Rotating circle indicator (more prominent)
+                    // Rotating circle indicator (more prominent) - FIXED: Moved inward slightly to prevent clipping
                     Circle()
                         .fill(Color(red: 30/255, green: 30/255, blue: 35/255))
                         .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
                         .opacity(0.8) // Keep this more visible
-                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.1))
+                        .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.08)) // Moved inward slightly
                 }
                 .rotationEffect(.degrees(currentRotation)) // Only the physical elements rotate
             }
@@ -292,7 +292,6 @@ struct TempoDialView: View {
         }
     }
 }
-
 // MARK: - Dial View
 
 struct DialView: View {
