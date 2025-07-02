@@ -191,7 +191,7 @@ struct CircularBeatIndicator: View {
     }
 }
 
-// MARK: - Tempo Dial Component (unchanged)
+// MARK: - Tempo Dial Component with Capsule Indicator
 struct TempoDialView: View {
     let size: CGFloat
     let bpm: Int
@@ -236,11 +236,11 @@ struct TempoDialView: View {
                 .fill(Color.black.opacity(0.95))
                 .frame(width: totalDialDiameter, height: totalDialDiameter)
             
-            // Circle indicator - positioned closer to outer edge and made slightly bigger
-            Circle()
-                .fill(Color(red: 43/255, green: 44/255, blue: 44/255).opacity(0.9))
-                .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.08)
-                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.1))
+            // Capsule indicator - positioned closer to outer edge and made as a rounded line
+            Capsule()
+                .fill(Color.white) // Same white color as the play button
+                .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.12) // Width: extra skinny, Height: longer line
+                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.08)) // Position near outer edge
                 .rotationEffect(.degrees(currentRotation))
         }
         .gesture(
@@ -365,16 +365,6 @@ struct DialView: View {
         let activeArcWidth = arcWidth * 1.0  // NOW MATCHES BeatArc multiplier
         let maxStrokeWidth = activeArcWidth
         return arcSize + maxStrokeWidth
-    }
-}
-
-#Preview {
-    ZStack {
-        BackgroundView()
-        VStack {
-            Spacer()
-            DialView(metronome: MetronomeEngine())
-        }
     }
 }
 
