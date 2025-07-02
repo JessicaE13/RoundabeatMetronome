@@ -72,11 +72,6 @@ struct TempoDialView: View {
     @State private var currentRotation: Double = 0
     @State private var lastRotation: Double = 0
     
-    private let grayCircleMultiplier: CGFloat = 0.72
-    private let notchCount: Int = 25 // Number of notches around the dial
-    private let notchWidth: CGFloat = 0.08 // Relative width of each notch
-    private let notchHeight: CGFloat = 0.08 // Relative height of each notch
-    
     private func bpmToRotation(_ bpm: Int) -> Double {
         let bpmRange = 400.0 - 40.0
         let totalRotations = 5.0
@@ -94,138 +89,95 @@ struct TempoDialView: View {
         return max(40, min(400, Int(bpm.rounded())))
     }
     
-    private var totalDialDiameter: CGFloat { size * grayCircleMultiplier }
-    private var donutHoleDiameter: CGFloat { size * 0.45 }
-    private var dialWidth: CGFloat { (totalDialDiameter - donutHoleDiameter) / 2 }
-    
     var body: some View {
         ZStack {
-            // DJ-style dial with static lighting and rotating bevels
+            // Drop shadow for depth
+            Circle()
+                .fill(Color.black)
+                .frame(width: size * 0.6 * 1.05, height: size * 0.6 * 1.05)
+                .offset(y: size * 0.6 * 0.04)
+                .blur(radius: size * 0.6 * 0.03)
+
+            // Outer shell with black gradient
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            Color(white: 0.08),
+                            Color(white: 0.02)
+                        ]),
+                        center: .center,
+                        startRadius: size * 0.6 * 0.05,
+                        endRadius: size * 0.6 * 0.5
+                    )
+                )
+                .frame(width: size * 0.6, height: size * 0.6)
+
+            // CRISP edge ring — like a subtle plastic lip
+            Circle()
+                .stroke(Color(white: 0.4), lineWidth: size * 0.6 * 0.006)
+                .frame(width: size * 0.6, height: size * 0.6)
+
+            // Inner dial face with black lighting (this rotates)
             ZStack {
-                // STATIC LIGHTING/GRADIENT LAYER - These provide the lighting effects and don't rotate
-                ZStack {
-                    // Outermost dark ring (base shadow) - STATIC
-                    Circle()
-                        .fill(Color(red: 20/255, green: 20/255, blue: 22/255))
-                        .frame(width: totalDialDiameter * 1.08, height: totalDialDiameter * 1.08)
-                        .shadow(color: Color.black.opacity(0.6), radius: 8, x: 3, y: 3)
-                    
-                    // Static beveled ring gradients with wider raised outer edge - LIGHTING STAYS FIXED
-                    // Outer bevel edge - made wider to compensate for smaller red dial
-                    Circle()
-                        .stroke(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(red: 85/255, green: 85/255, blue: 90/255),
-                                    Color(red: 45/255, green: 45/255, blue: 46/255),
-                                    Color(red: 25/255, green: 25/255, blue: 26/255)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: totalDialDiameter * 0.08
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color(white: 0.05),
+                                Color(white: 0.01)
+                            ]),
+                            center: .topLeading,
+                            startRadius: size * 0.6 * 0.1,
+                            endRadius: size * 0.6 * 0.8
                         )
-                        .frame(width: totalDialDiameter , height: totalDialDiameter )
-                    
-                    // Inner bevel highlight - made wider to compensate
-                    Circle()
-                        .stroke(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(red: 95/255, green: 95/255, blue: 97/255),
-                                    Color(red: 40/255, green: 40/255, blue: 42/255)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: totalDialDiameter * 0.04
-                        )
-                        .frame(width: totalDialDiameter * 0.88, height: totalDialDiameter * 0.88)
-                        .blur(radius: 1)
-                    
-                    // Static dial surface lighting - made 15% smaller
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                gradient: Gradient(colors: [
-                                    Color(red: 200/255, green: 60/255, blue: 65/255),
-                                    Color(red: 200/255, green: 40/255, blue: 45/255),
-                                    Color(red: 200/255, green: 25/255, blue: 28/255)
-                                ]),
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: totalDialDiameter * 0.425
-                            )
-                        )
-                        .frame(width: totalDialDiameter * 0.765, height: totalDialDiameter * 0.765)
-                    
-                    // Static center highlight - adjusted for smaller red dial
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                gradient: Gradient(colors: [
-                                    Color.white.opacity(0.15),
-                                    Color.clear
-                                ]),
-                                center: .topLeading,
-                                startRadius: 5,
-                                endRadius: totalDialDiameter * 0.25
-                            )
-                        )
-                        .frame(width: totalDialDiameter * 0.8, height: totalDialDiameter * 0.8)
-                    
-                    // Static notch shadows - FIXED: Moved outward slightly
-                    ForEach(0..<notchCount, id: \.self) { index in
+                    )
+                    .frame(width: size * 0.6 * 0.85, height: size * 0.6 * 0.85)
+                    .overlay(
                         Circle()
-                            .fill(Color.clear)
-                            .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
-                            .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0.5, y: 0.5)
-                            .shadow(color: Color.white.opacity(0.1), radius: 1, x: -0.5, y: -0.5)
-                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.02)) // Moved outward slightly
-                            .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
-                    }
-                }
+                            .stroke(Color.black.opacity(0.15), lineWidth: size * 0.6 * 0.005)
+                    )
                 
-                // ROTATING PHYSICAL ELEMENTS - Only the physical structure rotates
-                ZStack {
-                    // Rotating dial base (solid color) - adjusted for smaller red dial
-                    Circle()
-                        .fill(Color(red: 45/255, green: 45/255, blue: 50/255))
-                        .frame(width: totalDialDiameter * 0.765, height: totalDialDiameter * 0.765)
-                        .opacity(0.2) // More transparent to blend better
-                    
-                    // Rotating beveled ring structures with wider raised outer edge - made wider
-                    // Outer rotating bevel edge - made wider to compensate for smaller red dial
-                    Circle()
-                        .stroke(Color(red: 50/255, green: 50/255, blue: 55/255), lineWidth: totalDialDiameter * 0.072)
-                        .frame(width: totalDialDiameter * 1.02, height: totalDialDiameter * 1.02)
-                        .opacity(0.12)
-                        .blendMode(.multiply)
-                    
-                    // Inner rotating bevel highlight - made wider to compensate
-                    Circle()
-                        .stroke(Color(red: 60/255, green: 60/255, blue: 65/255), lineWidth: totalDialDiameter * 0.024)
-                        .frame(width: totalDialDiameter * 0.92, height: totalDialDiameter * 0.92)
-                        .opacity(0.08)
-                        .blendMode(.multiply)
-                    
-                    // Rotating notches (softer appearance) - FIXED: Moved outward slightly
-                    ForEach(0..<notchCount, id: \.self) { index in
-                        Circle()
-                            .fill(Color(red: 20/255, green: 20/255, blue: 25/255))
-                            .frame(width: totalDialDiameter * notchWidth, height: totalDialDiameter * notchHeight)
-                            .opacity(0.6) // More transparent for smoother look
-                            .offset(y: -(totalDialDiameter / 2 - totalDialDiameter * 0.02)) // Moved outward slightly
-                            .rotationEffect(.degrees(Double(index) * 360.0 / Double(notchCount)))
-                    }
-                }
-                .rotationEffect(.degrees(currentRotation)) // Only the physical elements rotate
+                // Rotating indicator dot to show position
+                Circle()
+                    .fill(Color.white.opacity(0.8))
+                    .frame(width: size * 0.6 * 0.04, height: size * 0.6 * 0.04)
+                    .offset(y: -(size * 0.6 * 0.85 / 2 - size * 0.6 * 0.08))
+            }
+            .rotationEffect(.degrees(currentRotation))
+            
+            // Center play button (static - doesn't rotate)
+            ZStack {
+                // Enlarged and slightly colored play button background
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color(red: 0.2, green: 0.2, blue: 0.2), // subtle glow
+                                Color(red: 30/255, green: 30/255, blue: 31/255)
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: size * 0.7 * 0.2
+                        )
+                    )
+                    .frame(width: size * 0.7 * 0.4, height: size * 0.7 * 0.4)
+                    .shadow(color: Color.white.opacity(0.1), radius: size * 0.6 * 0.03, y: size * 0.6 * 0.01)
+
+                Circle()
+                    .stroke(Color(red: 4/255, green: 4/255, blue: 4/255), lineWidth: size * 0.6 * 0.005)
+                    .frame(width: size * 0.6 * 0.5, height: size * 0.6 * 0.5)
+
+                Image(systemName: "play.fill")
+                    .font(.system(size: size * 0.7 * 0.16, weight: .heavy))
+                    .foregroundColor(.white)
             }
         }
+        .frame(width: size * 0.7, height: size * 0.7)
         .gesture(
             DragGesture()
                 .onChanged { value in
-                    let center = CGPoint(x: totalDialDiameter/2, y: totalDialDiameter/2)
+                    let center = CGPoint(x: size * 0.6/2, y: size * 0.6/2)
                     let vector = CGPoint(x: value.location.x - center.x, y: value.location.y - center.y)
                     let angle = atan2(vector.y, vector.x) * 180 / .pi
                     let normalizedAngle = angle < 0 ? angle + 360 : angle

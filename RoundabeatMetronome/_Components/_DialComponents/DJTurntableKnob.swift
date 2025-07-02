@@ -57,6 +57,32 @@ struct DJTurntableKnob: View {
                     Circle()
                         .stroke(Color.black.opacity(0.15), lineWidth: size * 0.005)
                 )
+            ZStack {
+                // Enlarged and slightly colored play button background
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color(red: 0.2, green: 0.2, blue: 0.2), // subtle glow
+                                Color(red: 30/255, green: 30/255, blue: 31/255)
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: size * 0.2
+                        )
+                    )
+                    .frame(width: size * 0.4, height: size * 0.4)
+                    .shadow(color: Color.white.opacity(0.1), radius: size * 0.03, y: size * 0.01)
+
+                Circle()
+                    .stroke(Color(red: 4/255, green: 4/255, blue: 4/255), lineWidth: size * 0.005)
+                    .frame(width: size * 0.5, height: size * 0.5)
+
+                Image(systemName: "play.fill")
+                    .font(.system(size: size * 0.16, weight: .heavy))
+                    .foregroundColor(.white)
+            }
+
 
         }
         .frame(width: size, height: size)
