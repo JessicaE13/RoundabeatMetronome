@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import GoogleMobileAds
 
 // MARK: - Navigation State (Updated)
 enum NavigationTab: String, CaseIterable {
