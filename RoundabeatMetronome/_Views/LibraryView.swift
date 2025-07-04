@@ -31,8 +31,8 @@ struct LibraryView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Custom Tab Bar
-                libraryTabBar
+                // Segmented Picker Tab Bar
+                segmentedPickerTabBar
                 
                 // Content based on selected tab
                 Group {
@@ -59,65 +59,71 @@ struct LibraryView: View {
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
-    private var libraryTabBar: some View {
-        HStack {
-            Spacer()
-            
-            // Segmented control style selector with sliding animation
-            ZStack {
-                // Background container
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.white.opacity(0.08))
-                    )
+    private var segmentedPickerTabBar: some View {
+        VStack(spacing: 0) {
+            // Segmented Control with custom styling
+            HStack {
+                Spacer()
                 
-                // Sliding background pill
-                HStack {
-                    if selectedTab == .setlists {
-                        Spacer()
-                    }
-                    
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(Color.white)
-                        .frame(width: 136) // Slightly smaller to account for padding
-                    
-                    if selectedTab == .songs {
-                        Spacer()
-                    }
-                }
-                .animation(.easeInOut(duration: 0.3), value: selectedTab)
-                .padding(4)
-                
-                // Button content
                 HStack(spacing: 0) {
                     ForEach(LibraryTab.allCases, id: \.self) { tab in
                         Button(action: {
-                            selectedTab = tab
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                selectedTab = tab
+                            }
                         }) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: 6) {
                                 Image(systemName: tab.iconName)
-                                    .font(.system(size: 16, weight: .medium))
-                                
+                                    .font(.system(size: 14, weight: .medium))
                                 Text(tab.rawValue)
                                     .font(.system(size: 16, weight: .medium))
                             }
-                            .foregroundColor(selectedTab == tab ? .black : .secondary)
+                            .foregroundColor(selectedTab == tab ? .white : .secondary)
                             .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
                         }
                         .buttonStyle(.plain)
                     }
                 }
+                .background(
+                    // Sliding background
+                    GeometryReader { geometry in
+                        HStack {
+                            if selectedTab == .setlists {
+                                Spacer()
+                            }
+                            
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color(.systemGray))
+                                .frame(width: geometry.size.width / 2 - 4) // Half width minus padding
+                            
+                            if selectedTab == .songs {
+                                Spacer()
+                            }
+                        }
+                        .padding(2)
+                    }
+                    .animation(.easeInOut(duration: 0.3), value: selectedTab)
+                )
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color(.systemGray3), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                
+                Spacer()
             }
-            .frame(width: 280, height: 48)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             
-            Spacer()
+            // Bottom border/divider
+            Divider()
+                .background(Color.white.opacity(0.2))
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
         .background(
             Color(.systemBackground)
                 .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
