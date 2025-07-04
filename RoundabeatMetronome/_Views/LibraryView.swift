@@ -7,7 +7,7 @@ import SwiftUI
 
 // MARK: - Library Tab Types
 enum LibraryTab: String, CaseIterable {
-    case songs = "Songs"
+    case songs = "All Songs"
     case setlists = "Setlists"
     
     var iconName: String {
@@ -53,7 +53,7 @@ struct LibraryView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .navigationTitle("Library")
+            .navigationTitle("My Songs")
             .navigationBarTitleDisplayMode(.large)
         }
         .navigationViewStyle(StackNavigationViewStyle())
