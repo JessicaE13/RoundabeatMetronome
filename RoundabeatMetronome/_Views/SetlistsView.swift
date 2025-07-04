@@ -5,6 +5,35 @@
 
 import SwiftUI
 
+// MARK: - Sort Options
+enum SetlistsSortOption: String, CaseIterable {
+    case none = "none"
+    case aToZ = "A-Z"
+    case zToA = "Z-A"
+    
+    var iconName: String {
+        switch self {
+        case .none:
+            return "arrow.up.arrow.down"
+        case .aToZ:
+            return "arrow.up"
+        case .zToA:
+            return "arrow.down"
+        }
+    }
+    
+    var nextOption: SetlistsSortOption {
+        switch self {
+        case .none:
+            return .aToZ
+        case .aToZ:
+            return .zToA
+        case .zToA:
+            return .none
+        }
+    }
+}
+
 // MARK: - Main Setlists View
 struct SetlistsView: View {
     @ObservedObject var setlistManager: SetlistManager
@@ -14,6 +43,19 @@ struct SetlistsView: View {
     @State private var showingCreateSetlist = false
     @State private var selectedSetlist: Setlist? = nil
     @State private var showingEditSetlist = false
+    @State private var sortOption: SetlistsSortOption = .none
+    
+    var sortedSetlists: [Setlist] {
+        let filtered = setlistManager.filteredSetlists
+        switch sortOption {
+        case .none:
+            return filtered
+        case .aToZ:
+            return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .zToA:
+            return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+        }
+    }
     
     var body: some View {
         NavigationView {
@@ -21,12 +63,27 @@ struct SetlistsView: View {
                 // Search and Actions Section
                 Section {
                     HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 16))
+                        // Sort button on the left
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                sortOption = sortOption.nextOption
+                            }
+                        }) {
+                            Image(systemName: sortOption.iconName)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
                         
-                        TextField("Search setlists...", text: $setlistManager.searchText)
-                            .textFieldStyle(.plain)
+                        // Search field
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                                .font(.system(size: 16))
+                            
+                            TextField("Search setlists...", text: $setlistManager.searchText)
+                                .textFieldStyle(.plain)
+                        }
                     }
                     .padding(.vertical, 4)
                     
@@ -47,21 +104,21 @@ struct SetlistsView: View {
                 }
                 
                 // Setlists List Section
-                if setlistManager.filteredSetlists.isEmpty {
+                if sortedSetlists.isEmpty {
                     Section {
                         emptySetlistsView
                     }
                 } else {
                     List {
                         Section("My Setlists") {
-                            ForEach(setlistManager.filteredSetlists) { setlist in
+                            ForEach(sortedSetlists) { setlist in
                                 NavigationLink(destination: SetlistDetailView(
                                     setlist: setlist,
                                     setlistManager: setlistManager,
                                     songManager: songManager,
                                     metronome: metronome
                                 )) {
-                                    SetlistRowView(
+                                    SetlistsSetlistRowView(
                                         setlist: setlist,
                                         songCount: setlist.songIds.count,
                                         onEdit: {
@@ -131,7 +188,92 @@ struct SetlistsView: View {
     }
 }
 
-
+// MARK: - Setlist Row View
+struct SetlistsSetlistRowView: View {
+    let setlist: Setlist
+    let songCount: Int
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    let onDuplicate: () -> Void
+    
+    @State private var showingActionSheet = false
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Setlist icon
+            Image(systemName: "music.note.list")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.accentColor)
+                .frame(width: 36, height: 36)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.accentColor.opacity(0.1))
+                )
+            
+            // Setlist info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(setlist.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                
+                HStack(spacing: 8) {
+                    Text("\(songCount) song\(songCount == 1 ? "" : "s")")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.secondary)
+                    
+                    if !setlist.notes.isEmpty {
+                        Text("•")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                        
+                        Text(setlist.notes)
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                
+                Text("Modified \(formatDate(setlist.dateModified))")
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            // More button
+            Button(action: {
+                showingActionSheet = true
+            }) {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .confirmationDialog("Setlist Options", isPresented: $showingActionSheet, titleVisibility: .visible) {
+            Button("Edit Setlist") {
+                onEdit()
+            }
+            
+            Button("Duplicate Setlist") {
+                onDuplicate()
+            }
+            
+            Button("Delete Setlist", role: .destructive) {
+                onDelete()
+            }
+            
+            Button("Cancel", role: .cancel) { }
+        }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+}
 
 // MARK: - Create/Edit Setlist View
 struct CreateEditSetlistView: View {

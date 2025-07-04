@@ -5,6 +5,35 @@
 
 import SwiftUI
 
+// MARK: - Sort Options
+enum LibrarySortOption: String, CaseIterable {
+    case none = "none"
+    case aToZ = "A-Z"
+    case zToA = "Z-A"
+    
+    var iconName: String {
+        switch self {
+        case .none:
+            return "arrow.up.arrow.down"
+        case .aToZ:
+            return "arrow.up"
+        case .zToA:
+            return "arrow.down"
+        }
+    }
+    
+    var nextOption: LibrarySortOption {
+        switch self {
+        case .none:
+            return .aToZ
+        case .aToZ:
+            return .zToA
+        case .zToA:
+            return .none
+        }
+    }
+}
+
 // MARK: - Library Tab Types
 enum LibraryTab: String, CaseIterable {
     case songs = "All Songs"
@@ -140,36 +169,53 @@ struct SongsTabView: View {
     @State private var showingAddSong = false
     @State private var selectedSong: Song? = nil
     @State private var showingEditSong = false
-    @State private var showingFilterSheet = false
     @State private var showingApplyConfirmation = false
     @State private var songToApply: Song? = nil
+    @State private var sortOption: LibrarySortOption = .none
+    
+    var sortedSongs: [Song] {
+        let filtered = songManager.filteredSongs
+        switch sortOption {
+        case .none:
+            return filtered
+        case .aToZ:
+            return filtered.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+        case .zToA:
+            return filtered.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedDescending }
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             Form {
-                // Search and Filter Section
+                // Search and Actions Section
                 Section {
                     HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 16))
+                        // Search field
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                                .font(.system(size: 16))
+                            
+                            TextField("Search songs...", text: $songManager.searchText)
+                                .textFieldStyle(.plain)
+                        }
                         
-                        TextField("Search songs...", text: $songManager.searchText)
-                            .textFieldStyle(.plain)
+                        // Sort button on the right
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                sortOption = sortOption.nextOption
+                            }
+                        }) {
+                            Image(systemName: sortOption.iconName)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(sortOption == .none ? .secondary : .white)
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding(.vertical, 4)
                     
                     HStack {
-                        Button(action: {
-                            showingFilterSheet = true
-                        }) {
-                            HStack {
-                                Image(systemName: "line.3.horizontal.decrease.circle")
-                                Text("Filter & Sort")
-                            }
-                            .foregroundColor(.accentColor)
-                        }
-                        
                         Spacer()
                         
                         Button(action: {
@@ -186,14 +232,14 @@ struct SongsTabView: View {
                 }
                 
                 // Songs List Section
-                if songManager.filteredSongs.isEmpty {
+                if sortedSongs.isEmpty {
                     Section {
                         emptySongsView
                     }
                 } else {
                     Section("My Songs") {
-                        ForEach(songManager.filteredSongs) { song in
-                            EnhancedSongFormRowView(
+                        ForEach(sortedSongs) { song in
+                            LibraryEnhancedSongFormRowView(
                                 song: song,
                                 isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
                                 setlistManager: setlistManager,
@@ -239,7 +285,7 @@ struct SongsTabView: View {
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        CurrentlyAppliedSongView(
+                        LibraryCurrentlyAppliedSongView(
                             song: currentSong,
                             metronome: metronome,
                             onClearSelection: {
@@ -260,9 +306,6 @@ struct SongsTabView: View {
             if let song = selectedSong {
                 AddEditSongView(songManager: songManager, editingSong: song)
             }
-        }
-        .sheet(isPresented: $showingFilterSheet) {
-            FilterSortSheet(songManager: songManager)
         }
         .alert("Apply Song Settings?", isPresented: $showingApplyConfirmation) {
             Button("Cancel", role: .cancel) {
@@ -326,18 +369,46 @@ struct SetlistsTabView: View {
     @State private var showingCreateSetlist = false
     @State private var selectedSetlist: Setlist? = nil
     @State private var showingEditSetlist = false
+    @State private var sortOption: LibrarySortOption = .none
+    
+    var sortedSetlists: [Setlist] {
+        let filtered = setlistManager.filteredSetlists
+        switch sortOption {
+        case .none:
+            return filtered
+        case .aToZ:
+            return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .zToA:
+            return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+        }
+    }
     
     var body: some View {
         Form {
             // Search and Actions Section
             Section {
                 HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 16))
+                    // Search field
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 16))
+                        
+                        TextField("Search setlists...", text: $setlistManager.searchText)
+                            .textFieldStyle(.plain)
+                    }
                     
-                    TextField("Search setlists...", text: $setlistManager.searchText)
-                        .textFieldStyle(.plain)
+                    // Sort button on the right
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            sortOption = sortOption.nextOption
+                        }
+                    }) {
+                        Image(systemName: sortOption.iconName)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(sortOption == .none ? .secondary : .white)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.vertical, 4)
                 
@@ -358,20 +429,20 @@ struct SetlistsTabView: View {
             }
             
             // Setlists List Section
-            if setlistManager.filteredSetlists.isEmpty {
+            if sortedSetlists.isEmpty {
                 Section {
                     emptySetlistsView
                 }
             } else {
                 Section("My Setlists") {
-                    ForEach(setlistManager.filteredSetlists) { setlist in
+                    ForEach(sortedSetlists) { setlist in
                         NavigationLink(destination: SetlistDetailView(
                             setlist: setlist,
                             setlistManager: setlistManager,
                             songManager: songManager,
                             metronome: metronome
                         )) {
-                            SetlistRowView(
+                            LibrarySetlistRowView(
                                 setlist: setlist,
                                 songCount: setlist.songIds.count,
                                 onEdit: {
@@ -438,7 +509,7 @@ struct SetlistsTabView: View {
 }
 
 // MARK: - Currently Applied Song View (Reused from SongsView)
-struct CurrentlyAppliedSongView: View {
+struct LibraryCurrentlyAppliedSongView: View {
     let song: Song
     @ObservedObject var metronome: MetronomeEngine
     let onClearSelection: () -> Void
@@ -505,7 +576,7 @@ struct CurrentlyAppliedSongView: View {
 }
 
 // MARK: - Enhanced Song Form Row View (Reused from SongsView)
-struct EnhancedSongFormRowView: View {
+struct LibraryEnhancedSongFormRowView: View {
     let song: Song
     let isCurrentlyApplied: Bool
     @ObservedObject var setlistManager: SetlistManager
@@ -542,7 +613,7 @@ struct EnhancedSongFormRowView: View {
                         .lineLimit(1)
                     
                     // Setlist badge with improved contrast
-                    FixedSongSetlistBadgeView(
+                    LibraryFixedSongSetlistBadgeView(
                         song: song,
                         setlistManager: setlistManager
                     )
@@ -643,7 +714,7 @@ struct EnhancedSongFormRowView: View {
 }
 
 // MARK: - Fixed Song Setlist Badge View with better contrast
-struct FixedSongSetlistBadgeView: View {
+struct LibraryFixedSongSetlistBadgeView: View {
     let song: Song
     @ObservedObject var setlistManager: SetlistManager
     
@@ -684,7 +755,7 @@ struct FixedSongSetlistBadgeView: View {
 }
 
 // MARK: - Setlist Row View (Reused from SetlistsView)
-struct SetlistRowView: View {
+struct LibrarySetlistRowView: View {
     let setlist: Setlist
     let songCount: Int
     let onEdit: () -> Void
