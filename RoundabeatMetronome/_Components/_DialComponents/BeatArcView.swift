@@ -144,12 +144,12 @@ struct BeatArcView: View {
     ZStack {
         
         BackgroundView()
-        // Active first beat with emphasis
+        
         BeatArcView(
             beatNumber: 1,
             totalBeats: 4,
             isActive: true,
-            size: 300,
+            size: 250,
             emphasizeFirstBeatOnly: true
         )
         
@@ -157,8 +157,8 @@ struct BeatArcView: View {
         BeatArcView(
             beatNumber: 2,
             totalBeats: 4,
-            isActive: true,
-            size: 300,
+            isActive: false,
+            size: 250,
             emphasizeFirstBeatOnly: true
         )
         
@@ -167,7 +167,7 @@ struct BeatArcView: View {
             beatNumber: 3,
             totalBeats: 4,
             isActive: false,
-            size: 300,
+            size: 250,
             emphasizeFirstBeatOnly: false
         )
         
@@ -175,11 +175,26 @@ struct BeatArcView: View {
         BeatArcView(
             beatNumber: 4,
             totalBeats: 4,
-            isActive: true,
-            size: 300,
+            isActive: false,
+            size: 250,
             emphasizeFirstBeatOnly: false
         )
+        
+        // Play button in center
+             Button(action: {
+                 // Add your play/pause action here
+             }) {
+                 Image(systemName: "play.fill")
+                     .font(.system(size: 75))
+                     .foregroundColor(.white)
+
+             }
+             
+         
+        
+        
+        
     }
-    .padding()
-    .background(Color.black)
+    .frame(width: 330, height: 330)
+   
 }

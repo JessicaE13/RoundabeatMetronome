@@ -115,6 +115,7 @@ struct UniformButtonWithIcon: View {
             }
             .kerning(1.2)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
         }
         .frame(
             width: uniformButtonWidth,
@@ -122,6 +123,7 @@ struct UniformButtonWithIcon: View {
         )
         .background(Color(.systemBackground).opacity(0.98))
         .cornerRadius(16)
+        
 //        .overlay(
 //            RoundedRectangle(cornerRadius: 16)
 //                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
