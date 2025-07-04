@@ -78,7 +78,7 @@ struct LibraryView: View {
                                 Text(tab.rawValue)
                                     .font(.system(size: 16, weight: .medium))
                             }
-                            .foregroundColor(selectedTab == tab ? .white : .secondary)
+                            .foregroundColor(selectedTab == tab ? .primary : .secondary)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 8)
                         }
@@ -86,7 +86,7 @@ struct LibraryView: View {
                     }
                 }
                 .background(
-                    // Sliding background
+                    // Sliding background - now matches selected song background
                     GeometryReader { geometry in
                         HStack {
                             if selectedTab == .setlists {
@@ -94,7 +94,7 @@ struct LibraryView: View {
                             }
                             
                             RoundedRectangle(cornerRadius: 6)
-                                .fill(Color(.systemGray))
+                                .fill(Color(.systemGray6)) // Changed to match selected song background
                                 .frame(width: geometry.size.width / 2 - 4) // Half width minus padding
                             
                             if selectedTab == .songs {
