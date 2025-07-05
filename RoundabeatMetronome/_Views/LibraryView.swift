@@ -673,7 +673,7 @@ struct SoundsTabView: View {
     }
 }
 
-// MARK: - Modified SoundsView for Library (with icons in search bar)
+// MARK: - Modified SoundsView for Library (with icons in search bar and NO current sound section)
 struct SoundsViewForLibrary: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var isPreviewPlaying = false
@@ -792,196 +792,171 @@ struct SoundsViewForLibrary: View {
             .background(Color(.systemBackground))
             
             ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                // Current Sound Section
-                VStack(alignment: .leading, spacing: settingsSectionSpacing) {
-                    Text("Current Sound")
-                        .font(.system(size: sectionHeaderFontSize, weight: .bold))
-                        .padding(.bottom, settingsItemSpacing)
-                    
-                    currentSoundCard
-                }
-                .padding(.top, sectionPadding)
-                .padding(.bottom, sectionSpacing)
-                
-              
-                
-                // Available Sounds Section
-                VStack(alignment: .leading, spacing: settingsSectionSpacing) {
-                    Text("Available Sounds")
-                        .font(.system(size: sectionHeaderFontSize, weight: .bold))
-                        .padding(.bottom, settingsItemSpacing)
-                    
-                    LazyVStack(spacing: soundItemSpacing) {
-                        ForEach(filteredAndSortedSounds, id: \.self) { sound in
-                            soundRowView(sound: sound)
-                        }
-                    }
-                }
-                
-                // Add extra padding at the bottom
-                Spacer()
-                    .frame(height: isIPad ? 100 : 80)
-            }
-            .padding(.horizontal, horizontalPadding)
-        }
-    }
-    }
-    
-    private var currentSoundCard: some View {
-        HStack(spacing: 16) {
-            // Sound icon
-            Image(systemName: soundIcon(for: metronome.selectedSoundType))
-                .font(.system(size: isIPad ? 32 : 28, weight: .medium))
-                .foregroundColor(.accentColor)
-                .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.accentColor.opacity(0.1))
-                )
-            
-            // Sound info
-            VStack(alignment: .leading, spacing: 4) {
-                Text(metronome.selectedSoundType.rawValue)
-                    .font(.system(size: currentSoundTitleSize, weight: .semibold))
-                    .foregroundColor(.primary)
-                
-                
-                HStack {
-                    Text(metronome.selectedSoundType.description)
-                        .font(.system(size: currentSoundDescSize))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                    
-                    Spacer()
-                    
-                // Preview button
-                Button(action: {
-                    playPreview(metronome.selectedSoundType)
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: isPreviewPlaying ? "waveform" : "play.fill")
-                            .font(.system(size: previewButtonIconSize, weight: .medium))
+                VStack(alignment: .leading, spacing: 0) {
+                    // Available Sounds Section (removed Current Sound section)
+                    VStack(alignment: .leading, spacing: settingsSectionSpacing) {
+                        Text("\(filteredAndSortedSounds.count) SOUND\(filteredAndSortedSounds.count == 1 ? "" : "S")")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(.top, 16)
+                            .padding(.bottom, 8)
                         
-                        Text(isPreviewPlaying ? "PLAYING" : "PREVIEW")
-                            .font(.system(size: previewButtonTextSize, weight: .medium))
-                            .kerning(0.5)
-                    }
-                    .foregroundColor(isPreviewPlaying ? .green : .accentColor)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(isPreviewPlaying ? Color.green.opacity(0.1) : Color.accentColor.opacity(0.1))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(isPreviewPlaying ? Color.green.opacity(0.3) : Color.accentColor.opacity(0.3), lineWidth: 1)
+                        // Sounds list
+                        ForEach(filteredAndSortedSounds, id: \.self) { sound in
+                            LibrarySoundRowView(
+                                sound: sound,
+                                isCurrentlyApplied: metronome.selectedSoundType == sound,
+                                metronome: metronome,
+                                isPreviewPlaying: $isPreviewPlaying,
+                                onTap: {
+                                    if #available(iOS 10.0, *) {
+                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    }
+                                    
+                                    // Update the selected sound
+                                    metronome.updateSoundType(to: sound)
+                                    
+                                    // Only play preview if metronome is NOT playing
+                                    if !metronome.isPlaying {
+                                        playPreview(sound)
+                                    }
+                                },
+                                onPreview: {
+                                    playPreview(sound)
+                                }
                             )
-                    )
-                }
-                .disabled(isPreviewPlaying)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(metronome.selectedSoundType == sound ? Color(.systemGray6) : Color.clear)
+                                    .padding(.horizontal, 16)
+                            )
+                        }
+                    }
                     
+                    // Add extra padding at the bottom
+                    Spacer()
+                        .frame(height: isIPad ? 100 : 80)
                 }
-            }
-        }
-        .padding(cardPadding)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.accentColor.opacity(0.2), lineWidth: 1.5)
-                )
-        )
-    }
-    
-
-
-    private func soundRowView(sound: SyntheticSound) -> some View {
-        let isSelected = sound == metronome.selectedSoundType
-        
-        return Button(action: {
-            if #available(iOS 10.0, *) {
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                .padding(.horizontal, horizontalPadding)
             }
             
-            // Update the selected sound
-            metronome.updateSoundType(to: sound)
-            
-            // Only play preview if metronome is NOT playing
-            if !metronome.isPlaying {
-                playPreview(sound)
-            }
-        }) {
-            HStack(spacing: 16) {
-                // Sound icon
-                Image(systemName: soundIcon(for: sound))
-                    .font(.system(size: soundIconSize, weight: .medium))
-                    .foregroundColor(isSelected ? .black : .accentColor)
-                    .frame(width: soundIconFrameSize, height: soundIconFrameSize)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(isSelected ? Color.accentColor : Color.accentColor.opacity(0.1))
-                    )
+            // Fixed "Currently Applied" section at bottom - Always visible
+            VStack(spacing: 0) {
+                Divider()
+                    .background(Color.white.opacity(0.2))
                 
-                // Sound info
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(sound.rawValue)
-                        .font(.system(size: soundTitleSize, weight: .medium))
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    Text(sound.description)
-                        .font(.system(size: soundDescSize))
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Currently Applied")
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                
-                Spacer()
-                
-                HStack(spacing: 8) {
-                    // Preview button - only show if not selected AND metronome is not playing
-                    if !isSelected && !metronome.isPlaying {
-                        Button(action: {
-                            playPreview(sound)
-                        }) {
-                            Image(systemName: "play.circle")
-                                .font(.system(size: actionButtonSize, weight: .medium))
-                                .foregroundColor(.accentColor)
-                        }
-                        .disabled(isPreviewPlaying)
-                    }
                     
-                    // Show a different icon when metronome is playing to indicate preview is disabled
-                    if !isSelected && metronome.isPlaying {
-                        Image(systemName: "speaker.slash.circle")
-                            .font(.system(size: actionButtonSize, weight: .medium))
+                    LibraryCurrentlyAppliedSoundView(
+                        sound: metronome.selectedSoundType,
+                        metronome: metronome,
+                        isPreviewPlaying: $isPreviewPlaying,
+                        playPreview: { sound in
+                            playPreview(sound)
+                        }
+                    )
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color(.systemBackground))
+            }
+        }
+    }
+
+// MARK: - Sound Row View (matching songs list style)
+struct LibrarySoundRowView: View {
+    let sound: SyntheticSound
+    let isCurrentlyApplied: Bool
+    @ObservedObject var metronome: MetronomeEngine
+    @Binding var isPreviewPlaying: Bool
+    let onTap: () -> Void
+    let onPreview: () -> Void
+    
+    var body: some View {
+        HStack {
+            // Sound icon on the left (matching heart icon position in songs)
+            Image(systemName: soundIcon(for: sound))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(isCurrentlyApplied ? .accentColor : .secondary)
+                .frame(width: 20, height: 20)
+            
+            Spacer()
+                .frame(width: 22)
+            
+            VStack(alignment: .leading) {
+                // Sound name
+                Text(sound.rawValue)
+                    .font(.body)
+                    .foregroundColor(isCurrentlyApplied ? .white : .primary)
+                    .brightness(isCurrentlyApplied ? 0.3 : -0.3) // Brighter for selected, much duller for unselected
+                    .lineLimit(1)
+                
+                // Sound description
+                Text(sound.description)
+                    .font(.caption)
+                    .foregroundColor(isCurrentlyApplied ? .white.opacity(0.8) : .secondary)
+                    .brightness(isCurrentlyApplied ? 0.3 : -0.3) // Brighter for selected, much duller for unselected
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            // Action buttons - Only show menu button for consistency with songs
+            HStack(spacing: 12) {
+                // Preview button - only show if not selected AND metronome is not playing
+                if !isCurrentlyApplied && !metronome.isPlaying {
+                    Button(action: {
+                        onPreview()
+                    }) {
+                        Image(systemName: "play.circle")
+                            .font(.body)
                             .foregroundColor(.secondary)
                     }
-                    
-                    if isSelected {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: actionButtonSize, weight: .medium))
-                            .foregroundColor(.accentColor)
-                    }
+                    .buttonStyle(.plain)
+                    .disabled(isPreviewPlaying)
+                }
+                
+                // Show a different icon when metronome is playing to indicate preview is disabled
+                if !isCurrentlyApplied && metronome.isPlaying {
+                    Image(systemName: "speaker.slash.circle")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                
+                // Checkmark for currently applied sound
+                if isCurrentlyApplied {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.body)
+                        .foregroundColor(.accentColor)
                 }
             }
-            .padding(soundRowPadding)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemGray6).opacity(isSelected ? 1.0 : 0.5))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                isSelected ? Color.accentColor.opacity(0.3) : Color.clear,
-                                lineWidth: 1
-                            )
-                    )
-            )
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle()) // Makes the entire row tappable
+        .onTapGesture {
+            onTap() // Apply sound when tapping anywhere on the row
+        }
+        .padding(.vertical, 8) // Add padding to make rows taller (matching songs)
     }
+    
+    private func soundIcon(for sound: SyntheticSound) -> String {
+        switch sound {
+        case .click:
+            return "waveform.path"
+        case .snap:
+            return "hand.point.up"
+        case .beep:
+            return "speaker.wave.2"
+        case .blip:
+            return "dot.radiowaves.left.and.right"
+        }
+    }
+}
     
     // MARK: - Helper Methods
     
@@ -1011,161 +986,7 @@ struct SoundsViewForLibrary: View {
         }
     }
     
-    // MARK: - Responsive Properties (Same as original SoundsView)
-    
-    private var sectionHeaderFontSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 20 :
-                   screenWidth <= 834 ? 22 :
-                   screenWidth <= 1024 ? 24 :
-                   26
-        } else {
-            return screenWidth <= 320 ? 16 :
-                   screenWidth <= 375 ? 18 :
-                   screenWidth <= 393 ? 20 :
-                   22
-        }
-    }
-    
-    private var currentSoundTitleSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 18 :
-                   screenWidth <= 834 ? 20 :
-                   screenWidth <= 1024 ? 22 :
-                   24
-        } else {
-            return screenWidth <= 320 ? 14 :
-                   screenWidth <= 375 ? 16 :
-                   screenWidth <= 393 ? 18 :
-                   19
-        }
-    }
-    
-    private var currentSoundDescSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 14 :
-                   screenWidth <= 834 ? 15 :
-                   screenWidth <= 1024 ? 16 :
-                   17
-        } else {
-            return screenWidth <= 320 ? 11 :
-                   screenWidth <= 375 ? 12 :
-                   screenWidth <= 393 ? 13 :
-                   14
-        }
-    }
-    
-    private var soundTitleSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 16 :
-                   screenWidth <= 834 ? 18 :
-                   screenWidth <= 1024 ? 20 :
-                   22
-        } else {
-            return screenWidth <= 320 ? 12 :
-                   screenWidth <= 375 ? 14 :
-                   screenWidth <= 393 ? 16 :
-                   17
-        }
-    }
-    
-    private var soundDescSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 13 :
-                   screenWidth <= 834 ? 14 :
-                   screenWidth <= 1024 ? 15 :
-                   16
-        } else {
-            return screenWidth <= 320 ? 10 :
-                   screenWidth <= 375 ? 11 :
-                   screenWidth <= 393 ? 12 :
-                   13
-        }
-    }
-    
-    private var previewButtonIconSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 12 :
-                   screenWidth <= 834 ? 13 :
-                   screenWidth <= 1024 ? 14 :
-                   15
-        } else {
-            return screenWidth <= 320 ? 10 :
-                   screenWidth <= 375 ? 11 :
-                   screenWidth <= 393 ? 12 :
-                   13
-        }
-    }
-    
-    private var previewButtonTextSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 11 :
-                   screenWidth <= 834 ? 12 :
-                   screenWidth <= 1024 ? 13 :
-                   14
-        } else {
-            return screenWidth <= 320 ? 9 :
-                   screenWidth <= 375 ? 10 :
-                   screenWidth <= 393 ? 11 :
-                   12
-        }
-    }
-    
-    private var soundIconSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 18 :
-                   screenWidth <= 834 ? 20 :
-                   screenWidth <= 1024 ? 22 :
-                   24
-        } else {
-            return screenWidth <= 320 ? 14 :
-                   screenWidth <= 375 ? 16 :
-                   screenWidth <= 393 ? 18 :
-                   20
-        }
-    }
-    
-    private var soundIconFrameSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 36 :
-                   screenWidth <= 834 ? 40 :
-                   screenWidth <= 1024 ? 44 :
-                   48
-        } else {
-            return screenWidth <= 320 ? 28 :
-                   screenWidth <= 375 ? 32 :
-                   screenWidth <= 393 ? 36 :
-                   40
-        }
-    }
-    
-    private var actionButtonSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 20 :
-                   screenWidth <= 834 ? 22 :
-                   screenWidth <= 1024 ? 24 :
-                   26
-        } else {
-            return screenWidth <= 320 ? 16 :
-                   screenWidth <= 375 ? 18 :
-                   screenWidth <= 393 ? 20 :
-                   22
-        }
-    }
-    
-    private var sectionPadding: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 32 :
-                   screenWidth <= 834 ? 40 :
-                   screenWidth <= 1024 ? 48 :
-                   56
-        } else {
-            return screenWidth <= 320 ? 12 :
-                   screenWidth <= 375 ? 16 :
-                   screenWidth <= 393 ? 20 :
-                   22
-        }
-    }
+    // MARK: - Responsive Properties (simplified to match songs list)
     
     private var horizontalPadding: CGFloat {
         if isIPad {
@@ -1192,76 +1013,6 @@ struct SoundsViewForLibrary: View {
                    screenWidth <= 375 ? 16 :
                    screenWidth <= 393 ? 18 :
                    20
-        }
-    }
-    
-    private var settingsItemSpacing: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 14 :
-                   screenWidth <= 834 ? 16 :
-                   screenWidth <= 1024 ? 18 :
-                   20
-        } else {
-            return screenWidth <= 320 ? 8 :
-                   screenWidth <= 375 ? 10 :
-                   screenWidth <= 393 ? 12 :
-                   14
-        }
-    }
-    
-    private var sectionSpacing: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 30 :
-                   screenWidth <= 834 ? 35 :
-                   screenWidth <= 1024 ? 40 :
-                   45
-        } else {
-            return screenWidth <= 320 ? 16 :
-                   screenWidth <= 375 ? 20 :
-                   screenWidth <= 393 ? 25 :
-                   28
-        }
-    }
-    
-    private var cardPadding: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 20 :
-                   screenWidth <= 834 ? 24 :
-                   screenWidth <= 1024 ? 28 :
-                   32
-        } else {
-            return screenWidth <= 320 ? 12 :
-                   screenWidth <= 375 ? 16 :
-                   screenWidth <= 393 ? 18 :
-                   20
-        }
-    }
-    
-    private var soundRowPadding: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 16 :
-                   screenWidth <= 834 ? 18 :
-                   screenWidth <= 1024 ? 20 :
-                   22
-        } else {
-            return screenWidth <= 320 ? 10 :
-                   screenWidth <= 375 ? 12 :
-                   screenWidth <= 393 ? 14 :
-                   16
-        }
-    }
-    
-    private var soundItemSpacing: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 12 :
-                   screenWidth <= 834 ? 14 :
-                   screenWidth <= 1024 ? 16 :
-                   18
-        } else {
-            return screenWidth <= 320 ? 8 :
-                   screenWidth <= 375 ? 10 :
-                   screenWidth <= 393 ? 12 :
-                   14
         }
     }
 }
@@ -1657,6 +1408,67 @@ struct FloatingActionButton: View {
         }
         .buttonStyle(.plain)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isCollapsed)
+    }
+}
+
+// MARK: - Currently Applied Sound View (Library version)
+struct LibraryCurrentlyAppliedSoundView: View {
+    let sound: SyntheticSound
+    @ObservedObject var metronome: MetronomeEngine
+    @Binding var isPreviewPlaying: Bool
+    let playPreview: (SyntheticSound) -> Void
+    
+    var body: some View {
+        HStack {
+            // Sound icon
+            Image(systemName: soundIcon(for: sound))
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: 30, height: 30)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.white.opacity(0.15))
+                )
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(sound.rawValue)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                
+                Text(sound.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            // Preview button
+            Button(action: {
+                playPreview(sound)
+            }) {
+                Image(systemName: isPreviewPlaying ? "waveform" : "play.circle.fill")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(.accentColor)
+            }
+            .buttonStyle(.plain)
+            .disabled(isPreviewPlaying || metronome.isPlaying)
+        }
+        .padding(.vertical, 12)
+    }
+    
+    private func soundIcon(for sound: SyntheticSound) -> String {
+        switch sound {
+        case .click:
+            return "waveform.path"
+        case .snap:
+            return "hand.point.up"
+        case .beep:
+            return "speaker.wave.2"
+        case .blip:
+            return "dot.radiowaves.left.and.right"
+        }
     }
 }
 
