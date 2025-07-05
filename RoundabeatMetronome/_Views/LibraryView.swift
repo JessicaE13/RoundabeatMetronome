@@ -34,20 +34,20 @@ enum LibrarySortOption: String, CaseIterable {
     }
 }
 
-// MARK: - Library Tab Types (Updated with Sounds)
+// MARK: - Library Tab Types (Updated with Sounds First)
 enum LibraryTab: String, CaseIterable {
+    case sounds = "Sounds"
     case songs = "Songs"
     case setlists = "Setlists"
-    case sounds = "Sounds"
     
     var iconName: String {
         switch self {
+        case .sounds:
+            return "speaker.wave.3"
         case .songs:
             return "music.note.list"
         case .setlists:
             return "list.bullet.rectangle"
-        case .sounds:
-            return "speaker.wave.3"
         }
     }
 }
@@ -58,17 +58,19 @@ struct LibraryView: View {
     @ObservedObject var songManager: SongManager
     @ObservedObject var setlistManager: SetlistManager
     
-    @State private var selectedTab: LibraryTab = .songs
+    @State private var selectedTab: LibraryTab = .sounds // Changed default to sounds
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Segmented Picker Tab Bar (Updated for 3 tabs)
+                // Segmented Picker Tab Bar (Updated for new order)
                 segmentedPickerTabBar
                 
-                // Content based on selected tab (Updated)
+                // Content based on selected tab (Updated order)
                 Group {
                     switch selectedTab {
+                    case .sounds:
+                        SoundsTabView(metronome: metronome)
                     case .songs:
                         SongsTabView(
                             metronome: metronome,
@@ -81,8 +83,6 @@ struct LibraryView: View {
                             songManager: songManager,
                             metronome: metronome
                         )
-                    case .sounds:
-                        SoundsTabView(metronome: metronome)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -95,7 +95,7 @@ struct LibraryView: View {
     
     private var segmentedPickerTabBar: some View {
         VStack(spacing: 0) {
-            // Segmented Control with custom styling (Updated for 3 tabs)
+            // Segmented Control with custom styling (Updated for new order)
             HStack {
                 Spacer()
                 
@@ -120,12 +120,12 @@ struct LibraryView: View {
                     }
                 }
                 .background(
-                    // Sliding background - now handles 3 tabs
+                    // Sliding background - now handles new order (Sounds, Songs, Setlists)
                     GeometryReader { geometry in
                         HStack {
-                            if selectedTab == .setlists {
+                            if selectedTab == .songs {
                                 Spacer()
-                            } else if selectedTab == .sounds {
+                            } else if selectedTab == .setlists {
                                 Spacer()
                                 Spacer()
                             }
@@ -134,10 +134,10 @@ struct LibraryView: View {
                                 .fill(Color(.systemGray6))
                                 .frame(width: geometry.size.width / 3 - 4) // Third width minus padding
                             
-                            if selectedTab == .songs {
+                            if selectedTab == .sounds {
                                 Spacer()
                                 Spacer()
-                            } else if selectedTab == .setlists {
+                            } else if selectedTab == .songs {
                                 Spacer()
                             }
                         }
@@ -519,7 +519,7 @@ struct SetlistsTabView: View {
     }
 }
 
-// MARK: - NEW Sounds Tab View (Wrapper for SoundsView)
+// MARK: - Sounds Tab View (Wrapper for SoundsView)
 struct SoundsTabView: View {
     @ObservedObject var metronome: MetronomeEngine
     

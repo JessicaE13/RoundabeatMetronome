@@ -2,19 +2,16 @@ import SwiftUI
 import AVFoundation
 import GoogleMobileAds
 
-// MARK: - Navigation State (Updated)
+// MARK: - Navigation State (Updated - Removed Sounds)
 enum NavigationTab: String, CaseIterable {
-    case sounds = "Sounds"
-    case library = "Library"  // Combined Songs + Setlists
+    case library = "Library"  // Combined Songs + Setlists + Sounds
     case metronome = "Metronome"
     case settings = "Settings"
     
     var iconName: String {
         switch self {
-        case .sounds:
-            return "speaker.wave.3"
         case .library:
-            return "rectangle.stack.badge.play.fill"  // New icon for combined library
+            return "rectangle.stack.badge.play.fill"  // Icon for combined library
         case .metronome:
             return "metronome"
         case .settings:
@@ -23,7 +20,7 @@ enum NavigationTab: String, CaseIterable {
     }
 }
 
-// MARK: - Bottom Navigation Bar (Updated)
+// MARK: - Bottom Navigation Bar (Updated - 3 tabs instead of 4)
 struct BottomNavigationBar: View {
     @Binding var selectedTab: NavigationTab
     
@@ -95,7 +92,7 @@ struct FlashOverlay: View {
     }
 }
 
-// MARK: - Main Content View (Updated)
+// MARK: - Main Content View (Updated - Removed Sounds case)
 struct ContentView: View {
     @StateObject private var metronome = MetronomeEngine()
     @StateObject private var songManager = SongManager()
@@ -111,9 +108,7 @@ struct ContentView: View {
                     // Main content area - this will now always leave space for the navigation bar
                     Group {
                         switch selectedTab {
-                        case .sounds:
-                            SoundsView(metronome: metronome)
-                        case .library:  // Updated case
+                        case .library:  // Now includes Sounds tab within it
                             LibraryView(
                                 metronome: metronome,
                                 songManager: songManager,
