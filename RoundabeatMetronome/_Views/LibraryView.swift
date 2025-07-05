@@ -142,10 +142,6 @@ struct LibraryView: View {
                 .padding(.horizontal, 16)
             }
             .padding(.vertical, 12)
-            
-            // Bottom border/divider
-            Divider()
-                .background(Color.white.opacity(0.2))
         }
         .background(
             Color(.systemBackground)
@@ -154,7 +150,7 @@ struct LibraryView: View {
     }
 }
 
-// MARK: - Songs Tab View (Modified with Search Bar at Top)
+// MARK: - Songs Tab View (Modified with Icons in Search Bar)
 struct SongsTabView: View {
     @ObservedObject var metronome: MetronomeEngine
     @ObservedObject var songManager: SongManager
@@ -167,6 +163,7 @@ struct SongsTabView: View {
     @State private var songToApply: Song? = nil
     @State private var sortOption: LibrarySortOption = .none
     @State private var filterOption: LibraryFilterOption = .all
+    @State private var isScrolling = false
     
     var sortedSongs: [Song] {
         let filtered = songManager.filteredSongs
@@ -196,155 +193,179 @@ struct SongsTabView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Search Section (matching Sounds tab style)
+        ZStack {
             VStack(spacing: 0) {
-                HStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 16))
-                        
-                        TextField("Search songs...", text: $songManager.searchText)
-                            .textFieldStyle(.plain)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(.systemGray6))
-                    )
-                    
-                    // Sort button
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            sortOption = sortOption.nextOption
-                        }
-                    }) {
-                        Image(systemName: sortOption.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(sortOption == .none ? .secondary : .white)
-                    }
-                    .buttonStyle(.plain)
-                    
-                    // Filter button
-                    Menu {
-                        ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                            Button(action: {
-                                filterOption = option
-                            }) {
-                                HStack {
-                                    Text(option.rawValue)
-                                    if filterOption == option {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        Image(systemName: filterOption.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(filterOption == .all ? .secondary : .accentColor)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
-                
-                // Add Song button
-                Button(action: {
-                    showingAddSong = true
-                }) {
-                    HStack {
-                        Spacer()
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add Song")
-                        Spacer()
-                    }
-                    .foregroundColor(.accentColor)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.accentColor.opacity(0.1))
-                    )
-                }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                
-                Divider()
-                    .background(Color.white.opacity(0.2))
-            }
-            .background(Color(.systemBackground))
-            
-            // Form content
-            Form {
-                // Songs List Section - Modified
-                if sortedSongs.isEmpty {
-                    Section {
-                        emptySongsView
-                    }
-                } else {
-                    Section("\(sortedSongs.count) song\(sortedSongs.count == 1 ? "" : "s")") {
-                        // Songs list
-                        ForEach(sortedSongs) { song in
-                            LibraryEnhancedSongFormRowView(
-                                song: song,
-                                isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
-                                setlistManager: setlistManager,
-                                onTap: {
-                                    if metronome.isPlaying {
-                                        songToApply = song
-                                        showingApplyConfirmation = true
-                                    } else {
-                                        songManager.applySongToMetronome(song, metronome: metronome)
-                                    }
-                                },
-                                onEdit: {
-                                    selectedSong = song
-                                    showingEditSong = true
-                                },
-                                onDelete: {
-                                    songManager.deleteSong(song)
-                                },
-                                onToggleFavorite: {
-                                    songManager.toggleFavorite(song)
-                                }
-                            )
-                            .listRowBackground(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(songManager.currentlySelectedSongId == song.id ? Color(.systemGray6) : Color.clear)
-                                    .padding(.vertical, 2)
-                            )
-                            .listRowSeparator(.hidden) // Hide separator lines
-                        }
-                    }
-                }
-            }
-            
-            // Fixed "Currently Applied" section at bottom - Always visible
-            if let currentSong = songManager.currentlySelectedSong {
+                // Search Section with embedded icons
                 VStack(spacing: 0) {
-                    Divider()
-                        .background(Color.white.opacity(0.2))
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Currently Applied")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        LibraryCurrentlyAppliedSongView(
-                            song: currentSong,
-                            metronome: metronome,
-                            onClearSelection: {
-                                songManager.clearCurrentlySelectedSong()
+                    HStack {
+                        // Search bar with embedded icons
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                                .font(.system(size: 16))
+                            
+                            TextField("Search songs...", text: $songManager.searchText)
+                                .textFieldStyle(.plain)
+                            
+                            Spacer()
+                            
+                            // Sort button inside search bar
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    sortOption = sortOption.nextOption
+                                }
+                            }) {
+                                Image(systemName: sortOption.iconName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                             }
+                            .buttonStyle(.plain)
+                            
+                            // Filter button inside search bar
+                            Menu {
+                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                    Button(action: {
+                                        filterOption = option
+                                    }) {
+                                        HStack {
+                                            Text(option.rawValue)
+                                            if filterOption == option {
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: filterOption.iconName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(.systemGray6))
                         )
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(Color(.systemBackground))
+                    .padding(.top, 16)
+                    .padding(.bottom, 12)
+                    
+                    Divider()
+                        .background(Color.white.opacity(0.2))
+                }
+                .background(Color(.systemBackground))
+                
+                // Scrollable content with DragGesture scroll detection
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        // Songs List Section - Modified
+                        if sortedSongs.isEmpty {
+                            emptySongsView
+                                .padding(.top, 20)
+                        } else {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("\(sortedSongs.count) song\(sortedSongs.count == 1 ? "" : "s")")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                    .padding(.top, 16)
+                                    .padding(.bottom, 8)
+                                
+                                // Songs list
+                                ForEach(sortedSongs) { song in
+                                    LibraryEnhancedSongFormRowView(
+                                        song: song,
+                                        isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
+                                        setlistManager: setlistManager,
+                                        onTap: {
+                                            if metronome.isPlaying {
+                                                songToApply = song
+                                                showingApplyConfirmation = true
+                                            } else {
+                                                songManager.applySongToMetronome(song, metronome: metronome)
+                                            }
+                                        },
+                                        onEdit: {
+                                            selectedSong = song
+                                            showingEditSong = true
+                                        },
+                                        onDelete: {
+                                            songManager.deleteSong(song)
+                                        },
+                                        onToggleFavorite: {
+                                            songManager.toggleFavorite(song)
+                                        }
+                                    )
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(songManager.currentlySelectedSongId == song.id ? Color(.systemGray6) : Color.clear)
+                                            .padding(.horizontal, 16)
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // Add bottom padding to prevent FAB overlap
+                        Color.clear.frame(height: 100)
+                    }
+                }
+                .simultaneousGesture(
+                    DragGesture()
+                        .onChanged { value in
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                // Collapse when scrolling down, expand when scrolling up
+                                if abs(value.translation.height) > 10 {
+                                    isScrolling = value.translation.height < 0 // Scrolling down
+                                }
+                            }
+                        }
+                )
+                
+                // Fixed "Currently Applied" section at bottom - Always visible
+                if let currentSong = songManager.currentlySelectedSong {
+                    VStack(spacing: 0) {
+                        Divider()
+                            .background(Color.white.opacity(0.2))
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Currently Applied")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            LibraryCurrentlyAppliedSongView(
+                                song: currentSong,
+                                metronome: metronome,
+                                onClearSelection: {
+                                    songManager.clearCurrentlySelectedSong()
+                                }
+                            )
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color(.systemBackground))
+                    }
+                }
+            }
+            
+            // Floating Add Button
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    FloatingActionButton(
+                        isCollapsed: isScrolling,
+                        iconName: "plus",
+                        text: "Add Song",
+                        action: { showingAddSong = true }
+                    )
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 20)
                 }
             }
         }
@@ -409,7 +430,7 @@ struct SongsTabView: View {
     }
 }
 
-// MARK: - Setlists Tab View (Modified with Search Bar at Top)
+// MARK: - Setlists Tab View (Modified with Icons in Search Bar)
 struct SetlistsTabView: View {
     @ObservedObject var setlistManager: SetlistManager
     @ObservedObject var songManager: SongManager
@@ -420,6 +441,7 @@ struct SetlistsTabView: View {
     @State private var showingEditSetlist = false
     @State private var sortOption: LibrarySortOption = .none
     @State private var filterOption: LibraryFilterOption = .all
+    @State private var isScrolling = false
     
     var sortedSetlists: [Setlist] {
         let filtered = setlistManager.filteredSetlists
@@ -460,122 +482,145 @@ struct SetlistsTabView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Search Section (matching Sounds tab style)
+        ZStack {
             VStack(spacing: 0) {
-                HStack {
+                // Search Section with embedded icons
+                VStack(spacing: 0) {
                     HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 16))
-                        
-                        TextField("Search setlists...", text: $setlistManager.searchText)
-                            .textFieldStyle(.plain)
+                        // Search bar with embedded icons
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                                .font(.system(size: 16))
+                            
+                            TextField("Search setlists...", text: $setlistManager.searchText)
+                                .textFieldStyle(.plain)
+                            
+                            Spacer()
+                            
+                            // Sort button inside search bar
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    sortOption = sortOption.nextOption
+                                }
+                            }) {
+                                Image(systemName: sortOption.iconName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(sortOption == .none ? .secondary : .accentColor)
+                            }
+                            .buttonStyle(.plain)
+                            
+                            // Filter button inside search bar
+                            Menu {
+                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                    Button(action: {
+                                        filterOption = option
+                                    }) {
+                                        HStack {
+                                            Text(option.rawValue)
+                                            if filterOption == option {
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: filterOption.iconName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(.systemGray6))
+                        )
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(.systemGray6))
-                    )
+                    .padding(.top, 16)
+                    .padding(.bottom, 12)
                     
-                    // Sort button
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            sortOption = sortOption.nextOption
-                        }
-                    }) {
-                        Image(systemName: sortOption.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(sortOption == .none ? .secondary : .white)
-                    }
-                    .buttonStyle(.plain)
-                    
-                    // Filter button
-                    Menu {
-                        ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                            Button(action: {
-                                filterOption = option
-                            }) {
-                                HStack {
-                                    Text(option.rawValue)
-                                    if filterOption == option {
-                                        Image(systemName: "checkmark")
+                    Divider()
+                        .background(Color.white.opacity(0.09))
+                }
+                .background(Color(.systemBackground))
+                
+                // Scrollable content with DragGesture scroll detection
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        // Setlists List Section
+                        if sortedSetlists.isEmpty {
+                            emptySetlistsView
+                                .padding(.top, 20)
+                        } else {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("My Setlists")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                    .padding(.top, 16)
+                                    .padding(.bottom, 8)
+                                
+                                ForEach(sortedSetlists) { setlist in
+                                    NavigationLink(destination: SetlistDetailView(
+                                        setlist: setlist,
+                                        setlistManager: setlistManager,
+                                        songManager: songManager,
+                                        metronome: metronome
+                                    )) {
+                                        LibrarySetlistRowView(
+                                            setlist: setlist,
+                                            songCount: setlist.songIds.count,
+                                            onEdit: {
+                                                selectedSetlist = setlist
+                                                showingEditSetlist = true
+                                            },
+                                            onDelete: {
+                                                setlistManager.deleteSetlist(setlist)
+                                            },
+                                            onDuplicate: {
+                                                setlistManager.duplicateSetlist(setlist)
+                                            }
+                                        )
                                     }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 4)
                                 }
                             }
                         }
-                    } label: {
-                        Image(systemName: filterOption.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                        
+                        // Add bottom padding to prevent FAB overlap
+                        Color.clear.frame(height: 100)
                     }
-                    .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
-                
-                // Add Setlist button
-                Button(action: {
-                    showingCreateSetlist = true
-                }) {
-                    HStack {
-                        Spacer()
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add Setlist")
-                        Spacer()
-                    }
-                    .foregroundColor(.accentColor)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.accentColor.opacity(0.1))
-                    )
-                }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                
-                Divider()
-                    .background(Color.white.opacity(0.2))
-            }
-            .background(Color(.systemBackground))
-            
-            // Form content
-            Form {
-                // Setlists List Section
-                if sortedSetlists.isEmpty {
-                    Section {
-                        emptySetlistsView
-                    }
-                } else {
-                    Section("My Setlists") {
-                        ForEach(sortedSetlists) { setlist in
-                            NavigationLink(destination: SetlistDetailView(
-                                setlist: setlist,
-                                setlistManager: setlistManager,
-                                songManager: songManager,
-                                metronome: metronome
-                            )) {
-                                LibrarySetlistRowView(
-                                    setlist: setlist,
-                                    songCount: setlist.songIds.count,
-                                    onEdit: {
-                                        selectedSetlist = setlist
-                                        showingEditSetlist = true
-                                    },
-                                    onDelete: {
-                                        setlistManager.deleteSetlist(setlist)
-                                    },
-                                    onDuplicate: {
-                                        setlistManager.duplicateSetlist(setlist)
-                                    }
-                                )
+                .simultaneousGesture(
+                    DragGesture()
+                        .onChanged { value in
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                // Collapse when scrolling down, expand when scrolling up
+                                if abs(value.translation.height) > 10 {
+                                    isScrolling = value.translation.height < 0 // Scrolling down
+                                }
                             }
-                            .listRowSeparator(.hidden) // Hide separator lines
                         }
-                        .onMove(perform: setlistManager.moveSetlist)
-                    }
+                )
+            }
+            
+            // Floating Add Button
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    FloatingActionButton(
+                        isCollapsed: isScrolling,
+                        iconName: "plus",
+                        text: "Add Setlist",
+                        action: { showingCreateSetlist = true }
+                    )
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 20)
                 }
             }
         }
@@ -624,7 +669,7 @@ struct SetlistsTabView: View {
     }
 }
 
-// MARK: - Sounds Tab View (Wrapper for SoundsView)
+// MARK: - Sounds Tab View (Modified with Icons in Search Bar)
 struct SoundsTabView: View {
     @ObservedObject var metronome: MetronomeEngine
     
@@ -634,7 +679,7 @@ struct SoundsTabView: View {
     }
 }
 
-// MARK: - Modified SoundsView for Library (with sort functionality)
+// MARK: - Modified SoundsView for Library (with icons in search bar)
 struct SoundsViewForLibrary: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var isPreviewPlaying = false
@@ -692,9 +737,10 @@ struct SoundsViewForLibrary: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Search Section
+            // Search Section with embedded icons
             VStack(spacing: 0) {
                 HStack {
+                    // Search bar with embedded icons
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
@@ -702,6 +748,41 @@ struct SoundsViewForLibrary: View {
                         
                         TextField("Search sounds...", text: $searchText)
                             .textFieldStyle(.plain)
+                        
+                        Spacer()
+                        
+                        // Sort button inside search bar
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                sortOption = sortOption.nextOption
+                            }
+                        }) {
+                            Image(systemName: sortOption.iconName)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(sortOption == .none ? .secondary : .accentColor)
+                        }
+                        .buttonStyle(.plain)
+                        
+                        // Filter button inside search bar
+                        Menu {
+                            ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                Button(action: {
+                                    filterOption = option
+                                }) {
+                                    HStack {
+                                        Text(option.rawValue)
+                                        if filterOption == option {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Image(systemName: filterOption.iconName)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
@@ -709,46 +790,10 @@ struct SoundsViewForLibrary: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color(.systemGray6))
                     )
-                    
-                    // Sort button
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            sortOption = sortOption.nextOption
-                        }
-                    }) {
-                        Image(systemName: sortOption.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(sortOption == .none ? .secondary : .white)
-                    }
-                    .buttonStyle(.plain)
-                    
-                    // Filter button
-                    Menu {
-                        ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                            Button(action: {
-                                filterOption = option
-                            }) {
-                                HStack {
-                                    Text(option.rawValue)
-                                    if filterOption == option {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    } label: {
-                        Image(systemName: filterOption.iconName)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(filterOption == .all ? .secondary : .accentColor)
-                    }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 .padding(.bottom, 12)
-                
-                Divider()
-                    .background(Color.white.opacity(0.2))
             }
             .background(Color(.systemBackground))
             
@@ -1558,6 +1603,67 @@ struct LibrarySetlistRowView: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
+    }
+}
+
+// MARK: - Scroll Detection Helper
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+// MARK: - Floating Action Button
+struct FloatingActionButton: View {
+    let isCollapsed: Bool
+    let iconName: String
+    let text: String
+    let action: () -> Void
+    
+    private var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+    
+    private var buttonHeight: CGFloat {
+        isIPad ? 56 : 48
+    }
+    
+    private var iconSize: CGFloat {
+        isIPad ? 20 : 18
+    }
+    
+    private var fontSize: CGFloat {
+        isIPad ? 16 : 14
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: iconName)
+                    .font(.system(size: iconSize, weight: .semibold))
+                    .foregroundColor(.black)
+                
+                if !isCollapsed {
+                    Text(text)
+                        .font(.system(size: fontSize, weight: .semibold))
+                        .foregroundColor(.black)
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .trailing)),
+                            removal: .opacity.combined(with: .move(edge: .trailing))
+                        ))
+                }
+            }
+            .padding(.horizontal, isCollapsed ? 16 : 20)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: buttonHeight / 2)
+                    .fill(Color.accentColor)
+                    .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+            )
+        }
+        .buttonStyle(.plain)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isCollapsed)
     }
 }
 
