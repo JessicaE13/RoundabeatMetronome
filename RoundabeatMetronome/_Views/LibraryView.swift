@@ -136,7 +136,7 @@ struct LibraryView: View {
     }
 }
 
-// MARK: - Songs Tab View (Unchanged)
+// MARK: - Songs Tab View (Modified)
 struct SongsTabView: View {
     @ObservedObject var metronome: MetronomeEngine
     @ObservedObject var songManager: SongManager
@@ -190,30 +190,41 @@ struct SongsTabView: View {
                         .buttonStyle(.plain)
                     }
                     .padding(.vertical, 4)
-                    
-                    HStack {
-                        Spacer()
-                        
-                        Button(action: {
-                            showingAddSong = true
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                Text("Add Song")
-                            }
-                            .foregroundColor(.accentColor)
-                        }
-                    }
-                    .padding(.vertical, 4)
                 }
                 
-                // Songs List Section
+                // Songs List Section - Modified
                 if sortedSongs.isEmpty {
                     Section {
                         emptySongsView
                     }
                 } else {
-                    Section("My Songs") {
+                    Section("\(sortedSongs.count) song\(sortedSongs.count == 1 ? "" : "s")") {
+                        // Add Song button as first item
+                        Button(action: {
+                            showingAddSong = true
+                        }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(.accentColor)
+                                    .frame(width: 24, height: 24)
+                                
+                                Text("Add Song")
+                                    .font(.body)
+                                    .foregroundColor(.accentColor)
+                                
+                                Spacer()
+                            }
+                            .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.accentColor.opacity(0.05))
+                                .padding(.vertical, 2)
+                        )
+                        
+                        // Songs list
                         ForEach(sortedSongs) { song in
                             LibraryEnhancedSongFormRowView(
                                 song: song,
