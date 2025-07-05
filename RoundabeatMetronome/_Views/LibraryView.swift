@@ -106,16 +106,15 @@ struct LibraryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle("Library")
-            .navigationBarTitleDisplayMode(.large)
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private var horizontalPillSegmentedControl: some View {
         VStack(spacing: 0) {
-            // Horizontal scrolling pill buttons
+ 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack() {
                     ForEach(LibraryTab.allCases, id: \.self) { tab in
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.3)) {
@@ -129,17 +128,17 @@ struct LibraryView: View {
                                     .font(.system(size: 14, weight: .medium))
                             }
                             .foregroundColor(selectedTab == tab ? .black : .primary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .fill(selectedTab == tab ? Color.primary : Color(.systemGray5))
+                                    .fill(selectedTab == tab ? Color.accentColor : Color(.systemGray5))
                             )
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 12)
             }
             .padding(.vertical, 12)
         }
@@ -662,6 +661,76 @@ struct SetlistsTabView: View {
         .multilineTextAlignment(.center)
     }
 }
+
+// MARK: - Create/Edit Setlist View
+struct CreateEditSetlistView: View {
+    @ObservedObject var setlistManager: SetlistManager
+    let editingSetlist: Setlist?
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var name: String = ""
+    @State private var notes: String = ""
+    
+    init(setlistManager: SetlistManager, editingSetlist: Setlist? = nil) {
+        self.setlistManager = setlistManager
+        self.editingSetlist = editingSetlist
+    }
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section("Setlist Details") {
+                    TextField("Setlist Name", text: $name)
+                    
+                    TextField("Notes (optional)", text: $notes, axis: .vertical)
+                        .lineLimit(3, reservesSpace: true)
+                }
+            }
+            .navigationTitle(editingSetlist == nil ? "New Setlist" : "Edit Setlist")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        saveSetlist()
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+        .onAppear {
+            if let setlist = editingSetlist {
+                name = setlist.name
+                notes = setlist.notes
+            }
+        }
+    }
+    
+    private func saveSetlist() {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if let editingSetlist = editingSetlist {
+            var updatedSetlist = editingSetlist
+            updatedSetlist.updateName(trimmedName)
+            updatedSetlist.updateNotes(trimmedNotes)
+            setlistManager.updateSetlist(updatedSetlist)
+        } else {
+            let newSetlist = Setlist(name: trimmedName, notes: trimmedNotes)
+            setlistManager.createSetlist(newSetlist)
+        }
+        
+        dismiss()
+    }
+}
+
+
 
 // MARK: - Sounds Tab View (Modified with Icons in Search Bar)
 struct SoundsTabView: View {
