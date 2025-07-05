@@ -4,6 +4,43 @@ import SwiftUI
 struct SoundsView: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var isPreviewPlaying = false
+    @State private var searchText = ""
+    @State private var sortOption: LibrarySortOption = .none
+    @State private var filterOption: LibraryFilterOption = .all
+    
+    var filteredAndSortedSounds: [SyntheticSound] {
+        let filtered: [SyntheticSound]
+        if searchText.isEmpty {
+            filtered = SyntheticSound.allCases
+        } else {
+            filtered = SyntheticSound.allCases.filter { sound in
+                sound.rawValue.localizedCaseInsensitiveContains(searchText) ||
+                sound.description.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        let filteredByOption: [SyntheticSound]
+        switch filterOption {
+        case .all:
+            filteredByOption = filtered
+        case .favorites:
+            // For sounds, we could potentially filter by user preferences if implemented
+            // For now, this will just show all sounds
+            filteredByOption = filtered
+        case .applied:
+            // Show only the currently selected sound
+            filteredByOption = filtered.filter { $0 == metronome.selectedSoundType }
+        }
+        
+        switch sortOption {
+        case .none:
+            return filteredByOption
+        case .aToZ:
+            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedAscending }
+        case .zToA:
+            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedDescending }
+        }
+    }
     
     // Get screen dimensions directly
     private var screenWidth: CGFloat {
@@ -20,47 +57,138 @@ struct SoundsView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                // Sounds Title
-                Text("Sounds")
-                    .font(.system(size: titleFontSize, weight: .bold, design: .default))
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, sectionPadding)
-                    .padding(.bottom, sectionPadding)
-                
-                // Current Sound Section
-                VStack(alignment: .leading, spacing: settingsSectionSpacing) {
-                    Text("Current Sound")
-                        .font(.system(size: sectionHeaderFontSize, weight: .bold))
-                        .padding(.bottom, settingsItemSpacing)
-                    
-                    currentSoundCard
-                }
-                .padding(.bottom, sectionSpacing)
-                
-                Divider()
-                    .padding(.bottom, sectionSpacing)
-                
-                // Available Sounds Section
-                VStack(alignment: .leading, spacing: settingsSectionSpacing) {
-                    Text("Available Sounds")
-                        .font(.system(size: sectionHeaderFontSize, weight: .bold))
-                        .padding(.bottom, settingsItemSpacing)
-                    
-                    LazyVStack(spacing: soundItemSpacing) {
-                        ForEach(SyntheticSound.allCases, id: \.self) { sound in
-                            soundRowView(sound: sound)
+        NavigationView {
+            VStack(spacing: 0) {
+                // Search Section with embedded icons (matching LibraryView style)
+                VStack(spacing: 0) {
+                    HStack {
+                        // Search bar with embedded icons
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                                .font(.system(size: 16))
+                            
+                            TextField("Search sounds...", text: $searchText)
+                                .textFieldStyle(.plain)
+                            
+                            Spacer()
+                            
+                            // Sort button inside search bar
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    sortOption = sortOption.nextOption
+                                }
+                            }) {
+                                Image(systemName: sortOption.iconName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(sortOption == .none ? .secondary : .accentColor)
+                            }
+                            .buttonStyle(.plain)
+                            
+                            // Filter button inside search bar
+                            Menu {
+                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                    Button(action: {
+                                        filterOption = option
+                                    }) {
+                                        HStack {
+                                            Text(option.rawValue)
+                                            if filterOption == option {
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: filterOption.iconName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                            }
+                            .buttonStyle(.plain)
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(.systemGray6))
+                        )
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 12)
+                    
+                    Divider()
+                        .background(Color.white.opacity(0.2))
+                }
+                .background(Color(.systemBackground))
+                
+                // Scrollable content
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Current Sound Section
+                        VStack(alignment: .leading, spacing: settingsSectionSpacing) {
+                            Text("Current Sound")
+                                .font(.system(size: sectionHeaderFontSize, weight: .bold))
+                                .padding(.bottom, settingsItemSpacing)
+                            
+                            currentSoundCard
+                        }
+                        .padding(.top, sectionPadding)
+                        .padding(.bottom, sectionSpacing)
+                        
+                        Divider()
+                            .padding(.bottom, sectionSpacing)
+                        
+                        // Available Sounds Section
+                        VStack(alignment: .leading, spacing: settingsSectionSpacing) {
+                            Text("\(filteredAndSortedSounds.count) sound\(filteredAndSortedSounds.count == 1 ? "" : "s")")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                                .padding(.bottom, 8)
+                            
+                            LazyVStack(spacing: soundItemSpacing) {
+                                ForEach(filteredAndSortedSounds, id: \.self) { sound in
+                                    soundRowView(sound: sound)
+                                }
+                            }
+                        }
+                        
+                        // Add extra padding at the bottom
+                        Spacer()
+                            .frame(height: isIPad ? 100 : 80)
+                    }
+                    .padding(.horizontal, horizontalPadding)
                 }
                 
-                // Add extra padding at the bottom to account for the navigation bar
-                Spacer()
-                    .frame(height: isIPad ? 100 : 80)
+                // Fixed "Currently Applied" section at bottom - Always visible
+                VStack(spacing: 0) {
+                    Divider()
+                        .background(Color.white.opacity(0.2))
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Currently Applied")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        CurrentlyAppliedSoundView(
+                            sound: metronome.selectedSoundType,
+                            metronome: metronome,
+                            isPreviewPlaying: $isPreviewPlaying,
+                            playPreview: { sound in
+                                playPreview(sound)
+                            }
+                        )
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color(.systemBackground))
+                }
             }
-            .padding(.horizontal, horizontalPadding)
+            .navigationTitle("Sounds")
+            .navigationBarTitleDisplayMode(.large)
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private var currentSoundCard: some View {
@@ -131,8 +259,6 @@ struct SoundsView: View {
         )
     }
     
-
-
     private func soundRowView(sound: SyntheticSound) -> some View {
         let isSelected = sound == metronome.selectedSoundType
         
@@ -153,7 +279,7 @@ struct SoundsView: View {
                 // Sound icon
                 Image(systemName: soundIcon(for: sound))
                     .font(.system(size: soundIconSize, weight: .medium))
-                    .foregroundColor(isSelected ? .white : .accentColor)
+                    .foregroundColor(isSelected ? .black : .accentColor)
                     .frame(width: soundIconFrameSize, height: soundIconFrameSize)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
@@ -216,6 +342,13 @@ struct SoundsView: View {
             )
         }
         .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isSelected ? Color(.systemGray6) : Color.clear)
+                .padding(.horizontal, 16)
+        )
     }
     
     // MARK: - Helper Methods
@@ -246,21 +379,7 @@ struct SoundsView: View {
         }
     }
     
-    // MARK: - Responsive Properties
-    
-    private var titleFontSize: CGFloat {
-        if isIPad {
-            return screenWidth <= 768 ? 32 :
-                   screenWidth <= 834 ? 36 :
-                   screenWidth <= 1024 ? 40 :
-                   44
-        } else {
-            return screenWidth <= 320 ? 20 :
-                   screenWidth <= 375 ? 24 :
-                   screenWidth <= 393 ? 28 :
-                   30
-        }
-    }
+    // MARK: - Responsive Properties (Same as original SoundsView)
     
     private var sectionHeaderFontSize: CGFloat {
         if isIPad {
@@ -511,6 +630,67 @@ struct SoundsView: View {
                    screenWidth <= 375 ? 10 :
                    screenWidth <= 393 ? 12 :
                    14
+        }
+    }
+}
+
+// MARK: - Currently Applied Sound View
+struct CurrentlyAppliedSoundView: View {
+    let sound: SyntheticSound
+    @ObservedObject var metronome: MetronomeEngine
+    @Binding var isPreviewPlaying: Bool
+    let playPreview: (SyntheticSound) -> Void
+    
+    var body: some View {
+        HStack {
+            // Sound icon
+            Image(systemName: soundIcon(for: sound))
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: 30, height: 30)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.white.opacity(0.15))
+                )
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(sound.rawValue)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                
+                Text(sound.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            // Preview button
+            Button(action: {
+                playPreview(sound)
+            }) {
+                Image(systemName: isPreviewPlaying ? "waveform" : "play.circle.fill")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(.accentColor)
+            }
+            .buttonStyle(.plain)
+            .disabled(isPreviewPlaying || metronome.isPlaying)
+        }
+        .padding(.vertical, 12)
+    }
+    
+    private func soundIcon(for sound: SyntheticSound) -> String {
+        switch sound {
+        case .click:
+            return "waveform.path"
+        case .snap:
+            return "hand.point.up"
+        case .beep:
+            return "speaker.wave.2"
+        case .blip:
+            return "dot.radiowaves.left.and.right"
         }
     }
 }

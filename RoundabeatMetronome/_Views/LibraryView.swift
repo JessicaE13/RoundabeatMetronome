@@ -204,7 +204,7 @@ struct SongsTabView: View {
                                 .foregroundColor(.secondary)
                                 .font(.system(size: 16))
                             
-                            TextField("Search songs...", text: $songManager.searchText)
+                            TextField("Search songs", text: $songManager.searchText)
                                 .textFieldStyle(.plain)
                             
                             Spacer()
@@ -252,9 +252,7 @@ struct SongsTabView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .padding(.bottom, 12)
-                    
-                    Divider()
-                        .background(Color.white.opacity(0.2))
+                
                 }
                 .background(Color(.systemBackground))
                 
@@ -267,7 +265,7 @@ struct SongsTabView: View {
                                 .padding(.top, 20)
                         } else {
                             VStack(alignment: .leading, spacing: 0) {
-                                Text("\(sortedSongs.count) song\(sortedSongs.count == 1 ? "" : "s")")
+                                Text("\(sortedSongs.count) SONG\(sortedSongs.count == 1 ? "" : "S")")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
@@ -329,9 +327,7 @@ struct SongsTabView: View {
                 // Fixed "Currently Applied" section at bottom - Always visible
                 if let currentSong = songManager.currentlySelectedSong {
                     VStack(spacing: 0) {
-                        Divider()
-                            .background(Color.white.opacity(0.2))
-                        
+                 
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Currently Applied")
                                 .font(.system(size: 14, weight: .medium))
@@ -493,7 +489,7 @@ struct SetlistsTabView: View {
                                 .foregroundColor(.secondary)
                                 .font(.system(size: 16))
                             
-                            TextField("Search setlists...", text: $setlistManager.searchText)
+                            TextField("Search setlists", text: $setlistManager.searchText)
                                 .textFieldStyle(.plain)
                             
                             Spacer()
@@ -542,8 +538,6 @@ struct SetlistsTabView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 12)
                     
-                    Divider()
-                        .background(Color.white.opacity(0.09))
                 }
                 .background(Color(.systemBackground))
                 
@@ -556,7 +550,7 @@ struct SetlistsTabView: View {
                                 .padding(.top, 20)
                         } else {
                             VStack(alignment: .leading, spacing: 0) {
-                                Text("My Setlists")
+                                Text("MY SETLISTS")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
@@ -746,7 +740,7 @@ struct SoundsViewForLibrary: View {
                             .foregroundColor(.secondary)
                             .font(.system(size: 16))
                         
-                        TextField("Search sounds...", text: $searchText)
+                        TextField("Search sounds", text: $searchText)
                             .textFieldStyle(.plain)
                         
                         Spacer()
@@ -810,8 +804,7 @@ struct SoundsViewForLibrary: View {
                 .padding(.top, sectionPadding)
                 .padding(.bottom, sectionSpacing)
                 
-                Divider()
-                    .padding(.bottom, sectionSpacing)
+              
                 
                 // Available Sounds Section
                 VStack(alignment: .leading, spacing: settingsSectionSpacing) {
