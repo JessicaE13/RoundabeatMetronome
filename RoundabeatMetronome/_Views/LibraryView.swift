@@ -34,6 +34,24 @@ enum LibrarySortOption: String, CaseIterable {
     }
 }
 
+// MARK: - Filter Options
+enum LibraryFilterOption: String, CaseIterable {
+    case all = "All"
+    case favorites = "Favorites"
+    case applied = "Currently Applied"
+    
+    var iconName: String {
+        switch self {
+        case .all:
+            return "line.3.horizontal.decrease.circle"
+        case .favorites:
+            return "heart.circle"
+        case .applied:
+            return "checkmark.circle"
+        }
+    }
+}
+
 // MARK: - Library Tab Types (Updated with Sounds First)
 enum LibraryTab: String, CaseIterable {
     case sounds = "Sounds"
@@ -106,9 +124,9 @@ struct LibraryView: View {
                         }) {
                             HStack(spacing: 6) {
                                 Image(systemName: tab.iconName)
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(.system(size: 12, weight: .medium))
                                 Text(tab.rawValue)
-                                    .font(.system(size: 16, weight: .medium))
+                                    .font(.system(size: 14, weight: .medium))
                             }
                             .foregroundColor(selectedTab == tab ? .black : .primary)
                             .padding(.horizontal, 20)
@@ -136,7 +154,7 @@ struct LibraryView: View {
     }
 }
 
-// MARK: - Songs Tab View (Modified)
+// MARK: - Songs Tab View (Modified with Search Bar at Top)
 struct SongsTabView: View {
     @ObservedObject var metronome: MetronomeEngine
     @ObservedObject var songManager: SongManager
@@ -148,50 +166,119 @@ struct SongsTabView: View {
     @State private var showingApplyConfirmation = false
     @State private var songToApply: Song? = nil
     @State private var sortOption: LibrarySortOption = .none
+    @State private var filterOption: LibraryFilterOption = .all
     
     var sortedSongs: [Song] {
         let filtered = songManager.filteredSongs
+        let filteredByOption: [Song]
+        
+        switch filterOption {
+        case .all:
+            filteredByOption = filtered
+        case .favorites:
+            filteredByOption = filtered.filter { $0.isFavorite }
+        case .applied:
+            if let currentSongId = songManager.currentlySelectedSongId {
+                filteredByOption = filtered.filter { $0.id == currentSongId }
+            } else {
+                filteredByOption = []
+            }
+        }
+        
         switch sortOption {
         case .none:
-            return filtered
+            return filteredByOption
         case .aToZ:
-            return filtered.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+            return filteredByOption.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
         case .zToA:
-            return filtered.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedDescending }
+            return filteredByOption.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedDescending }
         }
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            Form {
-                // Search and Actions Section
-                Section {
+            // Search Section (matching Sounds tab style)
+            VStack(spacing: 0) {
+                HStack {
                     HStack {
-                        // Search field
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.secondary)
-                                .font(.system(size: 16))
-                            
-                            TextField("Search songs...", text: $songManager.searchText)
-                                .textFieldStyle(.plain)
-                        }
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 16))
                         
-                        // Sort button on the right
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                sortOption = sortOption.nextOption
-                            }
-                        }) {
-                            Image(systemName: sortOption.iconName)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(sortOption == .none ? .secondary : .white)
-                        }
-                        .buttonStyle(.plain)
+                        TextField("Search songs...", text: $songManager.searchText)
+                            .textFieldStyle(.plain)
                     }
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color(.systemGray6))
+                    )
+                    
+                    // Sort button
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            sortOption = sortOption.nextOption
+                        }
+                    }) {
+                        Image(systemName: sortOption.iconName)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(sortOption == .none ? .secondary : .white)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    // Filter button
+                    Menu {
+                        ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                            Button(action: {
+                                filterOption = option
+                            }) {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if filterOption == option {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: filterOption.iconName)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                    }
+                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
                 
+                // Add Song button
+                Button(action: {
+                    showingAddSong = true
+                }) {
+                    HStack {
+                        Spacer()
+                        Image(systemName: "plus.circle.fill")
+                        Text("Add Song")
+                        Spacer()
+                    }
+                    .foregroundColor(.accentColor)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.accentColor.opacity(0.1))
+                    )
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                
+                Divider()
+                    .background(Color.white.opacity(0.2))
+            }
+            .background(Color(.systemBackground))
+            
+            // Form content
+            Form {
                 // Songs List Section - Modified
                 if sortedSongs.isEmpty {
                     Section {
@@ -199,31 +286,6 @@ struct SongsTabView: View {
                     }
                 } else {
                     Section("\(sortedSongs.count) song\(sortedSongs.count == 1 ? "" : "s")") {
-                        // Add Song button as first item
-                        Button(action: {
-                            showingAddSong = true
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 20, weight: .medium))
-                                    .foregroundColor(.accentColor)
-                                    .frame(width: 24, height: 24)
-                                
-                                Text("Add Song")
-                                    .font(.body)
-                                    .foregroundColor(.accentColor)
-                                
-                                Spacer()
-                            }
-                            .padding(.vertical, 12)
-                        }
-                        .buttonStyle(.plain)
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.accentColor.opacity(0.05))
-                                .padding(.vertical, 2)
-                        )
-                        
                         // Songs list
                         ForEach(sortedSongs) { song in
                             LibraryEnhancedSongFormRowView(
@@ -347,7 +409,7 @@ struct SongsTabView: View {
     }
 }
 
-// MARK: - Setlists Tab View (Unchanged)
+// MARK: - Setlists Tab View (Modified with Search Bar at Top)
 struct SetlistsTabView: View {
     @ObservedObject var setlistManager: SetlistManager
     @ObservedObject var songManager: SongManager
@@ -357,25 +419,51 @@ struct SetlistsTabView: View {
     @State private var selectedSetlist: Setlist? = nil
     @State private var showingEditSetlist = false
     @State private var sortOption: LibrarySortOption = .none
+    @State private var filterOption: LibraryFilterOption = .all
     
     var sortedSetlists: [Setlist] {
         let filtered = setlistManager.filteredSetlists
+        let filteredByOption: [Setlist]
+        
+        switch filterOption {
+        case .all:
+            filteredByOption = filtered
+        case .favorites:
+            // For setlists, we'll filter by those containing favorite songs
+            filteredByOption = filtered.filter { setlist in
+                setlist.songIds.contains { songId in
+                    if let song = songManager.songs.first(where: { $0.id == songId }) {
+                        return song.isFavorite
+                    }
+                    return false
+                }
+            }
+        case .applied:
+            // For setlists, we'll filter by those containing the currently applied song
+            if let currentSongId = songManager.currentlySelectedSongId {
+                filteredByOption = filtered.filter { setlist in
+                    setlist.songIds.contains(currentSongId)
+                }
+            } else {
+                filteredByOption = []
+            }
+        }
+        
         switch sortOption {
         case .none:
-            return filtered
+            return filteredByOption
         case .aToZ:
-            return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            return filteredByOption.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         case .zToA:
-            return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+            return filteredByOption.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
         }
     }
     
     var body: some View {
-        Form {
-            // Search and Actions Section
-            Section {
+        VStack(spacing: 0) {
+            // Search Section (matching Sounds tab style)
+            VStack(spacing: 0) {
                 HStack {
-                    // Search field
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
@@ -384,8 +472,14 @@ struct SetlistsTabView: View {
                         TextField("Search setlists...", text: $setlistManager.searchText)
                             .textFieldStyle(.plain)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color(.systemGray6))
+                    )
                     
-                    // Sort button on the right
+                    // Sort button
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             sortOption = sortOption.nextOption
@@ -396,57 +490,92 @@ struct SetlistsTabView: View {
                             .foregroundColor(sortOption == .none ? .secondary : .white)
                     }
                     .buttonStyle(.plain)
-                }
-                .padding(.vertical, 4)
-                
-                HStack {
-                    Spacer()
                     
-                    Button(action: {
-                        showingCreateSetlist = true
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                            Text("New Setlist")
-                        }
-                        .foregroundColor(.accentColor)
-                    }
-                }
-                .padding(.vertical, 4)
-            }
-            
-            // Setlists List Section
-            if sortedSetlists.isEmpty {
-                Section {
-                    emptySetlistsView
-                }
-            } else {
-                Section("My Setlists") {
-                    ForEach(sortedSetlists) { setlist in
-                        NavigationLink(destination: SetlistDetailView(
-                            setlist: setlist,
-                            setlistManager: setlistManager,
-                            songManager: songManager,
-                            metronome: metronome
-                        )) {
-                            LibrarySetlistRowView(
-                                setlist: setlist,
-                                songCount: setlist.songIds.count,
-                                onEdit: {
-                                    selectedSetlist = setlist
-                                    showingEditSetlist = true
-                                },
-                                onDelete: {
-                                    setlistManager.deleteSetlist(setlist)
-                                },
-                                onDuplicate: {
-                                    setlistManager.duplicateSetlist(setlist)
+                    // Filter button
+                    Menu {
+                        ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                            Button(action: {
+                                filterOption = option
+                            }) {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if filterOption == option {
+                                        Image(systemName: "checkmark")
+                                    }
                                 }
-                            )
+                            }
                         }
-                        .listRowSeparator(.hidden) // Hide separator lines
+                    } label: {
+                        Image(systemName: filterOption.iconName)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(filterOption == .all ? .secondary : .accentColor)
                     }
-                    .onMove(perform: setlistManager.moveSetlist)
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+                
+                // Add Setlist button
+                Button(action: {
+                    showingCreateSetlist = true
+                }) {
+                    HStack {
+                        Spacer()
+                        Image(systemName: "plus.circle.fill")
+                        Text("Add Setlist")
+                        Spacer()
+                    }
+                    .foregroundColor(.accentColor)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.accentColor.opacity(0.1))
+                    )
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                
+                Divider()
+                    .background(Color.white.opacity(0.2))
+            }
+            .background(Color(.systemBackground))
+            
+            // Form content
+            Form {
+                // Setlists List Section
+                if sortedSetlists.isEmpty {
+                    Section {
+                        emptySetlistsView
+                    }
+                } else {
+                    Section("My Setlists") {
+                        ForEach(sortedSetlists) { setlist in
+                            NavigationLink(destination: SetlistDetailView(
+                                setlist: setlist,
+                                setlistManager: setlistManager,
+                                songManager: songManager,
+                                metronome: metronome
+                            )) {
+                                LibrarySetlistRowView(
+                                    setlist: setlist,
+                                    songCount: setlist.songIds.count,
+                                    onEdit: {
+                                        selectedSetlist = setlist
+                                        showingEditSetlist = true
+                                    },
+                                    onDelete: {
+                                        setlistManager.deleteSetlist(setlist)
+                                    },
+                                    onDuplicate: {
+                                        setlistManager.duplicateSetlist(setlist)
+                                    }
+                                )
+                            }
+                            .listRowSeparator(.hidden) // Hide separator lines
+                        }
+                        .onMove(perform: setlistManager.moveSetlist)
+                    }
                 }
             }
         }
@@ -505,20 +634,45 @@ struct SoundsTabView: View {
     }
 }
 
-// MARK: - Modified SoundsView for Library (without title)
+// MARK: - Modified SoundsView for Library (with sort functionality)
 struct SoundsViewForLibrary: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var isPreviewPlaying = false
     @State private var searchText = ""
+    @State private var sortOption: LibrarySortOption = .none
+    @State private var filterOption: LibraryFilterOption = .all
     
-    var filteredSounds: [SyntheticSound] {
+    var filteredAndSortedSounds: [SyntheticSound] {
+        let filtered: [SyntheticSound]
         if searchText.isEmpty {
-            return SyntheticSound.allCases
+            filtered = SyntheticSound.allCases
         } else {
-            return SyntheticSound.allCases.filter { sound in
+            filtered = SyntheticSound.allCases.filter { sound in
                 sound.rawValue.localizedCaseInsensitiveContains(searchText) ||
                 sound.description.localizedCaseInsensitiveContains(searchText)
             }
+        }
+        
+        let filteredByOption: [SyntheticSound]
+        switch filterOption {
+        case .all:
+            filteredByOption = filtered
+        case .favorites:
+            // For sounds, we could potentially filter by user preferences if implemented
+            // For now, this will just show all sounds
+            filteredByOption = filtered
+        case .applied:
+            // Show only the currently selected sound
+            filteredByOption = filtered.filter { $0 == metronome.selectedSoundType }
+        }
+        
+        switch sortOption {
+        case .none:
+            return filteredByOption
+        case .aToZ:
+            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedAscending }
+        case .zToA:
+            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedDescending }
         }
     }
     
@@ -555,8 +709,41 @@ struct SoundsViewForLibrary: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color(.systemGray6))
                     )
+                    
+                    // Sort button
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            sortOption = sortOption.nextOption
+                        }
+                    }) {
+                        Image(systemName: sortOption.iconName)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(sortOption == .none ? .secondary : .white)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    // Filter button
+                    Menu {
+                        ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                            Button(action: {
+                                filterOption = option
+                            }) {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if filterOption == option {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: filterOption.iconName)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .padding(.horizontal, horizontalPadding)
+                .padding(.horizontal, 16)
                 .padding(.top, 16)
                 .padding(.bottom, 12)
                 
@@ -588,7 +775,7 @@ struct SoundsViewForLibrary: View {
                         .padding(.bottom, settingsItemSpacing)
                     
                     LazyVStack(spacing: soundItemSpacing) {
-                        ForEach(filteredSounds, id: \.self) { sound in
+                        ForEach(filteredAndSortedSounds, id: \.self) { sound in
                             soundRowView(sound: sound)
                         }
                     }
