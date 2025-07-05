@@ -5,7 +5,7 @@ import GoogleMobileAds
 // MARK: - Navigation State (Updated)
 enum NavigationTab: String, CaseIterable {
     case sounds = "Sounds"
-    case library = "My Songs"  // Combined Songs + Setlists
+    case library = "Library"  // Combined Songs + Setlists
     case metronome = "Metronome"
     case settings = "Settings"
     
