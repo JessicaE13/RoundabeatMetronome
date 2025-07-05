@@ -550,7 +550,7 @@ struct SetlistsTabView: View {
                                 .padding(.top, 20)
                         } else {
                             VStack(alignment: .leading, spacing: 0) {
-                                Text("MY SETLISTS")
+                                Text("\(sortedSetlists.count) SETLIST\(sortedSetlists.count == 1 ? "" : "S")")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 16)
