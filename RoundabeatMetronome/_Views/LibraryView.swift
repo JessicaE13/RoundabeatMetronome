@@ -81,7 +81,7 @@ struct LibraryView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Horizontal Pill Segmented Control
+        
                 horizontalPillSegmentedControl
                 
                 // Content based on selected tab (Updated order)
@@ -668,12 +668,12 @@ struct SoundsTabView: View {
     @ObservedObject var metronome: MetronomeEngine
     
     var body: some View {
-        // Use the existing SoundsView but remove the title since we're in a tab
         SoundsViewForLibrary(metronome: metronome)
     }
 }
 
 // MARK: - Modified SoundsView for Library (with icons in search bar and NO current sound section)
+
 struct SoundsViewForLibrary: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var isPreviewPlaying = false
@@ -697,11 +697,8 @@ struct SoundsViewForLibrary: View {
         case .all:
             filteredByOption = filtered
         case .favorites:
-            // For sounds, we could potentially filter by user preferences if implemented
-            // For now, this will just show all sounds
             filteredByOption = filtered
         case .applied:
-            // Show only the currently selected sound
             filteredByOption = filtered.filter { $0 == metronome.selectedSoundType }
         }
         
@@ -715,7 +712,6 @@ struct SoundsViewForLibrary: View {
         }
     }
     
-    // Get screen dimensions directly
     private var screenWidth: CGFloat {
         UIScreen.main.bounds.width
     }
@@ -724,17 +720,16 @@ struct SoundsViewForLibrary: View {
         UIScreen.main.bounds.height
     }
     
-    // Check if device is iPad
     private var isIPad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Search Section with embedded icons
+    
             VStack(spacing: 0) {
                 HStack {
-                    // Search bar with embedded icons
+           
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
@@ -744,8 +739,7 @@ struct SoundsViewForLibrary: View {
                             .textFieldStyle(.plain)
                         
                         Spacer()
-                        
-                        // Sort button inside search bar
+
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.2)) {
                                 sortOption = sortOption.nextOption
@@ -757,7 +751,6 @@ struct SoundsViewForLibrary: View {
                         }
                         .buttonStyle(.plain)
                         
-                        // Filter button inside search bar
                         Menu {
                             ForEach(LibraryFilterOption.allCases, id: \.self) { option in
                                 Button(action: {
@@ -793,7 +786,7 @@ struct SoundsViewForLibrary: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // Available Sounds Section (removed Current Sound section)
+             
                     VStack(alignment: .leading, spacing: settingsSectionSpacing) {
                         Text("\(filteredAndSortedSounds.count) SOUND\(filteredAndSortedSounds.count == 1 ? "" : "S")")
                             .font(.system(size: 14, weight: .medium))
