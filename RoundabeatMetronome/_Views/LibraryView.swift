@@ -63,8 +63,8 @@ struct LibraryView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Segmented Picker Tab Bar (Updated for new order)
-                segmentedPickerTabBar
+                // Horizontal Pill Segmented Control
+                horizontalPillSegmentedControl
                 
                 // Content based on selected tab (Updated order)
                 Group {
@@ -93,13 +93,11 @@ struct LibraryView: View {
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
-    private var segmentedPickerTabBar: some View {
+    private var horizontalPillSegmentedControl: some View {
         VStack(spacing: 0) {
-            // Segmented Control with custom styling (Updated for new order)
-            HStack {
-                Spacer()
-                
-                HStack(spacing: 0) {
+            // Horizontal scrolling pill buttons
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
                     ForEach(LibraryTab.allCases, id: \.self) { tab in
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.3)) {
@@ -112,52 +110,19 @@ struct LibraryView: View {
                                 Text(tab.rawValue)
                                     .font(.system(size: 16, weight: .medium))
                             }
-                            .foregroundColor(selectedTab == tab ? .primary : .secondary)
-                            .padding(.horizontal, 16) // Reduced padding for 3 tabs
-                            .padding(.vertical, 8)
+                            .foregroundColor(selectedTab == tab ? .black : .primary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(selectedTab == tab ? Color.primary : Color(.systemGray5))
+                            )
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .background(
-                    // Sliding background - now handles new order (Sounds, Songs, Setlists)
-                    GeometryReader { geometry in
-                        HStack {
-                            if selectedTab == .songs {
-                                Spacer()
-                            } else if selectedTab == .setlists {
-                                Spacer()
-                                Spacer()
-                            }
-                            
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(Color(.systemGray6))
-                                .frame(width: geometry.size.width / 3 - 4) // Third width minus padding
-                            
-                            if selectedTab == .sounds {
-                                Spacer()
-                                Spacer()
-                            } else if selectedTab == .songs {
-                                Spacer()
-                            }
-                        }
-                        .padding(2)
-                    }
-                    .animation(.easeInOut(duration: 0.3), value: selectedTab)
-                )
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(.systemGray3), lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                
-                Spacer()
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
             .padding(.vertical, 12)
             
             // Bottom border/divider
@@ -533,6 +498,18 @@ struct SoundsTabView: View {
 struct SoundsViewForLibrary: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var isPreviewPlaying = false
+    @State private var searchText = ""
+    
+    var filteredSounds: [SyntheticSound] {
+        if searchText.isEmpty {
+            return SyntheticSound.allCases
+        } else {
+            return SyntheticSound.allCases.filter { sound in
+                sound.rawValue.localizedCaseInsensitiveContains(searchText) ||
+                sound.description.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
     
     // Get screen dimensions directly
     private var screenWidth: CGFloat {
@@ -549,7 +526,35 @@ struct SoundsViewForLibrary: View {
     }
     
     var body: some View {
-        ScrollView {
+        VStack(spacing: 0) {
+            // Search Section
+            VStack(spacing: 0) {
+                HStack {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 16))
+                        
+                        TextField("Search sounds...", text: $searchText)
+                            .textFieldStyle(.plain)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color(.systemGray6))
+                    )
+                }
+                .padding(.horizontal, horizontalPadding)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+                
+                Divider()
+                    .background(Color.white.opacity(0.2))
+            }
+            .background(Color(.systemBackground))
+            
+            ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 // Current Sound Section
                 VStack(alignment: .leading, spacing: settingsSectionSpacing) {
@@ -572,7 +577,7 @@ struct SoundsViewForLibrary: View {
                         .padding(.bottom, settingsItemSpacing)
                     
                     LazyVStack(spacing: soundItemSpacing) {
-                        ForEach(SyntheticSound.allCases, id: \.self) { sound in
+                        ForEach(filteredSounds, id: \.self) { sound in
                             soundRowView(sound: sound)
                         }
                     }
@@ -584,6 +589,7 @@ struct SoundsViewForLibrary: View {
             }
             .padding(.horizontal, horizontalPadding)
         }
+    }
     }
     
     private var currentSoundCard: some View {
@@ -676,7 +682,7 @@ struct SoundsViewForLibrary: View {
                 // Sound icon
                 Image(systemName: soundIcon(for: sound))
                     .font(.system(size: soundIconSize, weight: .medium))
-                    .foregroundColor(isSelected ? .white : .accentColor)
+                    .foregroundColor(isSelected ? .black : .accentColor)
                     .frame(width: soundIconFrameSize, height: soundIconFrameSize)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
