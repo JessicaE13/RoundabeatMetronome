@@ -734,7 +734,7 @@ struct SoundsTabView: View {
     }
 }
 
-// MARK: - Sounds View for Library
+// MARK: - Improved Sound Preview System
 struct SoundsViewForLibrary: View {
     @ObservedObject var metronome: MetronomeEngine
     @State private var currentlyPreviewingSound: SyntheticSound? = nil
@@ -742,6 +742,9 @@ struct SoundsViewForLibrary: View {
     @State private var searchText = ""
     @State private var sortOption: LibrarySortOption = .none
     @State private var filterOption: LibraryFilterOption = .all
+    
+    // Add a serial queue for preview operations
+    private let previewQueue = DispatchQueue(label: "com.roundabeat.preview", qos: .userInteractive)
     
     var filteredAndSortedSounds: [SyntheticSound] {
         let filtered: [SyntheticSound]
@@ -898,27 +901,42 @@ struct SoundsViewForLibrary: View {
         }
     }
     
+    // MARK: - Improved Preview Function
     private func playPreview(_ sound: SyntheticSound) {
-        // Cancel any existing preview timer
-        previewWorkItem?.cancel()
-        
-        // Set the currently previewing sound immediately
-        currentlyPreviewingSound = sound
-        
-        // Play the preview
-        metronome.playSoundPreviewAdvanced(sound)
-        
-        // Create a new work item to reset the preview state
-        let workItem = DispatchWorkItem {
-            currentlyPreviewingSound = nil
+        // Prevent multiple simultaneous previews
+        guard currentlyPreviewingSound == nil else {
+            print("🔊 Preview already playing, ignoring new request")
+            return
         }
         
-        // Store the work item so we can cancel it if needed
-        previewWorkItem = workItem
-        
-        // Schedule the reset
-        let previewDuration = sound == .snap ? 0.25 : 0.25
-        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration, execute: workItem)
+        previewQueue.async {
+            // Cancel any existing preview timer on the queue
+            self.previewWorkItem?.cancel()
+            
+            // Set the currently previewing sound on main thread
+            DispatchQueue.main.async {
+                self.currentlyPreviewingSound = sound
+            }
+            
+            // Play the preview on main thread (since it needs to access the metronome)
+            DispatchQueue.main.async {
+                self.metronome.playSoundPreviewAdvanced(sound)
+            }
+            
+            // Create a new work item to reset the preview state
+            let workItem = DispatchWorkItem {
+                DispatchQueue.main.async {
+                    self.currentlyPreviewingSound = nil
+                }
+            }
+            
+            // Store the work item so we can cancel it if needed
+            self.previewWorkItem = workItem
+            
+            // Schedule the reset with a longer duration to ensure cleanup
+            let previewDuration: TimeInterval = sound == .snap ? 0.4 : 0.4
+            DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration, execute: workItem)
+        }
     }
     
     private func soundIcon(for sound: SyntheticSound) -> String {

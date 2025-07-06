@@ -172,6 +172,9 @@ class MetronomeEngine: ObservableObject {
     private var previewEngine: AVAudioEngine?
     private var previewPlayerNode: AVAudioPlayerNode?
     
+    private var lastPreviewTime: Date = .distantPast
+    private let minimumPreviewInterval: TimeInterval = 0.3
+    
     // Timing variables (accessed atomically from audio thread)
     private var sampleRate: Double = 44100.0
     private var samplesPerBeat: Double = 0
