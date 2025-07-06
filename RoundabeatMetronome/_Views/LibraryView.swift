@@ -113,18 +113,18 @@ struct LibraryView: View {
                             selectedTab = tab
                         }
                     }) {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 4) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.system(size: 12))
                             Text(tab.rawValue)
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.system(size: 12))
                         }
                         .foregroundColor(selectedTab == tab ? .black : .primary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .frame(minHeight: 44) // Ensure touch target size
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .frame(minHeight: 32)
                         .background(
-                            RoundedRectangle(cornerRadius: 20)
+                            RoundedRectangle(cornerRadius: 16)
                                 .fill(selectedTab == tab ? Color.accentColor : Color(.systemGray5))
                         )
                     }
@@ -132,7 +132,7 @@ struct LibraryView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
         }
         .background(
             Color(.systemBackground)
