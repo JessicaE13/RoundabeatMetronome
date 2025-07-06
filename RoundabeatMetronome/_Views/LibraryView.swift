@@ -113,18 +113,17 @@ struct LibraryView: View {
                             selectedTab = tab
                         }
                     }) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 6) {
                             Image(systemName: tab.iconName)
                                 .font(.system(size: 12))
                             Text(tab.rawValue)
                                 .font(.system(size: 12))
                         }
                         .foregroundColor(selectedTab == tab ? .black : .primary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .frame(minHeight: 32)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                         .background(
-                            RoundedRectangle(cornerRadius: 16)
+                            RoundedRectangle(cornerRadius: 20)
                                 .fill(selectedTab == tab ? Color.accentColor : Color(.systemGray5))
                         )
                     }
@@ -132,7 +131,7 @@ struct LibraryView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 6)
+            .padding(.vertical, 8)
         }
         .background(
             Color(.systemBackground)
@@ -187,59 +186,61 @@ struct SongsTabView: View {
         ZStack {
             VStack(spacing: 0) {
                 // Search Section
-                VStack(spacing: 8) {
-                    HStack(spacing: 8) {
+                VStack(spacing: 4) {
+                    HStack(spacing: 2) {
                         HStack(spacing: 8) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 16, weight: .regular))
+                                .font(.system(size: 12, weight: .regular))
                                 .foregroundColor(.secondary)
                             
                             TextField("Search songs", text: $songManager.searchText)
-                                .font(.system(size: 16))
+                                .font(.system(size: 12))
                                 .textFieldStyle(.plain)
                             
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    sortOption = sortOption.nextOption
+                            HStack(spacing: 2) {
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        sortOption = sortOption.nextOption
+                                    }
+                                }) {
+                                    Image(systemName: sortOption.iconName)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                                 }
-                            }) {
-                                Image(systemName: sortOption.iconName)
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(sortOption == .none ? .secondary : .accentColor)
-                            }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 44, minHeight: 44)
-                            
-                            Menu {
-                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                                    Button(action: {
-                                        filterOption = option
-                                    }) {
-                                        HStack {
-                                            Text(option.rawValue)
-                                            if filterOption == option {
-                                                Image(systemName: "checkmark")
+                                .buttonStyle(.plain)
+                                .frame(minWidth: 12, minHeight: 12)
+                                
+                                Menu {
+                                    ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                        Button(action: {
+                                            filterOption = option
+                                        }) {
+                                            HStack {
+                                                Text(option.rawValue)
+                                                if filterOption == option {
+                                                    Image(systemName: "checkmark")
+                                                }
                                             }
                                         }
                                     }
+                                } label: {
+                                    Image(systemName: filterOption.iconName)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(filterOption == .all ? .secondary : .accentColor)
                                 }
-                            } label: {
-                                Image(systemName: filterOption.iconName)
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                                .buttonStyle(.plain)
+                                .frame(minWidth: 12, minHeight: 12)
                             }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 44, minHeight: 44)
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 4)
                         .background(
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: 8)
                                 .fill(Color(.systemGray6))
                         )
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 4)
                 }
                 .background(Color(.systemBackground))
                 
@@ -482,59 +483,61 @@ struct SetlistsTabView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                VStack(spacing: 8) {
-                    HStack(spacing: 8) {
+                VStack(spacing: 4) {
+                    HStack(spacing: 2) {
                         HStack(spacing: 8) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 16, weight: .regular))
+                                .font(.system(size: 14, weight: .regular))
                                 .foregroundColor(.secondary)
                             
                             TextField("Search setlists", text: $setlistManager.searchText)
-                                .font(.system(size: 16))
+                                .font(.system(size: 15))
                                 .textFieldStyle(.plain)
                             
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    sortOption = sortOption.nextOption
+                            HStack(spacing: 2) {
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        sortOption = sortOption.nextOption
+                                    }
+                                }) {
+                                    Image(systemName: sortOption.iconName)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                                 }
-                            }) {
-                                Image(systemName: sortOption.iconName)
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(sortOption == .none ? .secondary : .accentColor)
-                            }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 44, minHeight: 44)
-                            
-                            Menu {
-                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                                    Button(action: {
-                                        filterOption = option
-                                    }) {
-                                        HStack {
-                                            Text(option.rawValue)
-                                            if filterOption == option {
-                                                Image(systemName: "checkmark")
+                                .buttonStyle(.plain)
+                                .frame(minWidth: 28, minHeight: 28)
+                                
+                                Menu {
+                                    ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                        Button(action: {
+                                            filterOption = option
+                                        }) {
+                                            HStack {
+                                                Text(option.rawValue)
+                                                if filterOption == option {
+                                                    Image(systemName: "checkmark")
+                                                }
                                             }
                                         }
                                     }
+                                } label: {
+                                    Image(systemName: filterOption.iconName)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(filterOption == .all ? .secondary : .accentColor)
                                 }
-                            } label: {
-                                Image(systemName: filterOption.iconName)
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                                .buttonStyle(.plain)
+                                .frame(minWidth: 28, minHeight: 28)
                             }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 44, minHeight: 44)
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                         .background(
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: 8)
                                 .fill(Color(.systemGray6))
                         )
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 4)
                 }
                 .background(Color(.systemBackground))
                 
@@ -780,7 +783,7 @@ struct SoundsViewForLibrary: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 8) {
-                HStack(spacing: 8) {
+                HStack(spacing: 4) {
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 16, weight: .regular))
@@ -790,41 +793,43 @@ struct SoundsViewForLibrary: View {
                             .font(.system(size: 16))
                             .textFieldStyle(.plain)
                         
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                sortOption = sortOption.nextOption
+                        HStack(spacing: 4) {
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    sortOption = sortOption.nextOption
+                                }
+                            }) {
+                                Image(systemName: sortOption.iconName)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                             }
-                        }) {
-                            Image(systemName: sortOption.iconName)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(sortOption == .none ? .secondary : .accentColor)
-                        }
-                        .buttonStyle(.plain)
-                        .frame(minWidth: 44, minHeight: 44)
-                        
-                        Menu {
-                            ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                                Button(action: {
-                                    filterOption = option
-                                }) {
-                                    HStack {
-                                        Text(option.rawValue)
-                                        if filterOption == option {
-                                            Image(systemName: "checkmark")
+                            .buttonStyle(.plain)
+                            .frame(minWidth: 36, minHeight: 36)
+                            
+                            Menu {
+                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                    Button(action: {
+                                        filterOption = option
+                                    }) {
+                                        HStack {
+                                            Text(option.rawValue)
+                                            if filterOption == option {
+                                                Image(systemName: "checkmark")
+                                            }
                                         }
                                     }
                                 }
+                            } label: {
+                                Image(systemName: filterOption.iconName)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(filterOption == .all ? .secondary : .accentColor)
                             }
-                        } label: {
-                            Image(systemName: filterOption.iconName)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                            .buttonStyle(.plain)
+                            .frame(minWidth: 36, minHeight: 36)
                         }
-                        .buttonStyle(.plain)
-                        .frame(minWidth: 44, minHeight: 44)
                     }
                     .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
+                    .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color(.systemGray6))
