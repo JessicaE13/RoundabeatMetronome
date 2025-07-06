@@ -115,9 +115,9 @@ struct LibraryView: View {
                     }) {
                         HStack(spacing: 6) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 12))
+                                .font(.system(size: 17))
                             Text(tab.rawValue)
-                                .font(.system(size: 12))
+                                .font(.system(size: 17))
                         }
                         .foregroundColor(selectedTab == tab ? .black : .primary)
                         .padding(.horizontal, 16)
@@ -131,7 +131,7 @@ struct LibraryView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 16)
         }
         .background(
             Color(.systemBackground)
@@ -487,11 +487,11 @@ struct SetlistsTabView: View {
                     HStack(spacing: 2) {
                         HStack(spacing: 8) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 14, weight: .regular))
+                                .font(.system(size: 17, weight: .regular))
                                 .foregroundColor(.secondary)
                             
                             TextField("Search setlists", text: $setlistManager.searchText)
-                                .font(.system(size: 15))
+                                .font(.system(size: 17))
                                 .textFieldStyle(.plain)
                             
                             HStack(spacing: 2) {
@@ -501,11 +501,11 @@ struct SetlistsTabView: View {
                                     }
                                 }) {
                                     Image(systemName: sortOption.iconName)
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                                 }
                                 .buttonStyle(.plain)
-                                .frame(minWidth: 28, minHeight: 28)
+                                .frame(minWidth: 12, minHeight: 28)
                                 
                                 Menu {
                                     ForEach(LibraryFilterOption.allCases, id: \.self) { option in
@@ -522,7 +522,7 @@ struct SetlistsTabView: View {
                                     }
                                 } label: {
                                     Image(systemName: filterOption.iconName)
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(filterOption == .all ? .secondary : .accentColor)
                                 }
                                 .buttonStyle(.plain)
@@ -537,7 +537,7 @@ struct SetlistsTabView: View {
                         )
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 16)
                 }
                 .background(Color(.systemBackground))
                 
