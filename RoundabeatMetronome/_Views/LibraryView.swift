@@ -737,7 +737,8 @@ struct SoundsTabView: View {
 // MARK: - Sounds View for Library
 struct SoundsViewForLibrary: View {
     @ObservedObject var metronome: MetronomeEngine
-    @State private var isPreviewPlaying = false
+    @State private var currentlyPreviewingSound: SyntheticSound? = nil
+    @State private var previewWorkItem: DispatchWorkItem? = nil
     @State private var searchText = ""
     @State private var sortOption: LibrarySortOption = .none
     @State private var filterOption: LibraryFilterOption = .all
@@ -846,7 +847,7 @@ struct SoundsViewForLibrary: View {
                                 sound: sound,
                                 isCurrentlyApplied: metronome.selectedSoundType == sound,
                                 metronome: metronome,
-                                isPreviewPlaying: $isPreviewPlaying,
+                                isPreviewPlaying: .constant(currentlyPreviewingSound == sound),
                                 onTap: {
                                     if #available(iOS 10.0, *) {
                                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -884,7 +885,7 @@ struct SoundsViewForLibrary: View {
                     LibraryCurrentlyAppliedSoundView(
                         sound: metronome.selectedSoundType,
                         metronome: metronome,
-                        isPreviewPlaying: $isPreviewPlaying,
+                        isPreviewPlaying: .constant(currentlyPreviewingSound == metronome.selectedSoundType),
                         playPreview: { sound in
                             playPreview(sound)
                         }
@@ -898,15 +899,26 @@ struct SoundsViewForLibrary: View {
     }
     
     private func playPreview(_ sound: SyntheticSound) {
-        guard !isPreviewPlaying else { return }
+        // Cancel any existing preview timer
+        previewWorkItem?.cancel()
         
-        isPreviewPlaying = true
+        // Set the currently previewing sound immediately
+        currentlyPreviewingSound = sound
+        
+        // Play the preview
         metronome.playSoundPreviewAdvanced(sound)
         
-        let previewDuration = sound == .snap ? 0.25 : 0.25
-        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration) {
-            isPreviewPlaying = false
+        // Create a new work item to reset the preview state
+        let workItem = DispatchWorkItem {
+            currentlyPreviewingSound = nil
         }
+        
+        // Store the work item so we can cancel it if needed
+        previewWorkItem = workItem
+        
+        // Schedule the reset
+        let previewDuration = sound == .snap ? 0.25 : 0.25
+        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration, execute: workItem)
     }
     
     private func soundIcon(for sound: SyntheticSound) -> String {
