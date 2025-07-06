@@ -4,32 +4,31 @@ import GoogleMobileAds
 
 // MARK: - Navigation State (Updated - Removed Sounds)
 enum NavigationTab: String, CaseIterable {
-    case library = "Library"  // Combined Songs + Setlists + Sounds
+    case library = "Library"
     case metronome = "Metronome"
     case settings = "Settings"
     
     var iconName: String {
         switch self {
         case .library:
-            return "rectangle.stack.badge.play.fill"  // Icon for combined library
+            return "rectangle.stack.badge.play.fill"
         case .metronome:
             return "metronome"
         case .settings:
-            return "gear"
+            return "slider.vertical.3"
         }
     }
 }
 
-// MARK: - Bottom Navigation Bar (Updated - 3 tabs instead of 4)
+// MARK: - Bottom Navigation Bar
 struct BottomNavigationBar: View {
     @Binding var selectedTab: NavigationTab
     
-    // Get screen dimensions directly
+
     private var screenWidth: CGFloat {
         UIScreen.main.bounds.width
     }
     
-    // Check if device is iPad
     private var isIPad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
@@ -88,7 +87,7 @@ struct FlashOverlay: View {
             .fill(Color.white)
             .opacity(isFlashing ? 0.8 : 0.0)
             .ignoresSafeArea()
-            .allowsHitTesting(false) // Allow touches to pass through
+            .allowsHitTesting(false)
     }
 }
 
@@ -105,10 +104,9 @@ struct ContentView: View {
                 BackgroundView()
           
                 VStack(spacing: 0) {
-                    // Main content area - this will now always leave space for the navigation bar
                     Group {
                         switch selectedTab {
-                        case .library:  // Now includes Sounds tab within it
+                        case .library:
                             LibraryView(
                                 metronome: metronome,
                                 songManager: songManager,
@@ -122,11 +120,9 @@ struct ContentView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                    // Bottom navigation - always visible
                     BottomNavigationBar(selectedTab: $selectedTab)
                 }
                 
-                // Flash overlay - appears on top of everything
                 FlashOverlay(isFlashing: metronome.isFlashing)
             }
             .preferredColorScheme(.dark)
@@ -144,7 +140,7 @@ struct ContentView: View {
                 setlistManager.createSampleSetlists(with: songManager)
             }
         }
-        // Monitor metronome changes and validate selected song
+
         .onChange(of: metronome.bpm) { oldValue, newValue in
             songManager.validateSelectedSongAgainstMetronome(metronome: metronome)
         }
