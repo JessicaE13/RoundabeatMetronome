@@ -185,16 +185,16 @@ struct SongsTabView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // Search Section
+                // Search Section - Updated to match setlists styling
                 VStack(spacing: 4) {
                     HStack(spacing: 2) {
                         HStack(spacing: 8) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 12, weight: .regular))
+                                .font(.system(size: 17, weight: .regular))
                                 .foregroundColor(.secondary)
                             
                             TextField("Search songs", text: $songManager.searchText)
-                                .font(.system(size: 12))
+                                .font(.system(size: 17))
                                 .textFieldStyle(.plain)
                             
                             HStack(spacing: 2) {
@@ -204,11 +204,11 @@ struct SongsTabView: View {
                                     }
                                 }) {
                                     Image(systemName: sortOption.iconName)
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                                 }
                                 .buttonStyle(.plain)
-                                .frame(minWidth: 12, minHeight: 12)
+                                .frame(minWidth: 28, minHeight: 28)
                                 
                                 Menu {
                                     ForEach(LibraryFilterOption.allCases, id: \.self) { option in
@@ -225,22 +225,22 @@ struct SongsTabView: View {
                                     }
                                 } label: {
                                     Image(systemName: filterOption.iconName)
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(filterOption == .all ? .secondary : .accentColor)
                                 }
                                 .buttonStyle(.plain)
-                                .frame(minWidth: 12, minHeight: 12)
+                                .frame(minWidth: 28, minHeight: 28)
                             }
                         }
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(Color(.systemGray6))
                         )
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 16)
                 }
                 .background(Color(.systemBackground))
                 
@@ -505,7 +505,7 @@ struct SetlistsTabView: View {
                                         .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                                 }
                                 .buttonStyle(.plain)
-                                .frame(minWidth: 12, minHeight: 28)
+                                .frame(minWidth: 28, minHeight: 28)
                                 
                                 Menu {
                                     ForEach(LibraryFilterOption.allCases, id: \.self) { option in
@@ -782,29 +782,30 @@ struct SoundsViewForLibrary: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            // Search Section - Updated to match setlists styling
             VStack(spacing: 8) {
                 HStack(spacing: 4) {
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 16, weight: .regular))
+                            .font(.system(size: 17, weight: .regular))
                             .foregroundColor(.secondary)
                         
                         TextField("Search sounds", text: $searchText)
-                            .font(.system(size: 16))
+                            .font(.system(size: 17))
                             .textFieldStyle(.plain)
                         
-                        HStack(spacing: 4) {
+                        HStack(spacing: 2) {
                             Button(action: {
                                 withAnimation(.easeInOut(duration: 0.2)) {
                                     sortOption = sortOption.nextOption
                                 }
                             }) {
                                 Image(systemName: sortOption.iconName)
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(.system(size: 17, weight: .medium))
                                     .foregroundColor(sortOption == .none ? .secondary : .accentColor)
                             }
                             .buttonStyle(.plain)
-                            .frame(minWidth: 36, minHeight: 36)
+                            .frame(minWidth: 28, minHeight: 28)
                             
                             Menu {
                                 ForEach(LibraryFilterOption.allCases, id: \.self) { option in
@@ -821,22 +822,22 @@ struct SoundsViewForLibrary: View {
                                 }
                             } label: {
                                 Image(systemName: filterOption.iconName)
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(.system(size: 17, weight: .medium))
                                     .foregroundColor(filterOption == .all ? .secondary : .accentColor)
                             }
                             .buttonStyle(.plain)
-                            .frame(minWidth: 36, minHeight: 36)
+                            .frame(minWidth: 28, minHeight: 28)
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 8)
                             .fill(Color(.systemGray6))
                     )
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.vertical, 16)
             }
             .background(Color(.systemBackground))
             
