@@ -69,6 +69,7 @@ struct MetronomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, horizontalPadding)
+        .padding(.top, topPadding) // Added top padding
         .overlay(
             // Modal Overlays - removed sound picker modal
             Group {
@@ -156,6 +157,21 @@ struct MetronomeView: View {
                    screenWidth <= 375 ? 16 :
                    screenWidth <= 393 ? 20 :
                    24
+        }
+    }
+    
+    // Added responsive top padding
+    private var topPadding: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 24 :
+                   screenWidth <= 834 ? 28 :
+                   screenWidth <= 1024 ? 32 :
+                   36
+        } else {
+            return screenWidth <= 320 ? 16 :
+                   screenWidth <= 375 ? 18 :
+                   screenWidth <= 393 ? 20 :
+                   22
         }
     }
 }
