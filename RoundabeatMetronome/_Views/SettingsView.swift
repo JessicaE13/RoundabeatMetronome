@@ -124,7 +124,7 @@ struct SettingsView: View {
                         )
                     }
 
-                    Link(destination: URL(string: "https://roundabeat.com/roundabeat-mobile-app-terms-of-use/")!) {
+                    Link(destination: URL(string: "https://roundabeat.com/mobile-app-terms-of-use/")!) {
                         SettingsLinkRow(
                             title: "Terms of Use",
                             subtitle: "View our terms and conditions",
