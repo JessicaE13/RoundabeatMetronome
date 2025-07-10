@@ -1,32 +1,25 @@
-//
-//  RoundabeatMetronomeApp.swift
-//  RoundabeatMetronome
-//
-//  Created by Jessica Estes on 4/13/25.
-//
 
 import SwiftUI
 import GoogleMobileAds
 
-
-class AppDelegate:NSObject,UIApplicationDelegate{
+class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        GADMobileAds.sharedInstance().start()
+        GADMobileAds.sharedInstance().start { status in
+        }
         return true
     }
 }
 
-
-
 @main
 struct RoundabeatMetronomeApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-   // @StateObject private var metronome = MetronomeEngine()
+    @StateObject private var bannerAdsManager = BannerAdsManager()
     
     var body: some Scene {
         WindowGroup {
-           ContentView()
-                .environmentObject(InterstitialAdManager)
+            ContentView()
+                .environmentObject(bannerAdsManager)
         }
     }
 }
