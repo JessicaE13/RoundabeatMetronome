@@ -1,6 +1,5 @@
 import SwiftUI
 import AVFoundation
-import GoogleMobileAds
 
 // MARK: - Navigation State (Updated - Removed Sounds)
 enum NavigationTab: String, CaseIterable {
