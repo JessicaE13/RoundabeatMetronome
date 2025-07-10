@@ -119,6 +119,8 @@ struct ContentView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
+                   
+                    
                     BottomNavigationBar(selectedTab: $selectedTab)
                 }
                 

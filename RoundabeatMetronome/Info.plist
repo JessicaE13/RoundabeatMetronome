@@ -3,8 +3,10 @@
 <plist version="1.0">
 <dict>
     <key>GADApplicationIdentifier</key>
+    <!-- My AdMob app ID: ca-app-pub-3227610059153215~6311718287 -->
     <!-- Sample AdMob app ID: ca-app-pub-3940256099942544~1458002511 -->
-    <string>ca-app-pub-3227610059153215~6311718287</string>
+    <!-- Dedicated test ad unit ID for iOS banners: ca-app-pub-3940256099942544/2435281174 -->
+    <string>ca-app-pub-3940256099942544~1458002511</string>
     <key>SKAdNetworkItems</key>
     <array>
       <dict>
