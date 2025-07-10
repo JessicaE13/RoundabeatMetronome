@@ -783,8 +783,8 @@ struct SoundsViewForLibrary: View {
     var body: some View {
         VStack(spacing: 0) {
             // Search Section - Updated to match setlists styling
-            VStack(spacing: 8) {
-                HStack(spacing: 4) {
+            VStack(spacing: 4) {
+                HStack(spacing: 2) {
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 17, weight: .regular))
@@ -842,7 +842,7 @@ struct SoundsViewForLibrary: View {
             .background(Color(.systemBackground))
             
             ScrollView {
-                VStack(alignment: .leading, spacing: 8) {
+                LazyVStack(spacing: 8) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("\(filteredAndSortedSounds.count) SOUND\(filteredAndSortedSounds.count == 1 ? "" : "S")")
                             .font(.subheadline)
@@ -852,34 +852,37 @@ struct SoundsViewForLibrary: View {
                             .padding(.bottom, 4)
                         
                         ForEach(filteredAndSortedSounds, id: \.self) { sound in
-                            LibrarySoundRowView(
-                                sound: sound,
-                                isCurrentlyApplied: metronome.selectedSoundType == sound,
-                                metronome: metronome,
-                                isPreviewPlaying: .constant(currentlyPreviewingSound == sound),
-                                onTap: {
-                                    if #available(iOS 10.0, *) {
-                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                    }
-                                    metronome.updateSoundType(to: sound)
-                                    if !metronome.isPlaying {
+                            HStack {
+                                LibrarySoundRowView(
+                                    sound: sound,
+                                    isCurrentlyApplied: metronome.selectedSoundType == sound,
+                                    metronome: metronome,
+                                    isPreviewPlaying: .constant(currentlyPreviewingSound == sound),
+                                    onTap: {
+                                        if #available(iOS 10.0, *) {
+                                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                        }
+                                        metronome.updateSoundType(to: sound)
+                                        if !metronome.isPlaying {
+                                            playPreview(sound)
+                                        }
+                                    },
+                                    onPreview: {
                                         playPreview(sound)
                                     }
-                                },
-                                onPreview: {
-                                    playPreview(sound)
-                                }
-                            )
+                                )
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(metronome.selectedSoundType == sound ? Color(.systemGray6) : Color.clear)
+                                )
+                            }
                             .padding(.horizontal, 24)
-                            .padding(.vertical, 4)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(metronome.selectedSoundType == sound ? Color(.systemGray6) : Color.clear)
-                            )
                         }
                     }
-                    Spacer()
-                        .frame(height: 80)
+                    
+                    Color.clear.frame(height: 80)
                 }
             }
             
@@ -958,6 +961,7 @@ struct SoundsViewForLibrary: View {
         }
     }
 }
+
 
 // MARK: - Sound Row View
 struct LibrarySoundRowView: View {
