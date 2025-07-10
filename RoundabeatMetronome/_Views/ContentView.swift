@@ -118,10 +118,11 @@ struct ContentView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    
-                   
-                    
+                                       
                     BottomNavigationBar(selectedTab: $selectedTab)
+                    
+                    BannerContentView(navigationTitle: "Banner")
+                    
                 }
                 
                 FlashOverlay(isFlashing: metronome.isFlashing)
