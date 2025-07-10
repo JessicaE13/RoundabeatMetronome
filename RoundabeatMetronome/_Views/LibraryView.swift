@@ -113,25 +113,25 @@ struct LibraryView: View {
                             selectedTab = tab
                         }
                     }) {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 4) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 17))
+                                .font(.system(size: 12))
                             Text(tab.rawValue)
-                                .font(.system(size: 17))
+                                .font(.system(size: 12))
                         }
                         .foregroundColor(selectedTab == tab ? .black : .primary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .background(
-                            RoundedRectangle(cornerRadius: 20)
+                            RoundedRectangle(cornerRadius: 16)
                                 .fill(selectedTab == tab ? Color.accentColor : Color(.systemGray5))
                         )
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
         }
         .background(
             Color(.systemBackground)
@@ -239,7 +239,7 @@ struct SongsTabView: View {
                                 .fill(Color(.systemGray6))
                         )
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 24)
                     .padding(.vertical, 16)
                 }
                 .background(Color(.systemBackground))
@@ -254,7 +254,7 @@ struct SongsTabView: View {
                                 Text("\(sortedSongs.count) SONG\(sortedSongs.count == 1 ? "" : "S")")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
-                                    .padding(.horizontal, 16)
+                                    .padding(.horizontal, 24)
                                     .padding(.top, 12)
                                     .padding(.bottom, 4)
                                 
@@ -285,7 +285,7 @@ struct SongsTabView: View {
                                             songManager.toggleFavorite(song)
                                         }
                                     )
-                                    .padding(.horizontal, 16)
+                                    .padding(.horizontal, 24)
                                     .padding(.vertical, 4)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12)
@@ -314,7 +314,7 @@ struct SongsTabView: View {
                             Text("Currently Applied")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-                                .padding(.horizontal, 16)
+                                .padding(.horizontal, 24)
                             
                             LibraryCurrentlyAppliedSongView(
                                 song: currentSong,
@@ -323,7 +323,7 @@ struct SongsTabView: View {
                                     songManager.clearCurrentlySelectedSong()
                                 }
                             )
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 24)
                         }
                         .padding(.vertical, 12)
                         .background(Color(.systemBackground))
@@ -361,7 +361,7 @@ struct SongsTabView: View {
                                     songManager.clearCurrentlySelectedSong()
                                 }
                             )
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 24)
                         }
                         .padding(.vertical, 12)
                         .background(Color(.systemBackground))
@@ -536,7 +536,7 @@ struct SetlistsTabView: View {
                                 .fill(Color(.systemGray6))
                         )
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 24)
                     .padding(.vertical, 16)
                 }
                 .background(Color(.systemBackground))
@@ -551,7 +551,7 @@ struct SetlistsTabView: View {
                                 Text("\(sortedSetlists.count) SETLIST\(sortedSetlists.count == 1 ? "" : "S")")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
-                                    .padding(.horizontal, 16)
+                                    .padding(.horizontal, 24)
                                     .padding(.top, 12)
                                     .padding(.bottom, 4)
                                 
@@ -576,7 +576,7 @@ struct SetlistsTabView: View {
                                                 setlistManager.duplicateSetlist(setlist)
                                             }
                                         )
-                                        .padding(.horizontal, 16)
+                                        .padding(.horizontal, 24)
                                         .padding(.vertical, 4)
                                     }
                                 }
@@ -836,7 +836,7 @@ struct SoundsViewForLibrary: View {
                             .fill(Color(.systemGray6))
                     )
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 24)
                 .padding(.vertical, 16)
             }
             .background(Color(.systemBackground))
@@ -847,7 +847,7 @@ struct SoundsViewForLibrary: View {
                         Text("\(filteredAndSortedSounds.count) SOUND\(filteredAndSortedSounds.count == 1 ? "" : "S")")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 24)
                             .padding(.top, 12)
                             .padding(.bottom, 4)
                         
@@ -870,7 +870,7 @@ struct SoundsViewForLibrary: View {
                                     playPreview(sound)
                                 }
                             )
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 24)
                             .padding(.vertical, 4)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
@@ -889,7 +889,7 @@ struct SoundsViewForLibrary: View {
                     Text("Currently Applied")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 24)
                     
                     LibraryCurrentlyAppliedSoundView(
                         sound: metronome.selectedSoundType,
@@ -899,7 +899,7 @@ struct SoundsViewForLibrary: View {
                             playPreview(sound)
                         }
                     )
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 24)
                 }
                 .padding(.vertical, 12)
                 .background(Color(.systemBackground))
@@ -1257,7 +1257,7 @@ struct LibraryFixedSongSetlistBadgeView: View {
                         .font(.system(size: 10, weight: .medium))
                 }
                 .foregroundColor(.primary)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 24)
                 .padding(.vertical, 4)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
