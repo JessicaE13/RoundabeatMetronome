@@ -9,8 +9,8 @@ struct BackgroundView: View {
             
             LinearGradient(
                 colors: colorScheme == .dark ? [
-                    Color(red: 38/255, green: 38/255, blue: 39/255),
-                    Color(red: 34/255, green: 34/255, blue: 35/255)
+                    Color(red: 28/255, green: 28/255, blue: 29/255),
+                    Color(red: 24/255, green: 24/255, blue: 25/255)
                 ] : [
                     Color(red: 245/255, green: 245/255, blue: 246/255),
                     Color(red: 235/255, green: 235/255, blue: 237/255)
