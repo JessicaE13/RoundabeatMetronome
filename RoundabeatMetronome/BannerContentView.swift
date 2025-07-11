@@ -33,17 +33,22 @@ private struct BannerViewContainer: UIViewRepresentable {
     self.adSize = adSize
   }
 
-  func makeUIView(context: Context) -> BannerView {
-    let banner = BannerView(adSize: adSize)
-    // [START load_ad]
-    banner.adUnitID = "ca-app-pub-3940256099942544/2435281174"
-    banner.load(Request())
-    // [END load_ad]
-    // [START set_delegate]
-    banner.delegate = context.coordinator
-    // [END set_delegate]
-    return banner
-  }
+    func makeUIView(context: Context) -> BannerView {
+        let banner = BannerView(adSize: adSize)
+        
+        // ✅ Set rootViewController safely
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+            banner.rootViewController = rootVC
+        }
+
+        banner.adUnitID = "ca-app-pub-3940256099942544/2435281174"
+        banner.delegate = context.coordinator
+        banner.load(Request())
+        
+        return banner
+    }
+
 
   func updateUIView(_ uiView: BannerView, context: Context) {}
 
