@@ -4,122 +4,103 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var metronome: MetronomeEngine
     @Environment(\.colorScheme) var currentColorScheme
+    @State private var showingInfoPopup: InfoType? = nil
+    
+    enum InfoType: String, CaseIterable {
+        case accentFirstBeat = "accent_first_beat"
+        case emphasizeFirstBeat = "emphasize_first_beat"
+        case fullScreenFlash = "full_screen_flash"
+        case backgroundAudio = "background_audio"
+        case pauseOnInterruption = "pause_on_interruption"
+        case stayAwake = "stay_awake"
+        
+        var title: String {
+            switch self {
+            case .accentFirstBeat: return "Accent First Beat"
+            case .emphasizeFirstBeat: return "Emphasize First Beat"
+            case .fullScreenFlash: return "Flash Screen on First Beat"
+            case .backgroundAudio: return "Background Audio"
+            case .pauseOnInterruption: return "Pause on Interruption"
+            case .stayAwake: return "Stay Awake"
+            }
+        }
+        
+        var description: String {
+            switch self {
+            case .accentFirstBeat:
+                return "First beat plays with higher pitch"
+            case .emphasizeFirstBeat:
+                return "First beat shows solid, others outlined"
+            case .fullScreenFlash:
+                return "Screen flashes on first beat"
+            case .backgroundAudio:
+                return "Continues playing when app is in background"
+            case .pauseOnInterruption:
+                return "Stops for calls and other audio interruptions"
+            case .stayAwake:
+                return "Prevents screen from sleeping while playing"
+            }
+        }
+    }
     
     var body: some View {
         NavigationView {
             Form {
                 // Audio Settings Section
                 Section("Sound Options") {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Accent First Beat")
-                                .font(.body)
-                            Text("Higher pitch on beat 1")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
-                        }
-                        
-                        Spacer()
-                        Toggle("", isOn: $metronome.accentFirstBeat)
-                    }
-                    .padding(.vertical, 4)
+                    SettingsToggleRow(
+                        title: "Higher Pitch on First Beat",
+                        isOn: $metronome.accentFirstBeat,
+                        infoType: .accentFirstBeat, // Set to nil to remove info button
+                        showingInfoPopup: $showingInfoPopup
+                    )
                 }
                 
-                // Visual Settings Section - Moved up
+                // Visual Settings Section
                 Section("Visual Options") {
-                    
-                    // Emphasize First Beat Only Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Emphasize First Beat")
-                                .font(.body)
-                            Text("Beat 1 is solid, others are outlined")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.emphasizeFirstBeatOnly)
-                    }
-                    .padding(.vertical, 4)
-                    
-                    // Full Screen Flash Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Full Screen Flash on First Beat")
-                                .font(.body)
-                                .fixedSize(horizontal: true, vertical: false)
-                            Text("Flash entire screen on beat 1")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.fullScreenFlashOnFirstBeat)
-                    }
-                    .padding(.vertical, 4)
-                    
-
+                    SettingsToggleRow(
+                        title: "Flash Screen on First Beat",
+                        isOn: $metronome.fullScreenFlashOnFirstBeat,
+                        infoType: .fullScreenFlash, // Set to nil to remove info button
+                        showingInfoPopup: $showingInfoPopup
+                    )
+                    SettingsToggleRow(
+                    title: "Outline Offbeats",
+                    isOn: $metronome.emphasizeFirstBeatOnly,
+                    infoType: .emphasizeFirstBeat, // Set to nil to remove info button
+                    showingInfoPopup: $showingInfoPopup
+                )
                 }
                 
-                // Audio Session Settings Section - Title changed and headphones disconnect section removed
+                // App Settings Section
                 Section("App Settings") {
-                    // Background Audio Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Background Audio")
-                                .font(.body)
-                            Text("Continue playing when app is in background")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.backgroundAudioEnabled)
-                    }
-                    .padding(.vertical, 4)
+                    SettingsToggleRow(
+                        title: "Background Audio",
+                        isOn: $metronome.backgroundAudioEnabled,
+                        infoType: .backgroundAudio, // Set to nil to remove info button
+                        showingInfoPopup: $showingInfoPopup
+                    )
                     
-                    // Pause on Interruption Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Pause on Interruption")
-                                .font(.body)
-                            Text("Stop when phone calls or other apps interrupt")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false)
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.pauseOnInterruption)
-                    }
-                    .padding(.vertical, 4)
+                    SettingsToggleRow(
+                        title: "Pause on Interruption",
+                        isOn: $metronome.pauseOnInterruption,
+                        infoType: .pauseOnInterruption, // Set to nil to remove info button
+                        showingInfoPopup: $showingInfoPopup
+                    )
                     
-                    // Keep Screen Awake Toggle
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Stay Awake")
-                                .font(.body)
-                            Text("Prevent phone from sleeping while playing")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
-                        }
-                        Spacer()
-                        Toggle("", isOn: $metronome.keepScreenAwake)
-                    }
-                    .padding(.vertical, 4)
-                    
-                
+                    SettingsToggleRow(
+                        title: "Stay Awake",
+                        isOn: $metronome.keepScreenAwake,
+                        infoType: .stayAwake, // Set to nil to remove info button
+                        showingInfoPopup: $showingInfoPopup
+                    )
                 }
-   
                 
                 // Legal & Support Section
                 Section("SUPPORT") {
                     Link(destination: URL(string: "mailto:hello@roundabeat.com")!) {
                         SettingsLinkRow(
-                            title: "Feedback",
-                            subtitle: "Suggest features & ask questions",
+                            title: "Suggest features & send feedback",
                             iconName: "envelope"
                         )
                     }
@@ -127,7 +108,6 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://roundabeat.com/mobile-app-terms-of-use/")!) {
                         SettingsLinkRow(
                             title: "Terms of Use",
-                            subtitle: "View our terms and conditions",
                             iconName: "arrow.up.right"
                         )
                     }
@@ -135,7 +115,6 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://roundabeat.com/mobile-app-privacy-policy/")!) {
                         SettingsLinkRow(
                             title: "Privacy Policy",
-                            subtitle: "How we handle your data",
                             iconName: "arrow.up.right"
                         )
                     }
@@ -144,33 +123,76 @@ struct SettingsView: View {
                 // App Info Section
                 Section("App Info") {
                     HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("App Version")
-                                .font(.body)
-                            Text("Roundabeat \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                        Text("App Version")
+                            .font(.body)
                         Spacer()
-                        
+                        Text("Roundabeat \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     }
                     .padding(.vertical, 4)
+                    
                     // Audio Status Information (Read-only)
                     AudioStatusInfoView(metronome: metronome)
                 }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
-
-
+            .alert(item: Binding<AlertItem?>(
+                get: { showingInfoPopup.map { AlertItem(infoType: $0) } },
+                set: { _ in showingInfoPopup = nil }
+            )) { alertItem in
+                Alert(
+                    title: Text(alertItem.infoType.title),
+                    message: Text(alertItem.infoType.description),
+                    dismissButton: .default(Text("Got it"))
+                )
+            }
         }
-        .navigationViewStyle(StackNavigationViewStyle()) // Prevents split view on iPad
-
-
+        .navigationViewStyle(StackNavigationViewStyle())
     }
-    
 }
 
+// MARK: - Alert Item for Info Popups
+struct AlertItem: Identifiable {
+    let id = UUID()
+    let infoType: SettingsView.InfoType
+}
+
+// MARK: - Settings Toggle Row with Info Button
+struct SettingsToggleRow: View {
+    let title: String
+    @Binding var isOn: Bool
+    let infoType: SettingsView.InfoType?
+    @Binding var showingInfoPopup: SettingsView.InfoType?
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(title)
+                .font(.body)
+                .lineLimit(1)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            if let infoType = infoType {
+                Button(action: {
+                    showingInfoPopup = infoType
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.secondary)
+                        .font(.system(size: 14))
+                }
+                .buttonStyle(PlainButtonStyle())
+                .frame(width: 20, height: 20)
+            }
+            
+            Spacer(minLength: 20)
+            
+            Toggle("", isOn: $isOn)
+                .frame(width: 51) // Standard toggle width
+        }
+        .padding(.vertical, 4)
+    }
+}
 
 // MARK: - Audio Status Information View
 struct AudioStatusInfoView: View {
@@ -180,14 +202,9 @@ struct AudioStatusInfoView: View {
         VStack(spacing: 8) {
             // Current Audio Status
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Current Audio Status")
-                        .font(.body)
-                        .fontWeight(.medium)
-                    Text("Real-time audio session information")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text("Current Audio Status")
+                    .font(.body)
+                    .fontWeight(.medium)
                 Spacer()
             }
             
@@ -280,19 +297,12 @@ struct SettingsInfoRow: View {
 
 struct SettingsLinkRow: View {
     let title: String
-    let subtitle: String
     let iconName: String
     
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .foregroundColor(.primary)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: true, vertical: false) // Prevents wrapping
-            }
+            Text(title)
+                .foregroundColor(.primary)
             Spacer()
             Image(systemName: iconName)
                 .font(.caption)
