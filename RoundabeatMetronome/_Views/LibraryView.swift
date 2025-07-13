@@ -115,13 +115,13 @@ struct LibraryView: View {
                     }) {
                         HStack(spacing: 4) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 12))
+                                .font(.system(size: 14))
                             Text(tab.rawValue)
-                                .font(.system(size: 12))
+                                .font(.system(size: 14))
                         }
                         .foregroundColor(selectedTab == tab ? .black : .primary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(selectedTab == tab ? Color.accentColor : Color(.systemGray5))
