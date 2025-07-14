@@ -10,12 +10,12 @@
 		052B39D52E10C31000E3278E /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 052B39D42E10C31000E3278E /* GoogleMobileAds */; };
 		0542AE1D2E20B66800E7BBB6 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 0542AE1C2E20B66800E7BBB6 /* RevenueCat */; };
 		0542AE1F2E20B66800E7BBB6 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0542AE1E2E20B66800E7BBB6 /* RevenueCatUI */; };
-		0542AE472E2193A800E7BBB6 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0542AE462E2193A700E7BBB6 /* StoreKit.framework */; };
+		05D7DC0A2E25393D00174941 /* Roundabeat Metronome.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 05D7DC092E25393D00174941 /* Roundabeat Metronome.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0542AE462E2193A700E7BBB6 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		05628A5E2DAC430900277140 /* RoundabeatMetronome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoundabeatMetronome.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		05D7DC092E25393D00174941 /* Roundabeat Metronome.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Roundabeat Metronome.storekit"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -47,26 +47,17 @@
 				0542AE1D2E20B66800E7BBB6 /* RevenueCat in Frameworks */,
 				052B39D52E10C31000E3278E /* GoogleMobileAds in Frameworks */,
 				0542AE1F2E20B66800E7BBB6 /* RevenueCatUI in Frameworks */,
-				0542AE472E2193A800E7BBB6 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0542AE452E2193A700E7BBB6 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				0542AE462E2193A700E7BBB6 /* StoreKit.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		05628A552DAC430900277140 = {
 			isa = PBXGroup;
 			children = (
+				05D7DC092E25393D00174941 /* Roundabeat Metronome.storekit */,
 				05628A602DAC430900277140 /* RoundabeatMetronome */,
-				0542AE452E2193A700E7BBB6 /* Frameworks */,
 				05628A5F2DAC430900277140 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -150,6 +141,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05D7DC0A2E25393D00174941 /* Roundabeat Metronome.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
