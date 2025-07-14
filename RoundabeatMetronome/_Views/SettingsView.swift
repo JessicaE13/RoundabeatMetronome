@@ -204,7 +204,7 @@ struct CustomToggleStyle: ToggleStyle {
             Spacer()
             
             RoundedRectangle(cornerRadius: 16)
-                .fill(configuration.isOn ? Color.accentColor : Color.secondary.opacity(0.3))
+                .fill(configuration.isOn ? Color("Accent1") : Color.secondary.opacity(0.3))
                 .frame(width: 51, height: 31)
                 .overlay(
                     Circle()

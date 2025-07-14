@@ -118,7 +118,7 @@ struct LibraryView: View {
                             Text(tab.rawValue)
                                 .font(.system(size: 14))
                         }
-                        .foregroundColor(selectedTab == tab ? .accentColor : .primary)
+                        .foregroundColor(selectedTab == tab ? Color("Accent1") : .primary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(
@@ -204,7 +204,7 @@ struct SongsTabView: View {
                                 }) {
                                     Image(systemName: sortOption.iconName)
                                         .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(sortOption == .none ? .secondary : .accentColor)
+                                        .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
                                 }
                                 .buttonStyle(.plain)
                                 .frame(minWidth: 28, minHeight: 28)
@@ -225,7 +225,7 @@ struct SongsTabView: View {
                                 } label: {
                                     Image(systemName: filterOption.iconName)
                                         .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                                        .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
                                 }
                                 .buttonStyle(.plain)
                                 .frame(minWidth: 28, minHeight: 28)
@@ -421,7 +421,7 @@ struct SongsTabView: View {
             }) {
                 Text("Add Your First Song")
                     .font(.subheadline)
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(Color("Accent1"))
                     .padding(.vertical, 8)
             }
         }
@@ -501,7 +501,7 @@ struct SetlistsTabView: View {
                                 }) {
                                     Image(systemName: sortOption.iconName)
                                         .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(sortOption == .none ? .secondary : .accentColor)
+                                        .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
                                 }
                                 .buttonStyle(.plain)
                                 .frame(minWidth: 28, minHeight: 28)
@@ -522,7 +522,7 @@ struct SetlistsTabView: View {
                                 } label: {
                                     Image(systemName: filterOption.iconName)
                                         .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                                        .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
                                 }
                                 .buttonStyle(.plain)
                                 .frame(minWidth: 28, minHeight: 28)
@@ -647,7 +647,7 @@ struct SetlistsTabView: View {
             }) {
                 Text("Create Your First Setlist")
                     .font(.subheadline)
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(Color("Accent1"))
                     .padding(.vertical, 8)
             }
         }
@@ -798,7 +798,7 @@ struct SoundsViewForLibrary: View {
                             }) {
                                 Image(systemName: sortOption.iconName)
                                     .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(sortOption == .none ? .secondary : .accentColor)
+                                    .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
                             }
                             .buttonStyle(.plain)
                             .frame(minWidth: 28, minHeight: 28)
@@ -819,7 +819,7 @@ struct SoundsViewForLibrary: View {
                             } label: {
                                 Image(systemName: filterOption.iconName)
                                     .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(filterOption == .all ? .secondary : .accentColor)
+                                    .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
                             }
                             .buttonStyle(.plain)
                             .frame(minWidth: 28, minHeight: 28)
@@ -960,7 +960,7 @@ struct LibrarySoundRowView: View {
         HStack(spacing: 12) {
             Image(systemName: soundIcon(for: sound))
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(isCurrentlyApplied ? .accentColor : .secondary)
+                .foregroundColor(isCurrentlyApplied ? Color("Accent1") : .secondary)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -984,7 +984,7 @@ struct LibrarySoundRowView: View {
                     }) {
                         Image(systemName: isPreviewPlaying ? "waveform" : "play.circle")
                             .font(.system(size: 20))
-                            .foregroundColor(isPreviewPlaying ? .accentColor : .secondary)
+                            .foregroundColor(isPreviewPlaying ? Color("Accent1") : .secondary)
                     }
                     .buttonStyle(.plain)
                     .frame(minWidth: 44, minHeight: 44)
@@ -1000,7 +1000,7 @@ struct LibrarySoundRowView: View {
                 if isCurrentlyApplied {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(Color("Accent1"))
                 }
             }
         }
@@ -1036,11 +1036,11 @@ struct LibraryCurrentlyAppliedSongView: View {
         HStack(spacing: 12) {
             Image(systemName: "music.note")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(.accentColor)
+                .foregroundColor(Color("Accent1"))
                 .frame(width: 32, height: 32)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.accentColor.opacity(0.15))
+                        .fill(Color("Accent1").opacity(0.15))
                 )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -1082,7 +1082,7 @@ struct LibraryCurrentlyAppliedSongView: View {
             }) {
                 Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(Color("Accent1"))
             }
             .buttonStyle(.plain)
             .frame(minWidth: 44, minHeight: 44)
@@ -1270,11 +1270,11 @@ struct LibrarySetlistRowView: View {
         HStack(spacing: 12) {
             Image(systemName: "music.note.list")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(.accentColor)
+                .foregroundColor(Color("Accent1"))
                 .frame(width: 36, height: 36)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.accentColor.opacity(0.1))
+                        .fill(Color("Accent1").opacity(0.1))
                 )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -1368,7 +1368,7 @@ struct FloatingActionButton: View {
             .frame(minHeight: 44)
             .background(
                 RoundedRectangle(cornerRadius: isCollapsed ? 22 : 22)
-                    .fill(Color.accentColor)
+                    .fill(Color("Accent1"))
                     .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
             )
         }
@@ -1388,11 +1388,11 @@ struct LibraryCurrentlyAppliedSoundView: View {
         HStack(spacing: 12) {
             Image(systemName: soundIcon(for: sound))
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(.accentColor)
+                .foregroundColor(Color("Accent1"))
                 .frame(width: 32, height: 32)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.accentColor.opacity(0.15))
+                        .fill(Color("Accent1").opacity(0.15))
                 )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -1414,7 +1414,7 @@ struct LibraryCurrentlyAppliedSoundView: View {
             }) {
                 Image(systemName: isPreviewPlaying ? "waveform" : "play.circle.fill")
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(Color("Accent1"))
             }
             .buttonStyle(.plain)
             .frame(minWidth: 44, minHeight: 44)
