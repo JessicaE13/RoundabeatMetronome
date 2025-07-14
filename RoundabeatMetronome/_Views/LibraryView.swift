@@ -884,13 +884,13 @@ struct SoundsViewForLibrary: View {
                         playPreview(sound)
                     }
                 )
-                .padding(.horizontal, 36) // Extra padding to match the sound rows
+                .padding(.horizontal, 12) // Extra padding to match the sound rows
                 .padding(.vertical, 4)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color(.systemGray6)) // Same background as selected sound
                 )
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 12)
             }
             .padding(.vertical, 12)
             .background(Color(.systemBackground))
@@ -938,8 +938,6 @@ struct SoundsViewForLibrary: View {
     }
 }
 
-
-
 // MARK: - Updated Sound Row View
 struct LibrarySoundRowView: View {
     let sound: SyntheticSound
@@ -953,18 +951,18 @@ struct LibrarySoundRowView: View {
         HStack(spacing: 12) {
             Image(systemName: soundIcon(for: sound))
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(isCurrentlyApplied ? Color("Accent1") : .secondary)
+                .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(sound.rawValue)
                     .font(.body)
-                    .foregroundColor(isCurrentlyApplied ? .primary : .primary.opacity(0.8))
+                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
                     .lineLimit(1)
                 
                 Text(sound.description)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
                     .lineLimit(1)
             }
             
@@ -977,23 +975,22 @@ struct LibrarySoundRowView: View {
                     }) {
                         Image(systemName: isPreviewPlaying ? "waveform" : "play.circle")
                             .font(.system(size: 20))
-                            .foregroundColor(isPreviewPlaying ? Color("Accent1") : .secondary)
+                            .foregroundColor(isPreviewPlaying ? .primary : .secondary)
                     }
                     .buttonStyle(.plain)
                     .frame(minWidth: 44, minHeight: 44)
-                    // Remove the disabled state to allow rapid tapping
                 }
                 
                 if !isCurrentlyApplied && metronome.isPlaying {
                     Image(systemName: "speaker.slash.circle")
                         .font(.system(size: 20))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(isPreviewPlaying ? .primary : .secondary)
                 }
                 
                 if isCurrentlyApplied {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(Color("Accent1"))
+                        .foregroundColor(.primary)
                 }
             }
         }
