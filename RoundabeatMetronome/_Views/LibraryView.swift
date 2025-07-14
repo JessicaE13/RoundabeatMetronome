@@ -70,7 +70,6 @@ struct LibraryView: View {
     @ObservedObject var metronome: MetronomeEngine
     @ObservedObject var songManager: SongManager
     @ObservedObject var setlistManager: SetlistManager
-    
     @State private var selectedTab: LibraryTab = .sounds
     
     var body: some View {
@@ -119,12 +118,12 @@ struct LibraryView: View {
                             Text(tab.rawValue)
                                 .font(.system(size: 14))
                         }
-                        .foregroundColor(selectedTab == tab ? .black : .primary)
+                        .foregroundColor(selectedTab == tab ? .accentColor : .primary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(selectedTab == tab ? Color.accentColor : Color(.systemGray5))
+                                .fill(Color(.systemGray5))
                         )
                     }
                     .buttonStyle(.plain)
