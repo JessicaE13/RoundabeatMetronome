@@ -189,11 +189,37 @@ struct SettingsToggleRow: View {
             
             Toggle("", isOn: $isOn)
                 .frame(width: 51) // Standard toggle width
+                .toggleStyle(CustomToggleStyle())
         }
         .padding(.vertical, 4)
     }
 }
 
+// MARK: - Custom Toggle Style with AccentColor Background
+struct CustomToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            
+            Spacer()
+            
+            RoundedRectangle(cornerRadius: 16)
+                .fill(configuration.isOn ? Color.accentColor : Color.secondary.opacity(0.3))
+                .frame(width: 51, height: 31)
+                .overlay(
+                    Circle()
+                        .fill(Color.white)
+                        .shadow(color: Color.black.opacity(0.15), radius: 1, x: 0, y: 1)
+                        .frame(width: 27, height: 27)
+                        .offset(x: configuration.isOn ? 10 : -10)
+                        .animation(.easeInOut(duration: 0.2), value: configuration.isOn)
+                )
+                .onTapGesture {
+                    configuration.isOn.toggle()
+                }
+        }
+    }
+}
 // MARK: - Audio Status Information View
 struct AudioStatusInfoView: View {
     @ObservedObject var metronome: MetronomeEngine
