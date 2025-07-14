@@ -848,32 +848,24 @@ struct SoundsViewForLibrary: View {
                             .padding(.bottom, 4)
                         
                         ForEach(filteredAndSortedSounds, id: \.self) { sound in
-                            HStack {
-                                LibrarySoundRowView(
-                                    sound: sound,
-                                    isCurrentlyApplied: metronome.selectedSoundType == sound,
-                                    metronome: metronome,
-                                    isPreviewPlaying: .constant(currentlyPreviewingSound == sound),
-                                    onTap: {
-                                        if #available(iOS 10.0, *) {
-                                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                        }
-                                        metronome.updateSoundType(to: sound)
-                                        if !metronome.isPlaying {
-                                            playPreview(sound)
-                                        }
-                                    },
-                                    onPreview: {
+                            LibrarySoundRowView(
+                                sound: sound,
+                                isCurrentlyApplied: metronome.selectedSoundType == sound,
+                                metronome: metronome,
+                                isPreviewPlaying: .constant(currentlyPreviewingSound == sound),
+                                onTap: {
+                                    if #available(iOS 10.0, *) {
+                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    }
+                                    metronome.updateSoundType(to: sound)
+                                    if !metronome.isPlaying {
                                         playPreview(sound)
                                     }
-                                )
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 4)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(metronome.selectedSoundType == sound ? Color(.systemGray6) : Color.clear)
-                                )
-                            }
+                                },
+                                onPreview: {
+                                    playPreview(sound)
+                                }
+                            )
                             .padding(.horizontal, 24)
                         }
                     }
@@ -882,27 +874,26 @@ struct SoundsViewForLibrary: View {
                 }
             }
             
-            VStack(spacing: 0) {
-                Divider()
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Currently Applied")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 24)
-                    
-                    LibraryCurrentlyAppliedSoundView(
-                        sound: metronome.selectedSoundType,
-                        metronome: metronome,
-                        isPreviewPlaying: .constant(currentlyPreviewingSound == metronome.selectedSoundType),
-                        playPreview: { sound in
-                            playPreview(sound)
-                        }
-                    )
-                    .padding(.horizontal, 24)
-                }
-                .padding(.vertical, 12)
-                .background(Color(.systemBackground))
+            // Updated Currently Applied section - removed divider, label, and added matching background
+            VStack(alignment: .leading, spacing: 8) {
+                LibraryCurrentlyAppliedSoundView(
+                    sound: metronome.selectedSoundType,
+                    metronome: metronome,
+                    isPreviewPlaying: .constant(currentlyPreviewingSound == metronome.selectedSoundType),
+                    playPreview: { sound in
+                        playPreview(sound)
+                    }
+                )
+                .padding(.horizontal, 36) // Extra padding to match the sound rows
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray6)) // Same background as selected sound
+                )
+                .padding(.horizontal, 24)
             }
+            .padding(.vertical, 12)
+            .background(Color(.systemBackground))
         }
     }
     
@@ -946,6 +937,8 @@ struct SoundsViewForLibrary: View {
         }
     }
 }
+
+
 
 // MARK: - Updated Sound Row View
 struct LibrarySoundRowView: View {
