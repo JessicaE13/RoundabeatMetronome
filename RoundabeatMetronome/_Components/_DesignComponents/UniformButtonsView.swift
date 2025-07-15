@@ -34,7 +34,7 @@ struct UniformButton: View {
             width: uniformButtonWidth,
             height: uniformButtonHeight
         )
-        .background(Color(.systemBackground).opacity(0.98))
+        .background(Color("Background2"))
         .cornerRadius(16)
 //        .overlay(
 //            RoundedRectangle(cornerRadius: 16)
@@ -121,7 +121,7 @@ struct UniformButtonWithIcon: View {
             width: uniformButtonWidth,
             height: uniformButtonHeight
         )
-        .background(Color(.systemBackground).opacity(0.98))
+        .background(Color("Background2"))
         .cornerRadius(16)
         
 //        .overlay(
