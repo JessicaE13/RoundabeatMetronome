@@ -69,19 +69,47 @@ struct ParabolaPetalWithShadow: View {
                     )
                 )
             
-            // Highlight stroke — still subtle, for contrast against the dark shadows
+            // NEW: Top-right highlight — main light source effect
+            ParabolaPetal()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.white.opacity(0.2), location: 0.0),
+                            .init(color: Color.white.opacity(0.15), location: 0.3),
+                            .init(color: Color.white.opacity(0.1), location: 0.6),
+                            .init(color: Color.clear, location: 1.0)
+                        ]),
+                        center: UnitPoint(x: 0.8, y: 0.1), // Top-right position
+                        startRadius: 2,
+                        endRadius: 15
+                    )
+                )
+                .mask(
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.white, location: 0.0),
+                            .init(color: Color.white.opacity(0.6), location: 0.4),
+                            .init(color: Color.clear, location: 0.8)
+                        ]),
+                        startPoint: .topTrailing,
+                        endPoint: .bottomLeading
+                    )
+                )
+            
+            // Enhanced highlight stroke — more visible from top-right
             ParabolaPetal()
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white.opacity(0.15), location: 0.0),
-                            .init(color: Color.white.opacity(0.05), location: 0.3),
-                            .init(color: Color.clear, location: 0.6)
+                            .init(color: Color.white.opacity(0.35), location: 0.0),
+                            .init(color: Color.white.opacity(0.15), location: 0.3),
+                            .init(color: Color.white.opacity(0.05), location: 0.6),
+                            .init(color: Color.clear, location: 1.0)
                         ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        startPoint: .topTrailing,
+                        endPoint: .bottomLeading
                     ),
-                    lineWidth: 0.5
+                    lineWidth: 0.8
                 )
                 .scaleEffect(0.95)
             
@@ -108,7 +136,6 @@ struct ParabolaPetalWithShadow: View {
     }
 }
 
-
 struct CircularParabolaBorderView: View {
     let petalCount = 30
     
@@ -133,7 +160,6 @@ struct CircularParabolaBorderView: View {
             }
         }
         .frame(width: 340, height: 340)
-        
     }
 }
 
@@ -144,7 +170,6 @@ struct CircularParabolaBorderView: View {
                 Color(red: 80/255, green: 80/255, blue: 90/255),
                 Color(red: 40/255, green: 40/255, blue: 50/255)
             ]),
-            
             startPoint: .top,
             endPoint: .bottom
         )
