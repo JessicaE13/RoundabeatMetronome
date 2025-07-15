@@ -172,17 +172,40 @@ struct CircularBeatIndicator: View {
             
             TempoDialView(size: dialSize, bpm: bpm, onTempoChange: onTempoChange)
             
-            // Center play/stop button - made slightly bigger
+            // Center play/stop button - made slightly bigger with elevated outline
             Button(action: onTogglePlay) {
                 ZStack {
+                    let buttonSize = size * 0.35
+                    
+                    // Inner elevated highlight
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: Color(red: 80/255, green: 80/255, blue: 82/255).opacity(0.1), location: 0.0),
+                                    .init(color: Color(red: 80/255, green: 80/255, blue: 82/255).opacity(0.4), location: 1.0)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.0
+                        )
+                        .frame(width: buttonSize + 5, height: buttonSize + 5)
+
+                    
+                    // Main button circle
                     Circle()
                         .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
-                        .frame(width: size * 0.35, height: size * 0.35)
+                        .frame(width: buttonSize, height: buttonSize)
+                        .shadow(color: Color.black.opacity(0.4),
+                                radius: 2, x: 0, y: 1)
                     
+                    // Play/stop icon
                     Image(systemName: isPlaying ? "stop.fill" : "play.fill")
                         .font(.system(size: size * 0.12, weight: .bold))
                         .foregroundColor(.white)
                         .offset(x: isPlaying ? 0 : size * 0.006) // Slight offset for play button visual balance
+                        .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
                 }
             }
             .buttonStyle(.plain)
@@ -231,10 +254,30 @@ struct TempoDialView: View {
     
     var body: some View {
         ZStack {
-            // Full filled circle (no hole)
+            // Outer elevated outline with shadows
+            Circle()
+                .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 3.0)
+                .frame(width: totalDialDiameter + 6, height: totalDialDiameter + 6)
+                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.8),
+                        radius: 1, x: 0, y: 1)
+                .shadow(color: Color.black.opacity(0.3),
+                        radius: 3, x: 0, y: 2)
+                .shadow(color: Color.black.opacity(0.15),
+                        radius: 6, x: 0, y: 4)
+            
+            // Inner elevated highlight
+            Circle()
+                .stroke(Color(red: 80/255, green: 80/255, blue: 82/255).opacity(0.6), lineWidth: 1.5)
+                .frame(width: totalDialDiameter + 3, height: totalDialDiameter + 3)
+                .shadow(color: Color.white.opacity(0.1),
+                        radius: 1, x: 0, y: -1)
+            
+            // Main filled circle (no hole)
             Circle()
                 .fill(Color.black.opacity(0.95))
                 .frame(width: totalDialDiameter, height: totalDialDiameter)
+                .shadow(color: Color.black.opacity(0.4),
+                        radius: 2, x: 0, y: 1)
             
             // Capsule indicator - positioned closer to outer edge and made as a rounded line
             Capsule()
@@ -242,6 +285,7 @@ struct TempoDialView: View {
                 .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.12) // Width: extra skinny, Height: longer line
                 .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.08)) // Position near outer edge
                 .rotationEffect(.degrees(currentRotation))
+                .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
         }
         .gesture(
             DragGesture()

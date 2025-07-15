@@ -149,7 +149,9 @@ struct SettingsView: View {
                 )
             }
         }
+        .preferredColorScheme(.dark)
         .navigationViewStyle(StackNavigationViewStyle())
+
     }
 }
 
@@ -277,7 +279,7 @@ struct AudioStatusInfoView: View {
                 // Background Audio Status
                 HStack {
                     Image(systemName: metronome.backgroundAudioEnabled ? "music.note" : "music.note.tv")
-                        .foregroundColor(metronome.backgroundAudioEnabled ? .green : .secondary)
+                        .foregroundColor(metronome.backgroundAudioEnabled ? Color("Accent1") : .secondary)
                         .font(.caption)
                     
                     Text(metronome.backgroundAudioEnabled ? "Background Audio Enabled" : "Foreground Only")
