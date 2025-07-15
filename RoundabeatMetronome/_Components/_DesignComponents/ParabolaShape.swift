@@ -28,14 +28,14 @@ struct ParabolaPetal: Shape {
 struct ParabolaPetalWithShadow: View {
     var body: some View {
         ZStack {
-            // Main shadow fill - stronger at top, fading to transparent at bottom
+            // Main vertical shadow fill — now much darker and more pronounced
             ParabolaPetal()
                 .fill(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.black.opacity(0.12), location: 0.0),
-                            .init(color: Color.black.opacity(0.06), location: 0.4),
-                            .init(color: Color.black.opacity(0.02), location: 0.8),
+                            .init(color: Color.black.opacity(0.5), location: 0.0),
+                            .init(color: Color.black.opacity(0.35), location: 0.5),
+                            .init(color: Color.black.opacity(0.15), location: 0.85),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: .top,
@@ -43,14 +43,14 @@ struct ParabolaPetalWithShadow: View {
                     )
                 )
             
-            // Right side shadow for directional lighting
+            // Directional right-side shadow — deeper, with a heavier gradient
             ParabolaPetal()
                 .fill(
                     LinearGradient(
                         gradient: Gradient(stops: [
                             .init(color: Color.clear, location: 0.0),
-                            .init(color: Color.black.opacity(0.04), location: 0.5),
-                            .init(color: Color.black.opacity(0.08), location: 0.8),
+                            .init(color: Color.black.opacity(0.25), location: 0.5),
+                            .init(color: Color.black.opacity(0.35), location: 0.85),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: .leading,
@@ -61,7 +61,7 @@ struct ParabolaPetalWithShadow: View {
                     LinearGradient(
                         gradient: Gradient(stops: [
                             .init(color: Color.white, location: 0.0),
-                            .init(color: Color.white.opacity(0.3), location: 0.7),
+                            .init(color: Color.white.opacity(0.4), location: 0.7),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: .top,
@@ -69,7 +69,7 @@ struct ParabolaPetalWithShadow: View {
                     )
                 )
             
-            // Subtle top-left highlight
+            // Highlight stroke — still subtle, for contrast against the dark shadows
             ParabolaPetal()
                 .stroke(
                     LinearGradient(
@@ -85,13 +85,13 @@ struct ParabolaPetalWithShadow: View {
                 )
                 .scaleEffect(0.95)
             
-            // Inner edge shadow - more subtle and natural
+            // Inner shadow line — much darker for strong base definition
             ParabolaPetal()
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.black.opacity(0.1), location: 0.0),
-                            .init(color: Color.black.opacity(0.04), location: 0.5),
+                            .init(color: Color.black.opacity(0.4), location: 0.0),
+                            .init(color: Color.black.opacity(0.25), location: 0.5),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: .top,
@@ -101,12 +101,13 @@ struct ParabolaPetalWithShadow: View {
                 )
                 .scaleEffect(0.88)
             
-            // Original stroke outline
+            // Crisp black edge
             ParabolaPetal()
-                .stroke(Color.gray, lineWidth: 0.5)
+                .stroke(Color.black, lineWidth: 0.5)
         }
     }
 }
+
 
 struct CircularParabolaBorderView: View {
     let petalCount = 30
@@ -132,10 +133,23 @@ struct CircularParabolaBorderView: View {
             }
         }
         .frame(width: 340, height: 340)
-        .background(Color.white)
+        
     }
 }
 
 #Preview {
-    CircularParabolaBorderView()
+    ZStack {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Color(red: 80/255, green: 80/255, blue: 90/255),
+                Color(red: 40/255, green: 40/255, blue: 50/255)
+            ]),
+            
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+        
+        CircularParabolaBorderView()
+    }
 }

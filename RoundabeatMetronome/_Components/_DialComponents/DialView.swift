@@ -10,7 +10,7 @@ struct BeatArc: View {
     let emphasizeFirstBeatOnly: Bool
     
     // FIXED: Consistent stroke width calculations
-    private var arcWidth: CGFloat { size * 0.1 }
+    private var arcWidth: CGFloat { size * 0.08 }
     private var activeArcWidth: CGFloat { arcWidth * 1.0 } // Consistent with frame calculation
     
     // The maximum stroke width (for active state) determines the frame size needed
@@ -286,9 +286,9 @@ struct TempoDialView: View {
                 .shadow(color: Color.white.opacity(0.1),
                         radius: 1, x: 0, y: -1)
             
-            // Main filled circle - changed to dark gray
+            // Parabola background
             Circle()
-                .fill(Color(red: 60/255, green: 60/255, blue: 62/255))
+                .fill(Color(red: 20/255, green: 20/255, blue: 22/255))
                 .frame(width: totalDialDiameter, height: totalDialDiameter)
                 .shadow(color: Color.black.opacity(0.4),
                         radius: 2, x: 0, y: 1)
