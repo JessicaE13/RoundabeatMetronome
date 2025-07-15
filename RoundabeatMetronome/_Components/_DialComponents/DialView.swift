@@ -125,7 +125,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color(red: 38/255, green: 38/255, blue: 39/255))
+                    .fill(Color("Background2"))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
                             radius: 0.5, x: 0, y: 0)
             }
@@ -223,7 +223,8 @@ struct TempoDialView: View {
     let onTempoChange: (Int) -> Void
     
     @State private var currentRotation: Double = 0
-    @State private var lastRotation: Double = 0
+    @State private var isDragging: Bool = false
+    @State private var dragStartRotation: Double = 0
     
     // Gray circle size multiplier - increased to make dial bigger
     private let grayCircleMultiplier: CGFloat = 0.72
@@ -250,6 +251,14 @@ struct TempoDialView: View {
         let rotationProgress = (rotation - 180.0) / rotationRange
         let bpm = 40.0 + (rotationProgress * bpmRange)
         return max(40, min(400, Int(bpm.rounded())))
+    }
+    
+    // Calculate angle from center to a point
+    private func angleFromCenter(_ location: CGPoint, center: CGPoint) -> Double {
+        let vector = CGPoint(x: location.x - center.x, y: location.y - center.y)
+        let angle = atan2(vector.y, vector.x) * 180 / .pi
+        // Convert to 0-360 range
+        return angle < 0 ? angle + 360 : angle
     }
     
     // Dial size variables - make circle fit exactly in the square outline
@@ -348,9 +357,6 @@ struct TempoDialView: View {
                     .frame(width: totalDialDiameter - 4, height: totalDialDiameter - 4)
             }
             
-            // Update the TempoDialView section in your DialView.swift file
-            // Replace the existing "Rotating parabola outline" section with this:
-
             // Rotating parabola outline - positioned inside the dial circle (on top of dark gray circle)
             ZStack {
                 ForEach(0..<petalCount, id: \.self) { i in
@@ -383,61 +389,40 @@ struct TempoDialView: View {
         .gesture(
             DragGesture()
                 .onChanged { value in
-                    // Calculate angle from center to current touch point
                     let center = CGPoint(x: totalDialDiameter/2, y: totalDialDiameter/2)
-                    let vector = CGPoint(x: value.location.x - center.x, y: value.location.y - center.y)
-                    let angle = atan2(vector.y, vector.x) * 180 / .pi
+                    let currentAngle = angleFromCenter(value.location, center: center)
                     
-                    // Convert to 0-360 range
-                    let normalizedAngle = angle < 0 ? angle + 360 : angle
-                    
-                    // Initialize lastRotation on first touch to prevent jumping
-                    if lastRotation == 0 {
-                        lastRotation = normalizedAngle
-                        return
+                    if !isDragging {
+                        // Start of drag - store the initial rotation offset
+                        isDragging = true
+                        dragStartRotation = currentRotation - currentAngle
                     }
                     
-                    // Calculate rotation difference
-                    let angleDifference = normalizedAngle - lastRotation
-                    var adjustedDifference = angleDifference
+                    // Calculate new rotation by adding the drag angle to the start offset
+                    let newRotation = dragStartRotation + currentAngle
                     
-                    // Handle angle wrapping (crossing 0/360 boundary)
-                    if adjustedDifference > 180 {
-                        adjustedDifference -= 360
-                    } else if adjustedDifference < -180 {
-                        adjustedDifference += 360
-                    }
+                    // Clamp rotation to valid range and check BPM limits
+                    let clampedRotation = max(180.0, min(1980.0, newRotation))
+                    let newBPM = rotationToBpm(clampedRotation)
                     
-                    // Check BPM limits before updating rotation
-                    let canRotate: Bool
-                    if bpm >= 400 && adjustedDifference > 0 {
-                        canRotate = false
-                    } else if bpm <= 40 && adjustedDifference < 0 {
-                        canRotate = false
-                    } else {
-                        canRotate = true
-                    }
-                    
-                    if canRotate {
-                        currentRotation += adjustedDifference
-                        currentRotation = max(180.0, min(1980.0, currentRotation))
-                        lastRotation = normalizedAngle
-                        
-                        let newBPM = rotationToBpm(currentRotation)
+                    // Only update if within BPM limits
+                    if newBPM >= 40 && newBPM <= 400 {
+                        currentRotation = clampedRotation
                         onTempoChange(newBPM)
-                    } else {
-                        lastRotation = normalizedAngle
                     }
                 }
                 .onEnded { _ in
-                    lastRotation = 0
+                    isDragging = false
+                    dragStartRotation = 0
                 }
         )
         .onAppear {
             currentRotation = bpmToRotation(bpm)
         }
         .onChange(of: bpm) { _, newBPM in
-            currentRotation = bpmToRotation(newBPM)
+            if !isDragging {
+                currentRotation = bpmToRotation(newBPM)
+            }
         }
     }
 }

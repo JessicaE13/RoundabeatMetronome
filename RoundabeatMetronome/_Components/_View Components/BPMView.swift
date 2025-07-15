@@ -23,17 +23,18 @@ struct BPMView: View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 HStack(alignment: .center, spacing: buttonSpacing) {
-                    // Minus button
-                    Button("-1") {
-                        let newBPM = metronome.bpm - 1
-                        metronome.bpm = max(40, min(400, newBPM))
-                    }
-                    .font(.system(size: buttonFontSize, weight: .medium))
-                    .frame(
-                        width: bpmButtonWidth,
-                        height: bpmButtonHeight
-                    )
-                    .buttonStyle(.bordered)
+                    
+//                    // Minus button
+//                    Button("-1") {
+//                        let newBPM = metronome.bpm - 1
+//                        metronome.bpm = max(40, min(400, newBPM))
+//                    }
+//                    .font(.system(size: buttonFontSize, weight: .medium))
+//                    .frame(
+//                        width: bpmButtonWidth,
+//                        height: bpmButtonHeight
+//                    )
+//                    .buttonStyle(.bordered)
                     
                     // Centered BPM display - properly calculated width
                     Button(action: {
@@ -53,17 +54,17 @@ struct BPMView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    // Plus button
-                    Button("+1") {
-                        let newBPM = metronome.bpm + 1
-                        metronome.bpm = max(40, min(400, newBPM))
-                    }
-                    .font(.system(size: buttonFontSize, weight: .medium))
-                    .frame(
-                        width: bpmButtonWidth,
-                        height: bpmButtonHeight
-                    )
-                    .buttonStyle(.bordered)
+//                    // Plus button
+//                    Button("+1") {
+//                        let newBPM = metronome.bpm + 1
+//                        metronome.bpm = max(40, min(400, newBPM))
+//                    }
+//                    .font(.system(size: buttonFontSize, weight: .medium))
+//                    .frame(
+//                        width: bpmButtonWidth,
+//                        height: bpmButtonHeight
+//                    )
+//                    .buttonStyle(.bordered)
                 }
                 .frame(maxWidth: .infinity)
                 .offset(y: isIPad ? -16 : -16)
@@ -74,7 +75,7 @@ struct BPMView: View {
                         size: buttonFontSize,
                         weight: .medium
                     ))
-                    .foregroundStyle(Color.primary.opacity(0.4))
+                    .foregroundStyle(Color("Gray1"))
                     .kerning(1.2)
                     .offset(y: isIPad ? 4 : -8)
             }
