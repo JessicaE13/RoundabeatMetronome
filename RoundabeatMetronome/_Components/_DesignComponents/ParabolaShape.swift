@@ -40,12 +40,16 @@ struct ParabolaPetalWithDynamicShadow: View {
     // Calculate how much this parabola faces the light (0 = facing away, 1 = facing toward)
     private var lightIntensity: Double {
         let radians = relativeAngle * .pi / 180
-        return max(0, cos(radians) * 0.5 + 0.5) // Normalize to 0-1 range
+        let rawIntensity = max(0, cos(radians) * 0.5 + 0.5)
+        // Soften the contrast: reduce range from 0-1 to 0.2-0.8
+        return 0.2 + (rawIntensity * 0.6)
     }
     
-    // Calculate shadow intensity (inverse of light intensity)
+    // Calculate shadow intensity (inverse of light intensity, but also softened)
     private var shadowIntensity: Double {
-        1.0 - lightIntensity
+        let rawShadow = 1.0 - ((lightIntensity - 0.2) / 0.6) // Convert back to 0-1 range
+        // Soften shadows: reduce range from 0-1 to 0.15-0.85
+        return 0.15 + (rawShadow * 0.7)
     }
     
     // Calculate highlight position based on light direction
@@ -63,9 +67,9 @@ struct ParabolaPetalWithDynamicShadow: View {
                 .fill(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.black.opacity(0.3 + shadowIntensity * 0.3), location: 0.0),
-                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.25), location: 0.5),
-                            .init(color: Color.black.opacity(0.1 + shadowIntensity * 0.15), location: 0.85),
+                            .init(color: Color.black.opacity(0.25 + shadowIntensity * 0.2), location: 0.0),
+                            .init(color: Color.black.opacity(0.18 + shadowIntensity * 0.17), location: 0.5),
+                            .init(color: Color.black.opacity(0.08 + shadowIntensity * 0.12), location: 0.85),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: .top,
@@ -79,8 +83,8 @@ struct ParabolaPetalWithDynamicShadow: View {
                     LinearGradient(
                         gradient: Gradient(stops: [
                             .init(color: Color.clear, location: 0.0),
-                            .init(color: Color.black.opacity(0.15 + shadowIntensity * 0.2), location: 0.5),
-                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.3), location: 0.85),
+                            .init(color: Color.black.opacity(0.12 + shadowIntensity * 0.15), location: 0.5),
+                            .init(color: Color.black.opacity(0.16 + shadowIntensity * 0.2), location: 0.85),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: UnitPoint(x: highlightPosition.x, y: highlightPosition.y),
@@ -104,9 +108,9 @@ struct ParabolaPetalWithDynamicShadow: View {
                 .fill(
                     RadialGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white.opacity(0.1 + lightIntensity * 0.2), location: 0.0),
-                            .init(color: Color.white.opacity(0.08 + lightIntensity * 0.15), location: 0.3),
-                            .init(color: Color.white.opacity(0.05 + lightIntensity * 0.1), location: 0.6),
+                            .init(color: Color.white.opacity(0.08 + lightIntensity * 0.12), location: 0.0),
+                            .init(color: Color.white.opacity(0.06 + lightIntensity * 0.1), location: 0.3),
+                            .init(color: Color.white.opacity(0.04 + lightIntensity * 0.08), location: 0.6),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         center: highlightPosition,
@@ -131,9 +135,9 @@ struct ParabolaPetalWithDynamicShadow: View {
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white.opacity(0.2 + lightIntensity * 0.25), location: 0.0),
-                            .init(color: Color.white.opacity(0.1 + lightIntensity * 0.15), location: 0.3),
-                            .init(color: Color.white.opacity(0.05 + lightIntensity * 0.1), location: 0.6),
+                            .init(color: Color.white.opacity(0.15 + lightIntensity * 0.15), location: 0.0),
+                            .init(color: Color.white.opacity(0.08 + lightIntensity * 0.1), location: 0.3),
+                            .init(color: Color.white.opacity(0.04 + lightIntensity * 0.08), location: 0.6),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: highlightPosition,
