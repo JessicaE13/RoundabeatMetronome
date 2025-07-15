@@ -214,7 +214,7 @@ struct CircularBeatIndicator: View {
     }
 }
 
-// MARK: - Tempo Dial Component with Capsule Indicator
+// MARK: - Tempo Dial Component with Capsule Indicator and Rotating Parabola Outline
 struct TempoDialView: View {
     let size: CGFloat
     let bpm: Int
@@ -225,6 +225,9 @@ struct TempoDialView: View {
     
     // Gray circle size multiplier - increased to make dial bigger
     private let grayCircleMultiplier: CGFloat = 0.72
+    
+    // Parabola configuration
+    private let petalCount = 30
     
     // BPM to rotation mapping - bottom center (180°) for both min/max, 5 rotations total
     private func bpmToRotation(_ bpm: Int) -> Double {
@@ -279,11 +282,23 @@ struct TempoDialView: View {
                 .shadow(color: Color.black.opacity(0.4),
                         radius: 2, x: 0, y: 1)
             
+            // Rotating parabola outline - positioned inside the dial circle (on top of black circle)
+            ZStack {
+                ForEach(0..<petalCount, id: \.self) { i in
+                    ParabolaPetalWithShadow()
+                        .frame(width: totalDialDiameter * 0.06, height: totalDialDiameter * 0.06)
+                        .scaleEffect(x: 1, y: -1) // Flip the petal upside down
+                        .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.05)) // Position inside the dial circle
+                        .rotationEffect(.degrees(Double(i) * (360.0 / Double(petalCount))))
+                }
+            }
+            .rotationEffect(.degrees(currentRotation)) // Rotate with the dial
+            
             // Capsule indicator - positioned closer to outer edge and made as a rounded line
             Capsule()
                 .fill(Color.white) // Same white color as the play button
-                .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.12) // Width: extra skinny, Height: longer line
-                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.08)) // Position near outer edge
+                .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.1) // Width: extra skinny, Height: longer line
+                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.16)) // Position near outer edge
                 .rotationEffect(.degrees(currentRotation))
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
         }
@@ -348,6 +363,7 @@ struct TempoDialView: View {
         }
     }
 }
+
 
 struct DialView: View {
     @ObservedObject var metronome: MetronomeEngine
