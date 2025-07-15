@@ -175,7 +175,7 @@ struct CircularBeatIndicator: View {
             // Center play/stop button - made slightly bigger with elevated outline
             Button(action: onTogglePlay) {
                 ZStack {
-                    let buttonSize = size * 0.35
+                    let buttonSize = size * 0.28
                     
                     // Inner elevated highlight
                     Circle()
@@ -195,7 +195,7 @@ struct CircularBeatIndicator: View {
                     
                     // Main button circle
                     Circle()
-                        .fill(Color(red: 43/255, green: 44/255, blue: 44/255))
+                        .fill(Color("Background2"))
                         .frame(width: buttonSize, height: buttonSize)
                         .shadow(color: Color.black.opacity(0.4),
                                 radius: 2, x: 0, y: 1)
