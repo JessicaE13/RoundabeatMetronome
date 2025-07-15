@@ -300,8 +300,8 @@ struct TempoDialView: View {
                 // Outer shadow for the recessed edge effect
                 Circle()
                     .fill(Color.black.opacity(0.6))
-                    .frame(width: totalDialDiameter + 4, height: totalDialDiameter + 4)
-                    .blur(radius: 3)
+                    .frame(width: totalDialDiameter + 3.5, height: totalDialDiameter + 3.5)
+                    .blur(radius: 2.6)
                     .offset(x: 1, y: 2) // Shadow offset opposite to light source (top-left)
                 
                 // Main background circle with radial gradient for concave effect
@@ -314,8 +314,8 @@ struct TempoDialView: View {
                                 .init(color: Color(red: 24/255, green: 24/255, blue: 26/255), location: 0.3),
                                 .init(color: Color(red: 20/255, green: 20/255, blue: 22/255), location: 0.6),
                                 // Edges appear lower (darker, in shadow)
-                                .init(color: Color(red: 16/255, green: 16/255, blue: 18/255), location: 0.85),
-                                .init(color: Color(red: 12/255, green: 12/255, blue: 14/255), location: 1.0)
+                                .init(color: Color(red: 18/255, green: 16/255, blue: 18/255), location: 0.85),
+                                .init(color: Color(red: 18/255, green: 12/255, blue: 14/255), location: 1.0)
                             ]),
                             center: UnitPoint(x: 0.35, y: 0.35), // Offset center toward top-left light source
                             startRadius: 0,
@@ -324,37 +324,7 @@ struct TempoDialView: View {
                     )
                     .frame(width: totalDialDiameter, height: totalDialDiameter)
                 
-                // Inner highlight from top-left light source
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: Color.white.opacity(0.08), location: 0.0),
-                                .init(color: Color.clear, location: 0.4),
-                                .init(color: Color.clear, location: 1.0)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-                    .frame(width: totalDialDiameter - 2, height: totalDialDiameter - 2)
-                
-                // Bottom-right inner shadow for enhanced depth
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: Color.clear, location: 0.0),
-                                .init(color: Color.clear, location: 0.6),
-                                .init(color: Color.black.opacity(0.3), location: 1.0)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 2
-                    )
-                    .frame(width: totalDialDiameter - 4, height: totalDialDiameter - 4)
+ 
             }
             
             // Rotating parabola outline - positioned inside the dial circle (on top of dark gray circle)
