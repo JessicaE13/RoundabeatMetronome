@@ -105,7 +105,7 @@ struct LibraryView: View {
     
     private var horizontalPillSegmentedControl: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 ForEach(LibraryTab.allCases, id: \.self) { tab in
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -114,30 +114,499 @@ struct LibraryView: View {
                     }) {
                         HStack(spacing: 4) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 14))
+                                .font(.system(size: 18))
                             Text(tab.rawValue)
                                 .font(.system(size: 14))
                         }
-                        .foregroundColor(selectedTab == tab ? Color("Accent1") : .primary)
+                        .foregroundColor(selectedTab == tab ? .black : .primary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.systemGray5))
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(Color(selectedTab == tab ? Color("Accent1") : Color("Background2")))
                         )
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 12)
             .padding(.vertical, 12)
         }
-        .background(
-            Color(.systemBackground)
-                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-        )
     }
 }
+
+// MARK: - Fixed Sound Preview System
+struct SoundsViewForLibrary: View {
+    @ObservedObject var metronome: MetronomeEngine
+    @State private var currentlyPreviewingSound: SyntheticSound? = nil
+    @State private var previewWorkItem: DispatchWorkItem? = nil
+    @State private var searchText = ""
+    @State private var sortOption: LibrarySortOption = .none
+    @State private var filterOption: LibraryFilterOption = .all
+    
+    var filteredAndSortedSounds: [SyntheticSound] {
+        let filtered: [SyntheticSound]
+        if searchText.isEmpty {
+            filtered = SyntheticSound.allCases
+        } else {
+            filtered = SyntheticSound.allCases.filter { sound in
+                sound.rawValue.localizedCaseInsensitiveContains(searchText) ||
+                sound.description.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        let filteredByOption: [SyntheticSound]
+        switch filterOption {
+        case .all:
+            filteredByOption = filtered
+        case .favorites:
+            filteredByOption = filtered
+        case .applied:
+            filteredByOption = filtered.filter { $0 == metronome.selectedSoundType }
+        }
+        
+        switch sortOption {
+        case .none:
+            return filteredByOption
+        case .aToZ:
+            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedAscending }
+        case .zToA:
+            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedDescending }
+        }
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Search Section - Updated to match setlists styling
+            VStack(spacing: 4) {
+                HStack(spacing: 2) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 17, weight: .regular))
+                            .foregroundColor(.secondary)
+                        
+                        TextField("Search sounds", text: $searchText)
+                            .font(.system(size: 17))
+                            .textFieldStyle(.plain)
+                        
+                        HStack(spacing: 2) {
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    sortOption = sortOption.nextOption
+                                }
+                            }) {
+                                Image(systemName: sortOption.iconName)
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
+                            }
+                            .buttonStyle(.plain)
+                            .frame(minWidth: 28, minHeight: 28)
+                            
+                            Menu {
+                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                    Button(action: {
+                                        filterOption = option
+                                    }) {
+                                        HStack {
+                                            Text(option.rawValue)
+                                            if filterOption == option {
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: filterOption.iconName)
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
+                            }
+                            .buttonStyle(.plain)
+                            .frame(minWidth: 28, minHeight: 28)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color("Background2"))
+                    )
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+            }
+            
+            ScrollView {
+                LazyVStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("\(filteredAndSortedSounds.count) SOUND\(filteredAndSortedSounds.count == 1 ? "" : "S")")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 12)
+                            .padding(.bottom, 4)
+                        
+                        ForEach(filteredAndSortedSounds, id: \.self) { sound in
+                            LibrarySoundRowView(
+                                sound: sound,
+                                isCurrentlyApplied: metronome.selectedSoundType == sound,
+                                metronome: metronome,
+                                isPreviewPlaying: .constant(currentlyPreviewingSound == sound),
+                                onTap: {
+                                    if #available(iOS 10.0, *) {
+                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    }
+                                    metronome.updateSoundType(to: sound)
+                                    if !metronome.isPlaying {
+                                        playPreview(sound)
+                                    }
+                                },
+                                onPreview: {
+                                    playPreview(sound)
+                                }
+                            )
+                            .padding(.horizontal, 24)
+                        }
+                    }
+                    
+                    Color.clear.frame(height: 80)
+                }
+            }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                LibraryCurrentlyAppliedSoundView(
+                    sound: metronome.selectedSoundType,
+                    metronome: metronome,
+                    isPreviewPlaying: .constant(currentlyPreviewingSound == metronome.selectedSoundType),
+                    playPreview: { sound in
+                        playPreview(sound)
+                    }
+                )
+                .padding(.horizontal, 12) // Extra padding to match the sound rows
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color("Background2"))
+                )
+                .padding(.horizontal, 12)
+            }
+            .padding(.vertical, 12)
+        }
+    }
+    
+    // **MARK: - Fixed Preview Function**
+    private func playPreview(_ sound: SyntheticSound) {
+        // Cancel any existing preview work item
+        previewWorkItem?.cancel()
+        
+        // Set the currently previewing sound immediately
+        currentlyPreviewingSound = sound
+        
+        // Play the preview
+        metronome.playSoundPreviewAdvanced(sound)
+        
+        // Create a new work item to reset the preview state
+        let workItem = DispatchWorkItem {
+            // Only reset if this sound is still the current one being previewed
+            if self.currentlyPreviewingSound == sound {
+                self.currentlyPreviewingSound = nil
+            }
+        }
+        
+        // Store the work item
+        previewWorkItem = workItem
+        
+        // Schedule the reset - using a shorter duration for more responsive UI
+        let previewDuration: TimeInterval = 0.3
+        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration, execute: workItem)
+    }
+    
+    private func soundIcon(for sound: SyntheticSound) -> String {
+        switch sound {
+        case .click:
+            return "waveform.path"
+        case .snap:
+            return "hand.point.up"
+        case .beep:
+            return "speaker.wave.2"
+        case .blip:
+            return "dot.radiowaves.left.and.right"
+        }
+    }
+}
+
+// MARK: - Updated Sound Row View
+struct LibrarySoundRowView: View {
+    let sound: SyntheticSound
+    let isCurrentlyApplied: Bool
+    @ObservedObject var metronome: MetronomeEngine
+    @Binding var isPreviewPlaying: Bool
+    let onTap: () -> Void
+    let onPreview: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: soundIcon(for: sound))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
+                .frame(width: 24, height: 24)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(sound.rawValue)
+                    .font(.body)
+                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
+                    .lineLimit(1)
+                
+                Text(sound.description)
+                    .font(.caption)
+                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            HStack(spacing: 12) {
+                if !isCurrentlyApplied && !metronome.isPlaying {
+                    Button(action: {
+                        onPreview()
+                    }) {
+                        Image(systemName: isPreviewPlaying ? "waveform" : "play.circle")
+                            .font(.system(size: 20))
+                            .foregroundColor(isPreviewPlaying ? .primary : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .frame(minWidth: 44, minHeight: 44)
+                }
+                
+                if !isCurrentlyApplied && metronome.isPlaying {
+                    Image(systemName: "speaker.slash.circle")
+                        .font(.system(size: 20))
+                        .foregroundColor(isPreviewPlaying ? .primary : .secondary)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+                
+                if isCurrentlyApplied {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.primary)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap()
+        }
+        .padding(.vertical, 8)
+        .frame(minHeight: 44)
+    }
+    
+    private func soundIcon(for sound: SyntheticSound) -> String {
+        switch sound {
+        case .click:
+            return "waveform.path"
+        case .snap:
+            return "hand.point.up"
+        case .beep:
+            return "speaker.wave.2"
+        case .blip:
+            return "dot.radiowaves.left.and.right"
+        }
+    }
+}
+
+// MARK: - Currently Applied Song View
+struct LibraryCurrentlyAppliedSongView: View {
+    let song: Song
+    @ObservedObject var metronome: MetronomeEngine
+    let onClearSelection: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "music.note")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(Color("Accent1"))
+                .frame(width: 32, height: 32)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color("Accent1").opacity(0.15))
+                )
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(song.title)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                
+                HStack(spacing: 8) {
+                    if !song.artist.isEmpty {
+                        Text(song.artist)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        
+                        Text("•")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Text("\(song.bpm) BPM")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("•")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            Button(action: {
+                metronome.isPlaying.toggle()
+            }) {
+                Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(Color("Accent1"))
+            }
+            .buttonStyle(.plain)
+            .frame(minWidth: 44, minHeight: 44)
+        }
+        .padding(.vertical, 10)
+        .frame(minHeight: 44)
+    }
+}
+
+// MARK: - Enhanced Song Form Row View
+struct LibraryEnhancedSongFormRowView: View {
+    let song: Song
+    let isCurrentlyApplied: Bool
+    @ObservedObject var setlistManager: SetlistManager
+    let onTap: () -> Void
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    let onToggleFavorite: () -> Void
+    
+    @State private var showingSetlistPicker = false
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Button {
+                onToggleFavorite()
+            } label: {
+                Image(systemName: song.isFavorite ? "heart.fill" : "heart")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(song.isFavorite ? .red : .secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .frame(minWidth: 44, minHeight: 44)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(song.title)
+                        .font(.body)
+                        .foregroundColor(isCurrentlyApplied ? .primary : .primary.opacity(0.8))
+                        .lineLimit(1)
+                    
+                    LibraryFixedSongSetlistBadgeView(
+                        song: song,
+                        setlistManager: setlistManager
+                    )
+                }
+                
+                HStack(spacing: 8) {
+                    if !song.artist.isEmpty {
+                        Text(song.artist)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        
+                        Text("•")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Text("\(song.bpm) BPM")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("•")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            Menu {
+                Button {
+                    showingSetlistPicker = true
+                } label: {
+                    HStack {
+                        Image(systemName: "music.note.list")
+                        Text("Add to Setlists")
+                    }
+                }
+                
+                Button {
+                    onToggleFavorite()
+                } label: {
+                    HStack {
+                        Image(systemName: song.isFavorite ? "heart.slash" : "heart")
+                        Text(song.isFavorite ? "Remove from Favorites" : "Add to Favorites")
+                    }
+                }
+                
+                Button {
+                    onEdit()
+                } label: {
+                    HStack {
+                        Image(systemName: "pencil")
+                        Text("Edit Song")
+                    }
+                }
+                
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    HStack {
+                        Image(systemName: "trash")
+                        Text("Delete Song")
+                    }
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 20))
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+            .frame(minWidth: 44, minHeight: 44)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap()
+        }
+        .padding(.vertical, 10)
+        .frame(minHeight: 44)
+        .sheet(isPresented: $showingSetlistPicker) {
+            SongSetlistPickerView(
+                song: song,
+                setlistManager: setlistManager
+            )
+        }
+    }
+}
+
+
+
 
 // MARK: - Songs Tab View
 struct SongsTabView: View {
@@ -736,476 +1205,6 @@ struct SoundsTabView: View {
     }
 }
 
-// MARK: - Fixed Sound Preview System
-struct SoundsViewForLibrary: View {
-    @ObservedObject var metronome: MetronomeEngine
-    @State private var currentlyPreviewingSound: SyntheticSound? = nil
-    @State private var previewWorkItem: DispatchWorkItem? = nil
-    @State private var searchText = ""
-    @State private var sortOption: LibrarySortOption = .none
-    @State private var filterOption: LibraryFilterOption = .all
-    
-    var filteredAndSortedSounds: [SyntheticSound] {
-        let filtered: [SyntheticSound]
-        if searchText.isEmpty {
-            filtered = SyntheticSound.allCases
-        } else {
-            filtered = SyntheticSound.allCases.filter { sound in
-                sound.rawValue.localizedCaseInsensitiveContains(searchText) ||
-                sound.description.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-        
-        let filteredByOption: [SyntheticSound]
-        switch filterOption {
-        case .all:
-            filteredByOption = filtered
-        case .favorites:
-            filteredByOption = filtered
-        case .applied:
-            filteredByOption = filtered.filter { $0 == metronome.selectedSoundType }
-        }
-        
-        switch sortOption {
-        case .none:
-            return filteredByOption
-        case .aToZ:
-            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedAscending }
-        case .zToA:
-            return filteredByOption.sorted { $0.rawValue.localizedCaseInsensitiveCompare($1.rawValue) == .orderedDescending }
-        }
-    }
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Search Section - Updated to match setlists styling
-            VStack(spacing: 4) {
-                HStack(spacing: 2) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 17, weight: .regular))
-                            .foregroundColor(.secondary)
-                        
-                        TextField("Search sounds", text: $searchText)
-                            .font(.system(size: 17))
-                            .textFieldStyle(.plain)
-                        
-                        HStack(spacing: 2) {
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    sortOption = sortOption.nextOption
-                                }
-                            }) {
-                                Image(systemName: sortOption.iconName)
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
-                            }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 28, minHeight: 28)
-                            
-                            Menu {
-                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                                    Button(action: {
-                                        filterOption = option
-                                    }) {
-                                        HStack {
-                                            Text(option.rawValue)
-                                            if filterOption == option {
-                                                Image(systemName: "checkmark")
-                                            }
-                                        }
-                                    }
-                                }
-                            } label: {
-                                Image(systemName: filterOption.iconName)
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
-                            }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 28, minHeight: 28)
-                        }
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color(.systemGray6))
-                    )
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
-            }
-            .background(Color(.systemBackground))
-            
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("\(filteredAndSortedSounds.count) SOUND\(filteredAndSortedSounds.count == 1 ? "" : "S")")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 24)
-                            .padding(.top, 12)
-                            .padding(.bottom, 4)
-                        
-                        ForEach(filteredAndSortedSounds, id: \.self) { sound in
-                            LibrarySoundRowView(
-                                sound: sound,
-                                isCurrentlyApplied: metronome.selectedSoundType == sound,
-                                metronome: metronome,
-                                isPreviewPlaying: .constant(currentlyPreviewingSound == sound),
-                                onTap: {
-                                    if #available(iOS 10.0, *) {
-                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                    }
-                                    metronome.updateSoundType(to: sound)
-                                    if !metronome.isPlaying {
-                                        playPreview(sound)
-                                    }
-                                },
-                                onPreview: {
-                                    playPreview(sound)
-                                }
-                            )
-                            .padding(.horizontal, 24)
-                        }
-                    }
-                    
-                    Color.clear.frame(height: 80)
-                }
-            }
-            
-            // Updated Currently Applied section - removed divider, label, and added matching background
-            VStack(alignment: .leading, spacing: 8) {
-                LibraryCurrentlyAppliedSoundView(
-                    sound: metronome.selectedSoundType,
-                    metronome: metronome,
-                    isPreviewPlaying: .constant(currentlyPreviewingSound == metronome.selectedSoundType),
-                    playPreview: { sound in
-                        playPreview(sound)
-                    }
-                )
-                .padding(.horizontal, 12) // Extra padding to match the sound rows
-                .padding(.vertical, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray6)) // Same background as selected sound
-                )
-                .padding(.horizontal, 12)
-            }
-            .padding(.vertical, 12)
-            .background(Color(.systemBackground))
-        }
-    }
-    
-    // **MARK: - Fixed Preview Function**
-    private func playPreview(_ sound: SyntheticSound) {
-        // Cancel any existing preview work item
-        previewWorkItem?.cancel()
-        
-        // Set the currently previewing sound immediately
-        currentlyPreviewingSound = sound
-        
-        // Play the preview
-        metronome.playSoundPreviewAdvanced(sound)
-        
-        // Create a new work item to reset the preview state
-        let workItem = DispatchWorkItem {
-            // Only reset if this sound is still the current one being previewed
-            if self.currentlyPreviewingSound == sound {
-                self.currentlyPreviewingSound = nil
-            }
-        }
-        
-        // Store the work item
-        previewWorkItem = workItem
-        
-        // Schedule the reset - using a shorter duration for more responsive UI
-        let previewDuration: TimeInterval = 0.3
-        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration, execute: workItem)
-    }
-    
-    private func soundIcon(for sound: SyntheticSound) -> String {
-        switch sound {
-        case .click:
-            return "waveform.path"
-        case .snap:
-            return "hand.point.up"
-        case .beep:
-            return "speaker.wave.2"
-        case .blip:
-            return "dot.radiowaves.left.and.right"
-        }
-    }
-}
-
-// MARK: - Updated Sound Row View
-struct LibrarySoundRowView: View {
-    let sound: SyntheticSound
-    let isCurrentlyApplied: Bool
-    @ObservedObject var metronome: MetronomeEngine
-    @Binding var isPreviewPlaying: Bool
-    let onTap: () -> Void
-    let onPreview: () -> Void
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: soundIcon(for: sound))
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
-                .frame(width: 24, height: 24)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(sound.rawValue)
-                    .font(.body)
-                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
-                    .lineLimit(1)
-                
-                Text(sound.description)
-                    .font(.caption)
-                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
-                    .lineLimit(1)
-            }
-            
-            Spacer()
-            
-            HStack(spacing: 12) {
-                if !isCurrentlyApplied && !metronome.isPlaying {
-                    Button(action: {
-                        onPreview()
-                    }) {
-                        Image(systemName: isPreviewPlaying ? "waveform" : "play.circle")
-                            .font(.system(size: 20))
-                            .foregroundColor(isPreviewPlaying ? .primary : .secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .frame(minWidth: 44, minHeight: 44)
-                }
-                
-                if !isCurrentlyApplied && metronome.isPlaying {
-                    Image(systemName: "speaker.slash.circle")
-                        .font(.system(size: 20))
-                        .foregroundColor(isPreviewPlaying ? .primary : .secondary)
-                }
-                
-                if isCurrentlyApplied {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.primary)
-                }
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
-        }
-        .padding(.vertical, 10)
-        .frame(minHeight: 44)
-    }
-    
-    private func soundIcon(for sound: SyntheticSound) -> String {
-        switch sound {
-        case .click:
-            return "waveform.path"
-        case .snap:
-            return "hand.point.up"
-        case .beep:
-            return "speaker.wave.2"
-        case .blip:
-            return "dot.radiowaves.left.and.right"
-        }
-    }
-}
-
-// MARK: - Currently Applied Song View
-struct LibraryCurrentlyAppliedSongView: View {
-    let song: Song
-    @ObservedObject var metronome: MetronomeEngine
-    let onClearSelection: () -> Void
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "music.note")
-                .font(.system(size: 20, weight: .medium))
-                .foregroundColor(Color("Accent1"))
-                .frame(width: 32, height: 32)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color("Accent1").opacity(0.15))
-                )
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(song.title)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .lineLimit(1)
-                
-                HStack(spacing: 8) {
-                    if !song.artist.isEmpty {
-                        Text(song.artist)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                        
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Text("\(song.bpm) BPM")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("•")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            Spacer()
-            
-            Button(action: {
-                metronome.isPlaying.toggle()
-            }) {
-                Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(Color("Accent1"))
-            }
-            .buttonStyle(.plain)
-            .frame(minWidth: 44, minHeight: 44)
-        }
-        .padding(.vertical, 10)
-        .frame(minHeight: 44)
-    }
-}
-
-// MARK: - Enhanced Song Form Row View
-struct LibraryEnhancedSongFormRowView: View {
-    let song: Song
-    let isCurrentlyApplied: Bool
-    @ObservedObject var setlistManager: SetlistManager
-    let onTap: () -> Void
-    let onEdit: () -> Void
-    let onDelete: () -> Void
-    let onToggleFavorite: () -> Void
-    
-    @State private var showingSetlistPicker = false
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Button {
-                onToggleFavorite()
-            } label: {
-                Image(systemName: song.isFavorite ? "heart.fill" : "heart")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(song.isFavorite ? .red : .secondary)
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.plain)
-            .frame(minWidth: 44, minHeight: 44)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(song.title)
-                        .font(.body)
-                        .foregroundColor(isCurrentlyApplied ? .primary : .primary.opacity(0.8))
-                        .lineLimit(1)
-                    
-                    LibraryFixedSongSetlistBadgeView(
-                        song: song,
-                        setlistManager: setlistManager
-                    )
-                }
-                
-                HStack(spacing: 8) {
-                    if !song.artist.isEmpty {
-                        Text(song.artist)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                        
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Text("\(song.bpm) BPM")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("•")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("\(song.timeSignature.numerator)/\(song.timeSignature.denominator)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            Spacer()
-            
-            Menu {
-                Button {
-                    showingSetlistPicker = true
-                } label: {
-                    HStack {
-                        Image(systemName: "music.note.list")
-                        Text("Add to Setlists")
-                    }
-                }
-                
-                Button {
-                    onToggleFavorite()
-                } label: {
-                    HStack {
-                        Image(systemName: song.isFavorite ? "heart.slash" : "heart")
-                        Text(song.isFavorite ? "Remove from Favorites" : "Add to Favorites")
-                    }
-                }
-                
-                Button {
-                    onEdit()
-                } label: {
-                    HStack {
-                        Image(systemName: "pencil")
-                        Text("Edit Song")
-                    }
-                }
-                
-                Button(role: .destructive) {
-                    onDelete()
-                } label: {
-                    HStack {
-                        Image(systemName: "trash")
-                        Text("Delete Song")
-                    }
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.system(size: 20))
-                    .foregroundColor(.secondary)
-            }
-            .buttonStyle(.plain)
-            .frame(minWidth: 44, minHeight: 44)
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
-        }
-        .padding(.vertical, 10)
-        .frame(minHeight: 44)
-        .sheet(isPresented: $showingSetlistPicker) {
-            SongSetlistPickerView(
-                song: song,
-                setlistManager: setlistManager
-            )
-        }
-    }
-}
 
 // MARK: - Fixed Song Setlist Badge View
 struct LibraryFixedSongSetlistBadgeView: View {
@@ -1344,12 +1343,12 @@ struct FloatingActionButton: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: iconName)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundColor(.black)
                 
                 if !isCollapsed {
                     Text(text)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 14, weight: .regular))
                         .foregroundColor(.black)
                 }
             }
