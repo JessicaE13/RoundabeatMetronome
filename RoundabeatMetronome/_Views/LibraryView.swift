@@ -414,7 +414,7 @@ struct LibrarySoundRowView: View {
     }
 }
 
-// MARK: - Currently Applied Song View
+// MARK: - Currently Applied Song View (Updated with white icons)
 struct LibraryCurrentlyAppliedSongView: View {
     let song: Song
     @ObservedObject var metronome: MetronomeEngine
@@ -424,12 +424,8 @@ struct LibraryCurrentlyAppliedSongView: View {
         HStack(spacing: 12) {
             Image(systemName: "music.note")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(Color("Accent1"))
+                .foregroundColor(.white) // Changed from Color("Accent1") to .white
                 .frame(width: 32, height: 32)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color("Accent1").opacity(0.15))
-                )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(song.title)
@@ -470,7 +466,7 @@ struct LibraryCurrentlyAppliedSongView: View {
             }) {
                 Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(Color("Accent1"))
+                    .foregroundColor(.white) // Changed from Color("Accent1") to .white
             }
             .buttonStyle(.plain)
             .frame(minWidth: 44, minHeight: 44)
@@ -819,22 +815,14 @@ struct SongsTabView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    Button(action: {
-                        showingAddSong = true
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.white)
-                            .frame(width: 56, height: 56)
-                            .background(
-                                Circle()
-                                    .fill(Color("Accent1"))
-                                    .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.trailing, 24)
-                    .padding(.bottom, songManager.currentlySelectedSong != nil ? 100 : 24)
+                    FloatingActionButton(
+                        isCollapsed: false,
+                        iconName: "plus",
+                        text: "Add Song",
+                        action: { showingAddSong = true }
+                    )
+                    .padding(.trailing, 16)
+                    .padding(.bottom, songManager.currentlySelectedSong != nil ? 84 : 16)
                 }
             }
         )
@@ -1469,7 +1457,7 @@ struct FloatingActionButton: View {
     }
 }
 
-// MARK: - Updated Currently Applied Sound View
+// MARK: - Updated Currently Applied Sound View (Updated with white icons)
 struct LibraryCurrentlyAppliedSoundView: View {
     let sound: SyntheticSound
     @ObservedObject var metronome: MetronomeEngine
@@ -1480,12 +1468,8 @@ struct LibraryCurrentlyAppliedSoundView: View {
         HStack(spacing: 12) {
             Image(systemName: soundIcon(for: sound))
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(Color("Accent1"))
+                .foregroundColor(.white) // Changed from Color("Accent1") to .white
                 .frame(width: 32, height: 32)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color("Accent1").opacity(0.15))
-                )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(sound.rawValue)
@@ -1506,7 +1490,7 @@ struct LibraryCurrentlyAppliedSoundView: View {
             }) {
                 Image(systemName: isPreviewPlaying ? "waveform" : "play.circle.fill")
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(Color("Accent1"))
+                    .foregroundColor(.white) // Changed from Color("Accent1") to .white
             }
             .buttonStyle(.plain)
             .frame(minWidth: 44, minHeight: 44)
