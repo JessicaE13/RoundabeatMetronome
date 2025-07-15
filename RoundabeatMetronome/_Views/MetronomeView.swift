@@ -23,25 +23,25 @@ struct MetronomeView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            
-            // Show either tempo selector or selected song
-            if let selectedSong = songManager.currentlySelectedSong {
-                SelectedSongDisplayView(
-                    song: selectedSong,
-                    onClearSelection: {
-                        songManager.clearCurrentlySelectedSong()
-                    }
-                )
-            } else {
-                TempoScrollView(
-                    currentBPM: metronome.bpm,
-                    onTempoChange: { newBPM in
-                        metronome.bpm = newBPM
-                    }
-                )
-            }
-            
-            Spacer()
+//            
+//            // Show either tempo selector or selected song
+//            if let selectedSong = songManager.currentlySelectedSong {
+//                SelectedSongDisplayView(
+//                    song: selectedSong,
+//                    onClearSelection: {
+//                        songManager.clearCurrentlySelectedSong()
+//                    }
+//                )
+//            } else {
+//                TempoScrollView(
+//                    currentBPM: metronome.bpm,
+//                    onTempoChange: { newBPM in
+//                        metronome.bpm = newBPM
+//                    }
+//                )
+//            }
+//            
+//            Spacer()
             
             BPMView(
                 metronome: metronome,

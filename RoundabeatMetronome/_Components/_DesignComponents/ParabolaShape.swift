@@ -103,7 +103,7 @@ struct ParabolaPetalWithShadow: View {
             
             // Original stroke outline
             ParabolaPetal()
-                .stroke(Color.gray, lineWidth: 1.5)
+                .stroke(Color.gray, lineWidth: 0.5)
         }
     }
 }

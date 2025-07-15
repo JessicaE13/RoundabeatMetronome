@@ -214,6 +214,8 @@ struct CircularBeatIndicator: View {
     }
 }
 
+
+
 // MARK: - Tempo Dial Component with Capsule Indicator and Rotating Parabola Outline
 struct TempoDialView: View {
     let size: CGFloat
@@ -255,6 +257,15 @@ struct TempoDialView: View {
     private var donutHoleDiameter: CGFloat { size * 0.45 }
     private var dialWidth: CGFloat { (totalDialDiameter - donutHoleDiameter) / 2 }
     
+    // Calculate the size of the inner circle that touches the parabola tops
+    private var innerCircleDiameter: CGFloat {
+        // The parabolas are positioned at -(totalDialDiameter/2 - totalDialDiameter * 0.05)
+        // So the inner circle should have a diameter that reaches to their tops
+        let parabolaOffset = totalDialDiameter/2 - totalDialDiameter * 0.05
+        let parabolaHeight = totalDialDiameter * 0.06
+        return (parabolaOffset - parabolaHeight/2) * 2
+    }
+    
     var body: some View {
         ZStack {
             // Outer elevated outline with shadows
@@ -275,29 +286,35 @@ struct TempoDialView: View {
                 .shadow(color: Color.white.opacity(0.1),
                         radius: 1, x: 0, y: -1)
             
-            // Main filled circle (no hole)
+            // Main filled circle - changed to dark gray
             Circle()
-                .fill(Color.black.opacity(0.95))
+                .fill(Color(red: 60/255, green: 60/255, blue: 62/255))
                 .frame(width: totalDialDiameter, height: totalDialDiameter)
                 .shadow(color: Color.black.opacity(0.4),
                         radius: 2, x: 0, y: 1)
             
-            // Rotating parabola outline - positioned inside the dial circle (on top of black circle)
+            // Rotating parabola outline - positioned inside the dial circle (on top of dark gray circle)
             ZStack {
                 ForEach(0..<petalCount, id: \.self) { i in
                     ParabolaPetalWithShadow()
-                        .frame(width: totalDialDiameter * 0.06, height: totalDialDiameter * 0.06)
+                        .frame(width: totalDialDiameter * 0.06, height: totalDialDiameter * 0.05)
                         .scaleEffect(x: 1, y: -1) // Flip the petal upside down
-                        .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.05)) // Position inside the dial circle
+                        .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.04)) // Position inside the dial circle
                         .rotationEffect(.degrees(Double(i) * (360.0 / Double(petalCount))))
                 }
             }
             .rotationEffect(.degrees(currentRotation)) // Rotate with the dial
             
+            // Inner dark/black circle that touches the tops of the parabolas
+            Circle()
+                .fill(Color.black.opacity(0.95))
+                .frame(width: innerCircleDiameter, height: innerCircleDiameter)
+
+            
             // Capsule indicator - positioned closer to outer edge and made as a rounded line
             Capsule()
                 .fill(Color.white) // Same white color as the play button
-                .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.1) // Width: extra skinny, Height: longer line
+                .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.08) // Width: extra skinny, Height: longer line
                 .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.16)) // Position near outer edge
                 .rotationEffect(.degrees(currentRotation))
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
@@ -363,7 +380,6 @@ struct TempoDialView: View {
         }
     }
 }
-
 
 struct DialView: View {
     @ObservedObject var metronome: MetronomeEngine
