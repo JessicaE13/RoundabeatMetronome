@@ -334,7 +334,7 @@ struct SoundsViewForLibrary: View {
     }
 }
 
-// MARK: - Updated Sound Row View
+// MARK: - Updated Sound Row View with Song View Styling
 struct LibrarySoundRowView: View {
     let sound: SyntheticSound
     let isCurrentlyApplied: Bool
@@ -352,13 +352,13 @@ struct LibrarySoundRowView: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(sound.rawValue)
-                    .font(.body)
-                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
+                    .font(.body) // Matches song view font
+                    .foregroundColor(isCurrentlyApplied ? Color("Accent1") : .primary.opacity(0.8)) // Updated color logic
                     .lineLimit(1)
                 
                 Text(sound.description)
-                    .font(.caption)
-                    .foregroundColor(isCurrentlyApplied ? .primary : .secondary)
+                    .font(.caption) // Matches song view font
+                    .foregroundColor(.secondary)
                     .lineLimit(1)
             }
             
@@ -396,7 +396,7 @@ struct LibrarySoundRowView: View {
         .onTapGesture {
             onTap()
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10) // Updated to match song view padding
         .frame(minHeight: 44)
     }
     
@@ -1259,17 +1259,13 @@ struct LibrarySetlistRowView: View {
         HStack(spacing: 12) {
             Image(systemName: "music.note.list")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(Color("Accent1"))
+                .foregroundColor(.white)
                 .frame(width: 36, height: 36)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color("Accent1").opacity(0.1))
-                )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(setlist.name)
                     .font(.body)
-                    .fontWeight(.semibold)
+                    .fontWeight(.regular)
                     .lineLimit(1)
                 
                 HStack(spacing: 8) {
@@ -1331,6 +1327,7 @@ struct LibrarySetlistRowView: View {
         return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
+
 
 // MARK: - Floating Action Button
 struct FloatingActionButton: View {
