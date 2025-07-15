@@ -25,17 +25,47 @@ struct ParabolaPetal: Shape {
     }
 }
 
-struct ParabolaPetalWithShadow: View {
+struct ParabolaPetalWithDynamicShadow: View {
+    let rotationAngle: Double // The rotation angle of this specific parabola
+    
+    // Define light source direction (top-left)
+    private let lightSourceAngle: Double = 315 // degrees (top-left)
+    
+    // Calculate the relative angle between light source and this parabola
+    private var relativeAngle: Double {
+        let angle = rotationAngle - lightSourceAngle
+        return angle.truncatingRemainder(dividingBy: 360)
+    }
+    
+    // Calculate how much this parabola faces the light (0 = facing away, 1 = facing toward)
+    private var lightIntensity: Double {
+        let radians = relativeAngle * .pi / 180
+        return max(0, cos(radians) * 0.5 + 0.5) // Normalize to 0-1 range
+    }
+    
+    // Calculate shadow intensity (inverse of light intensity)
+    private var shadowIntensity: Double {
+        1.0 - lightIntensity
+    }
+    
+    // Calculate highlight position based on light direction
+    private var highlightPosition: UnitPoint {
+        let adjustedAngle = (lightSourceAngle - rotationAngle) * .pi / 180
+        let x = 0.5 + cos(adjustedAngle) * 0.3
+        let y = 0.5 + sin(adjustedAngle) * 0.3
+        return UnitPoint(x: max(0, min(1, x)), y: max(0, min(1, y)))
+    }
+    
     var body: some View {
         ZStack {
-            // Main vertical shadow fill — now much darker and more pronounced
+            // Main vertical shadow fill — intensity varies with lighting
             ParabolaPetal()
                 .fill(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.black.opacity(0.5), location: 0.0),
-                            .init(color: Color.black.opacity(0.35), location: 0.5),
-                            .init(color: Color.black.opacity(0.15), location: 0.85),
+                            .init(color: Color.black.opacity(0.3 + shadowIntensity * 0.3), location: 0.0),
+                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.25), location: 0.5),
+                            .init(color: Color.black.opacity(0.1 + shadowIntensity * 0.15), location: 0.85),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: .top,
@@ -43,18 +73,18 @@ struct ParabolaPetalWithShadow: View {
                     )
                 )
             
-            // Directional right-side shadow — deeper, with a heavier gradient
+            // Directional shadow — varies based on light position
             ParabolaPetal()
                 .fill(
                     LinearGradient(
                         gradient: Gradient(stops: [
                             .init(color: Color.clear, location: 0.0),
-                            .init(color: Color.black.opacity(0.25), location: 0.5),
-                            .init(color: Color.black.opacity(0.35), location: 0.85),
+                            .init(color: Color.black.opacity(0.15 + shadowIntensity * 0.2), location: 0.5),
+                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.3), location: 0.85),
                             .init(color: Color.clear, location: 1.0)
                         ]),
-                        startPoint: .leading,
-                        endPoint: .trailing
+                        startPoint: UnitPoint(x: highlightPosition.x, y: highlightPosition.y),
+                        endPoint: UnitPoint(x: 1 - highlightPosition.x, y: 1 - highlightPosition.y)
                     )
                 )
                 .mask(
@@ -69,17 +99,17 @@ struct ParabolaPetalWithShadow: View {
                     )
                 )
             
-            // NEW: Top-right highlight — main light source effect
+            // Dynamic highlight — positioned based on light source
             ParabolaPetal()
                 .fill(
                     RadialGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white.opacity(0.2), location: 0.0),
-                            .init(color: Color.white.opacity(0.15), location: 0.3),
-                            .init(color: Color.white.opacity(0.1), location: 0.6),
+                            .init(color: Color.white.opacity(0.1 + lightIntensity * 0.2), location: 0.0),
+                            .init(color: Color.white.opacity(0.08 + lightIntensity * 0.15), location: 0.3),
+                            .init(color: Color.white.opacity(0.05 + lightIntensity * 0.1), location: 0.6),
                             .init(color: Color.clear, location: 1.0)
                         ]),
-                        center: UnitPoint(x: 0.8, y: 0.1), // Top-right position
+                        center: highlightPosition,
                         startRadius: 2,
                         endRadius: 15
                     )
@@ -87,39 +117,39 @@ struct ParabolaPetalWithShadow: View {
                 .mask(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white, location: 0.0),
-                            .init(color: Color.white.opacity(0.6), location: 0.4),
+                            .init(color: Color.white.opacity(0.6 + lightIntensity * 0.4), location: 0.0),
+                            .init(color: Color.white.opacity(0.3 + lightIntensity * 0.3), location: 0.4),
                             .init(color: Color.clear, location: 0.8)
                         ]),
-                        startPoint: .topTrailing,
-                        endPoint: .bottomLeading
+                        startPoint: highlightPosition,
+                        endPoint: UnitPoint(x: 1 - highlightPosition.x, y: 1 - highlightPosition.y)
                     )
                 )
             
-            // Enhanced highlight stroke — more visible from top-right
+            // Dynamic highlight stroke — stronger on lit side
             ParabolaPetal()
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white.opacity(0.35), location: 0.0),
-                            .init(color: Color.white.opacity(0.15), location: 0.3),
-                            .init(color: Color.white.opacity(0.05), location: 0.6),
+                            .init(color: Color.white.opacity(0.2 + lightIntensity * 0.25), location: 0.0),
+                            .init(color: Color.white.opacity(0.1 + lightIntensity * 0.15), location: 0.3),
+                            .init(color: Color.white.opacity(0.05 + lightIntensity * 0.1), location: 0.6),
                             .init(color: Color.clear, location: 1.0)
                         ]),
-                        startPoint: .topTrailing,
-                        endPoint: .bottomLeading
+                        startPoint: highlightPosition,
+                        endPoint: UnitPoint(x: 1 - highlightPosition.x, y: 1 - highlightPosition.y)
                     ),
                     lineWidth: 0.8
                 )
                 .scaleEffect(0.95)
             
-            // Inner shadow line — much darker for strong base definition
+            // Inner shadow line — stronger on shadow side
             ParabolaPetal()
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.black.opacity(0.4), location: 0.0),
-                            .init(color: Color.black.opacity(0.25), location: 0.5),
+                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.3), location: 0.0),
+                            .init(color: Color.black.opacity(0.15 + shadowIntensity * 0.2), location: 0.5),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         startPoint: .top,
@@ -152,14 +182,23 @@ struct CircularParabolaBorderView: View {
                 .frame(width: 300, height: 300)
             
             ForEach(0..<petalCount, id: \.self) { i in
-                ParabolaPetalWithShadow()
+                let rotationAngle = Double(i) * (360.0 / Double(petalCount))
+                
+                ParabolaPetalWithDynamicShadow(rotationAngle: rotationAngle)
                     .frame(width: 20, height: 20)
                     .scaleEffect(x: 1, y: -1) // this flips the petal upside down
                     .offset(y: -150)
-                    .rotationEffect(.degrees(Double(i) * (360.0 / Double(petalCount))))
+                    .rotationEffect(.degrees(rotationAngle))
             }
         }
         .frame(width: 340, height: 340)
+    }
+}
+
+// Legacy component for backwards compatibility
+struct ParabolaPetalWithShadow: View {
+    var body: some View {
+        ParabolaPetalWithDynamicShadow(rotationAngle: 0)
     }
 }
 

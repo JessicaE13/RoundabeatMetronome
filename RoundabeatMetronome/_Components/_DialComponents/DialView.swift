@@ -348,14 +348,20 @@ struct TempoDialView: View {
                     .frame(width: totalDialDiameter - 4, height: totalDialDiameter - 4)
             }
             
+            // Update the TempoDialView section in your DialView.swift file
+            // Replace the existing "Rotating parabola outline" section with this:
+
             // Rotating parabola outline - positioned inside the dial circle (on top of dark gray circle)
             ZStack {
                 ForEach(0..<petalCount, id: \.self) { i in
-                    ParabolaPetalWithShadow()
+                    let baseRotation = Double(i) * (360.0 / Double(petalCount))
+                    let totalRotation = baseRotation + currentRotation
+                    
+                    ParabolaPetalWithDynamicShadow(rotationAngle: totalRotation)
                         .frame(width: totalDialDiameter * 0.06, height: totalDialDiameter * 0.05)
                         .scaleEffect(x: 1, y: -1) // Flip the petal upside down
                         .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.04)) // Position inside the dial circle
-                        .rotationEffect(.degrees(Double(i) * (360.0 / Double(petalCount))))
+                        .rotationEffect(.degrees(baseRotation))
                 }
             }
             .rotationEffect(.degrees(currentRotation)) // Rotate with the dial
