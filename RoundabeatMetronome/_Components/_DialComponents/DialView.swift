@@ -167,8 +167,8 @@ struct CircularBeatIndicator: View {
                 )
             }
             
-            // Tempo dial - circle that touches the square edges
-            let dialSize = arcFrameSize // Use the same size as the arc frame
+            // Tempo dial - circle that touches the square edges, use the same size as the arc frame
+            let dialSize = arcFrameSize
             
             TempoDialView(size: dialSize, bpm: bpm, onTempoChange: onTempoChange)
             
@@ -255,10 +255,7 @@ struct TempoDialView: View {
     @State private var isDragging: Bool = false
     @State private var dragStartRotation: Double = 0
     
-    // Gray circle size multiplier - increased to make dial bigger
-    private let grayCircleMultiplier: CGFloat = 0.72
-    
-    // Parabola configuration
+    private let grayCircleMultiplier: CGFloat = 0.75    //Gray circle size multiplier - increased to make dial bigger
     private let petalCount = 30
     
     // BPM to rotation mapping - bottom center (180°) for both min/max, 5 rotations total
@@ -374,7 +371,11 @@ struct TempoDialView: View {
             // Inner dark/black circle that touches the tops of the parabolas - slightly lighter
             Circle()
                 .fill(Color(red: 15/255, green: 15/255, blue: 17/255))
-                .frame(width: innerCircleDiameter, height: innerCircleDiameter)
+                .frame(width: innerCircleDiameter - 5, height: innerCircleDiameter - 5)
+
+            Circle()
+                .stroke(Color("AccentColor").opacity(0.6), lineWidth: 2)
+                .frame(width: innerCircleDiameter - 5, height: innerCircleDiameter - 5)
 
             
             // Capsule indicator - positioned closer to outer edge and made as a rounded line

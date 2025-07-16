@@ -41,11 +41,25 @@ struct BottomNavigationBar: View {
                     VStack(spacing: isIPad ? 6 : 4) {
                         Image(systemName: tab.iconName)
                             .font(.system(size: isIPad ? 20 : 18, weight: .medium))
-                            .foregroundColor(selectedTab == tab ? Color("AccentColor") : Color("Gray1"))
+                            .foregroundStyle(selectedTab == tab ?
+                                             AnyShapeStyle(LinearGradient(
+                                                gradient: Gradient(colors: [Color("AccentColor"), Color("AccentColor").opacity(0.7)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                             )) :
+                                                AnyShapeStyle(Color("Gray1"))
+                            )
                         
                         Text(tab.rawValue)
                             .font(.system(size: isIPad ? 11 : 9, weight: .medium))
-                            .foregroundColor(selectedTab == tab ? Color("AccentColor") : .secondary)
+                            .foregroundStyle(selectedTab == tab ?
+                                             AnyShapeStyle(LinearGradient(
+                                                gradient: Gradient(colors: [Color("AccentColor"), Color("AccentColor").opacity(0.7)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                             )) :
+                                                AnyShapeStyle(Color.secondary)
+                            )
                     }
                 }
                 .frame(maxWidth: .infinity)
