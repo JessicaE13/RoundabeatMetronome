@@ -62,8 +62,8 @@ struct MetronomeView: View {
   
             Spacer()
             
-            SwiftUIView()
-           // DialView(metronome: metronome)
+            //SwiftUIView()
+           DialView(metronome: metronome)
             
             Spacer()
             

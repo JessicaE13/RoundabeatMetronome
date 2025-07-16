@@ -359,9 +359,8 @@ struct TempoDialView: View {
                     let baseRotation = Double(i) * (360.0 / Double(petalCount))
                     let totalRotation = baseRotation + currentRotation
                     
-                    ParabolaPetalWithDynamicShadow(rotationAngle: totalRotation)
-                        .frame(width: totalDialDiameter * 0.06, height: totalDialDiameter * 0.05)
-                        .scaleEffect(x: 1, y: -1) // Flip the petal upside down
+                    EllipsePetalWithDynamicShadow(rotationAngle: totalRotation)
+                        .frame(width: totalDialDiameter * 0.05, height: totalDialDiameter * 0.03) // Elliptical proportions
                         .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.04)) // Position inside the dial circle
                         .rotationEffect(.degrees(baseRotation))
                 }
