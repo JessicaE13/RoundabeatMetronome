@@ -195,7 +195,7 @@ struct CircularBeatIndicator: View {
                     
                     // Main button circle
                     Circle()
-                        .fill(Color("Background2"))
+                        .fill(Color("Background3"))
                         .frame(width: buttonSize, height: buttonSize)
                         .shadow(color: Color.black.opacity(0.4),
                                 radius: 2, x: 0, y: 1)
@@ -277,45 +277,45 @@ struct TempoDialView: View {
     
     var body: some View {
         ZStack {
-            // Outer elevated outline with shadows
+            // Outer elevated outline with shadows - using Background3 as base
             Circle()
-                .stroke(Color(red: 1/255, green: 1/255, blue: 2/255), lineWidth: 3.0)
+                .stroke(Color("Background3"), lineWidth: 3.0)
                 .frame(width: totalDialDiameter + 6, height: totalDialDiameter + 6)
-                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.8),
+                .shadow(color: Color("Background3").opacity(0.8),
                         radius: 1, x: 0, y: 1)
                 .shadow(color: Color.black.opacity(0.3),
                         radius: 3, x: 0, y: 2)
                 .shadow(color: Color.black.opacity(0.15),
                         radius: 6, x: 0, y: 4)
             
-            // Inner elevated highlight
+            // Inner elevated highlight - lighter version of Background3
             Circle()
-                .stroke(Color(red: 80/255, green: 80/255, blue: 82/255).opacity(0.6), lineWidth: 1.5)
+                .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
                 .frame(width: totalDialDiameter + 3, height: totalDialDiameter + 3)
-                .shadow(color: Color.white.opacity(0.1),
+                .shadow(color: Color.white.opacity(0.2),
                         radius: 1, x: 0, y: -1)
             
-            // Parabola background with concave depth effect
+            // Parabola background with concave depth effect - LIGHTER COLORS
             ZStack {
                 // Outer shadow for the recessed edge effect
                 Circle()
-                    .fill(Color.black.opacity(0.6))
+                    .fill(Color.black.opacity(0.4))
                     .frame(width: totalDialDiameter + 3.5, height: totalDialDiameter + 3.5)
                     .blur(radius: 2.6)
                     .offset(x: 1, y: 2) // Shadow offset opposite to light source (top-left)
                 
-                // Main background circle with radial gradient for concave effect
+                // Main background circle with radial gradient for concave effect - using Background3 as base
                 Circle()
                     .fill(
                         RadialGradient(
                             gradient: Gradient(stops: [
-                                // Center appears higher (lighter from top-left light)
-                                .init(color: Color(red: 28/255, green: 28/255, blue: 30/255), location: 0.0),
-                                .init(color: Color(red: 24/255, green: 24/255, blue: 26/255), location: 0.3),
-                                .init(color: Color(red: 20/255, green: 20/255, blue: 22/255), location: 0.6),
-                                // Edges appear lower (darker, in shadow)
-                                .init(color: Color(red: 18/255, green: 16/255, blue: 18/255), location: 0.85),
-                                .init(color: Color(red: 18/255, green: 12/255, blue: 14/255), location: 1.0)
+                                // Center appears higher (lighter from top-left light) - lighter Background3
+                                .init(color: Color("Background3").opacity(1.2), location: 0.0),
+                                .init(color: Color("Background3").opacity(1.0), location: 0.3),
+                                .init(color: Color("Background3").opacity(0.9), location: 0.6),
+                                // Edges appear lower (darker, in shadow) - darker Background3
+                                .init(color: Color("Background3").opacity(0.8), location: 0.85),
+                                .init(color: Color("Background3").opacity(0.7), location: 1.0)
                             ]),
                             center: UnitPoint(x: 0.35, y: 0.35), // Offset center toward top-left light source
                             startRadius: 0,
@@ -342,9 +342,9 @@ struct TempoDialView: View {
             }
             .rotationEffect(.degrees(currentRotation)) // Rotate with the dial
             
-            // Inner dark/black circle that touches the tops of the parabolas
+            // Inner dark/black circle that touches the tops of the parabolas - slightly lighter
             Circle()
-                .fill(Color.black.opacity(0.95))
+                .fill(Color(red: 15/255, green: 15/255, blue: 17/255))
                 .frame(width: innerCircleDiameter, height: innerCircleDiameter)
 
             
