@@ -336,12 +336,12 @@ struct TempoDialView: View {
                         RadialGradient(
                             gradient: Gradient(stops: [
                                 // Center appears higher (lighter from top-left light) - lighter Background3
-                                .init(color: Color("Background3").opacity(1.2), location: 0.0),
-                                .init(color: Color("Background3").opacity(1.0), location: 0.3),
-                                .init(color: Color("Background3").opacity(0.9), location: 0.6),
+                                .init(color: Color("Gray2").opacity(1.2), location: 0.0),
+                                .init(color: Color("Gray2").opacity(1.0), location: 0.3),
+                                .init(color: Color("Gray2").opacity(0.9), location: 0.6),
                                 // Edges appear lower (darker, in shadow) - darker Background3
-                                .init(color: Color("Background3").opacity(0.8), location: 0.85),
-                                .init(color: Color("Background3").opacity(0.7), location: 1.0)
+                                .init(color: Color("Gray2").opacity(0.8), location: 0.85),
+                                .init(color: Color("Gray2").opacity(0.7), location: 1.0)
                             ]),
                             center: UnitPoint(x: 0.35, y: 0.35), // Offset center toward top-left light source
                             startRadius: 0,
@@ -360,7 +360,7 @@ struct TempoDialView: View {
                     let totalRotation = baseRotation + currentRotation
                     
                     EllipsePetalWithDynamicShadow(rotationAngle: totalRotation)
-                        .frame(width: totalDialDiameter * 0.05, height: totalDialDiameter * 0.03) // Elliptical proportions
+                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.06) // INCREASED SIZE: width from 0.05 to 0.08, height from 0.03 to 0.05
                         .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.04)) // Position inside the dial circle
                         .rotationEffect(.degrees(baseRotation))
                 }
