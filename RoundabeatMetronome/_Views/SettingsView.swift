@@ -206,7 +206,7 @@ struct CustomToggleStyle: ToggleStyle {
             Spacer()
             
             RoundedRectangle(cornerRadius: 16)
-                .fill(configuration.isOn ? Color("Accent1") : Color.secondary.opacity(0.3))
+                .fill(configuration.isOn ? Color("AccentColor") : Color.secondary.opacity(0.3))
                 .frame(width: 51, height: 31)
                 .overlay(
                     Circle()
@@ -279,7 +279,7 @@ struct AudioStatusInfoView: View {
                 // Background Audio Status
                 HStack {
                     Image(systemName: metronome.backgroundAudioEnabled ? "music.note" : "music.note.tv")
-                        .foregroundColor(metronome.backgroundAudioEnabled ? Color("Accent1") : .secondary)
+                        .foregroundColor(metronome.backgroundAudioEnabled ? Color("AccentColor") : .secondary)
                         .font(.caption)
                     
                     Text(metronome.backgroundAudioEnabled ? "Background Audio Enabled" : "Foreground Only")

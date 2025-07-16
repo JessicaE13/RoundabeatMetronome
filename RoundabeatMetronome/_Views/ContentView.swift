@@ -41,11 +41,11 @@ struct BottomNavigationBar: View {
                     VStack(spacing: isIPad ? 6 : 4) {
                         Image(systemName: tab.iconName)
                             .font(.system(size: isIPad ? 20 : 18, weight: .medium))
-                            .foregroundColor(selectedTab == tab ? Color("Accent1") : Color("Gray1"))
+                            .foregroundColor(selectedTab == tab ? Color("AccentColor") : Color("Gray1"))
                         
                         Text(tab.rawValue)
                             .font(.system(size: isIPad ? 11 : 9, weight: .medium))
-                            .foregroundColor(selectedTab == tab ? Color("Accent1") : .secondary)
+                            .foregroundColor(selectedTab == tab ? Color("AccentColor") : .secondary)
                     }
                 }
                 .frame(maxWidth: .infinity)

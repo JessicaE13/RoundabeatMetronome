@@ -123,7 +123,7 @@ struct LibraryView: View {
                         .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 24)
-                                .fill(Color(selectedTab == tab ? Color("Accent1") : Color("Background2")))
+                                .fill(Color(selectedTab == tab ? Color("AccentColor") : Color("Background2")))
                         )
                     }
                     .buttonStyle(.plain)
@@ -197,7 +197,7 @@ struct SoundsViewForLibrary: View {
                             }) {
                                 Image(systemName: sortOption.iconName)
                                     .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
+                                    .foregroundColor(sortOption == .none ? .secondary : Color("AccentColor"))
                             }
                             .buttonStyle(.plain)
                             .frame(minWidth: 28, minHeight: 28)
@@ -218,7 +218,7 @@ struct SoundsViewForLibrary: View {
                             } label: {
                                 Image(systemName: filterOption.iconName)
                                     .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
+                                    .foregroundColor(filterOption == .all ? .secondary : Color("AccentColor"))
                             }
                             .buttonStyle(.plain)
                             .frame(minWidth: 28, minHeight: 28)
@@ -353,7 +353,7 @@ struct LibrarySoundRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(sound.rawValue)
                     .font(.body) // Matches song view font
-                    .foregroundColor(isCurrentlyApplied ? Color("Accent1") : .primary.opacity(0.8)) // Updated color logic
+                    .foregroundColor(isCurrentlyApplied ? Color("AccentColor") : .primary.opacity(0.8)) // Updated color logic
                     .lineLimit(1)
                 
                 Text(sound.description)
@@ -424,7 +424,7 @@ struct LibraryCurrentlyAppliedSongView: View {
         HStack(spacing: 12) {
             Image(systemName: "music.note")
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(.white) // Changed from Color("Accent1") to .white
+                .foregroundColor(.white) // Changed from Color("AccentColor") to .white
                 .frame(width: 32, height: 32)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -466,7 +466,7 @@ struct LibraryCurrentlyAppliedSongView: View {
             }) {
                 Image(systemName: metronome.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.white) // Changed from Color("Accent1") to .white
+                    .foregroundColor(.white) // Changed from Color("AccentColor") to .white
             }
             .buttonStyle(.plain)
             .frame(minWidth: 44, minHeight: 44)
@@ -604,7 +604,7 @@ struct LibraryEnhancedSongFormRowView: View {
 
 
 
-// MARK: - Songs Tab View (Updated to match Sounds View styling)
+// MARK: - Songs Tab View (Updated to match Sounds View styling with collapsing button)
 struct SongsTabView: View {
     @ObservedObject var metronome: MetronomeEngine
     @ObservedObject var songManager: SongManager
@@ -617,6 +617,7 @@ struct SongsTabView: View {
     @State private var songToApply: Song? = nil
     @State private var sortOption: LibrarySortOption = .none
     @State private var filterOption: LibraryFilterOption = .all
+    @State private var isScrolling = false // Added for collapsing button
     
     var sortedSongs: [Song] {
         let filtered = songManager.filteredSongs
@@ -646,137 +647,164 @@ struct SongsTabView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Search Section - Matching sounds view styling exactly
-            VStack(spacing: 4) {
-                HStack(spacing: 2) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 17, weight: .regular))
-                            .foregroundColor(.secondary)
-                        
-                        TextField("Search songs", text: $songManager.searchText)
-                            .font(.system(size: 17))
-                            .textFieldStyle(.plain)
-                        
-                        HStack(spacing: 2) {
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    sortOption = sortOption.nextOption
-                                }
-                            }) {
-                                Image(systemName: sortOption.iconName)
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
-                            }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 28, minHeight: 28)
+        ZStack { // Changed from VStack to ZStack to match setlists view
+            VStack(spacing: 0) {
+                // Search Section - Matching sounds view styling exactly
+                VStack(spacing: 4) {
+                    HStack(spacing: 2) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 17, weight: .regular))
+                                .foregroundColor(.secondary)
                             
-                            Menu {
-                                ForEach(LibraryFilterOption.allCases, id: \.self) { option in
-                                    Button(action: {
-                                        filterOption = option
-                                    }) {
-                                        HStack {
-                                            Text(option.rawValue)
-                                            if filterOption == option {
-                                                Image(systemName: "checkmark")
+                            TextField("Search songs", text: $songManager.searchText)
+                                .font(.system(size: 17))
+                                .textFieldStyle(.plain)
+                            
+                            HStack(spacing: 2) {
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        sortOption = sortOption.nextOption
+                                    }
+                                }) {
+                                    Image(systemName: sortOption.iconName)
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundColor(sortOption == .none ? .secondary : Color("AccentColor"))
+                                }
+                                .buttonStyle(.plain)
+                                .frame(minWidth: 28, minHeight: 28)
+                                
+                                Menu {
+                                    ForEach(LibraryFilterOption.allCases, id: \.self) { option in
+                                        Button(action: {
+                                            filterOption = option
+                                        }) {
+                                            HStack {
+                                                Text(option.rawValue)
+                                                if filterOption == option {
+                                                    Image(systemName: "checkmark")
+                                                }
                                             }
                                         }
                                     }
+                                } label: {
+                                    Image(systemName: filterOption.iconName)
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundColor(filterOption == .all ? .secondary : Color("AccentColor"))
                                 }
-                            } label: {
-                                Image(systemName: filterOption.iconName)
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
-                            }
-                            .buttonStyle(.plain)
-                            .frame(minWidth: 28, minHeight: 28)
-                        }
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color("Background2"))
-                    )
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
-            }
-            
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    if sortedSongs.isEmpty {
-                        emptySongsView
-                            .padding(.top, 24)
-                    } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("\(sortedSongs.count) SONG\(sortedSongs.count == 1 ? "" : "S")")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 24)
-                                .padding(.top, 12)
-                                .padding(.bottom, 4)
-                            
-                            ForEach(sortedSongs) { song in
-                                LibrarySongRowView(
-                                    song: song,
-                                    isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
-                                    setlistManager: setlistManager,
-                                    onTap: {
-                                        if #available(iOS 10.0, *) {
-                                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                        }
-                                        if songManager.currentlySelectedSongId == song.id {
-                                            // Deselect if the same song is tapped
-                                            songManager.clearCurrentlySelectedSong()
-                                        } else if metronome.isPlaying {
-                                            songToApply = song
-                                            showingApplyConfirmation = true
-                                        } else {
-                                            songManager.applySongToMetronome(song, metronome: metronome)
-                                        }
-                                    },
-                                    onEdit: {
-                                        selectedSong = song
-                                        showingEditSong = true
-                                    },
-                                    onDelete: {
-                                        songManager.deleteSong(song)
-                                    },
-                                    onToggleFavorite: {
-                                        songManager.toggleFavorite(song)
-                                    }
-                                )
-                                .padding(.horizontal, 24)
+                                .buttonStyle(.plain)
+                                .frame(minWidth: 28, minHeight: 28)
                             }
                         }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color("Background2"))
+                        )
                     }
-                    
-                    Color.clear.frame(height: 80)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 16)
+                }
+                .background(Color(.systemBackground)) // Added background like setlists view
+                
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        if sortedSongs.isEmpty {
+                            emptySongsView
+                                .padding(.top, 24)
+                        } else {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("\(sortedSongs.count) SONG\(sortedSongs.count == 1 ? "" : "S")")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 24)
+                                    .padding(.top, 12)
+                                    .padding(.bottom, 4)
+                                
+                                ForEach(sortedSongs) { song in
+                                    LibrarySongRowView(
+                                        song: song,
+                                        isCurrentlyApplied: songManager.currentlySelectedSongId == song.id,
+                                        setlistManager: setlistManager,
+                                        onTap: {
+                                            if #available(iOS 10.0, *) {
+                                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                            }
+                                            if songManager.currentlySelectedSongId == song.id {
+                                                // Deselect if the same song is tapped
+                                                songManager.clearCurrentlySelectedSong()
+                                            } else if metronome.isPlaying {
+                                                songToApply = song
+                                                showingApplyConfirmation = true
+                                            } else {
+                                                songManager.applySongToMetronome(song, metronome: metronome)
+                                            }
+                                        },
+                                        onEdit: {
+                                            selectedSong = song
+                                            showingEditSong = true
+                                        },
+                                        onDelete: {
+                                            songManager.deleteSong(song)
+                                        },
+                                        onToggleFavorite: {
+                                            songManager.toggleFavorite(song)
+                                        }
+                                    )
+                                    .padding(.horizontal, 24)
+                                }
+                            }
+                        }
+                        
+                        Color.clear.frame(height: 80)
+                    }
+                }
+                .simultaneousGesture( // Added scroll detection like setlists view
+                    DragGesture()
+                        .onChanged { value in
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                isScrolling = value.translation.height < 0
+                            }
+                        }
+                )
+                
+                // Currently Applied Song Section - Matching sounds view layout
+                if let currentSong = songManager.currentlySelectedSong {
+                    VStack(alignment: .leading, spacing: 8) {
+                        LibraryCurrentlyAppliedSongView(
+                            song: currentSong,
+                            metronome: metronome,
+                            onClearSelection: {
+                                songManager.clearCurrentlySelectedSong()
+                            }
+                        )
+                        .padding(.horizontal, 12) // Extra padding to match the sound rows
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color("Background2"))
+                        )
+                        .padding(.horizontal, 12)
+                    }
+                    .padding(.vertical, 12)
                 }
             }
             
-            // Currently Applied Song Section - Matching sounds view layout
-            if let currentSong = songManager.currentlySelectedSong {
-                VStack(alignment: .leading, spacing: 8) {
-                    LibraryCurrentlyAppliedSongView(
-                        song: currentSong,
-                        metronome: metronome,
-                        onClearSelection: {
-                            songManager.clearCurrentlySelectedSong()
-                        }
+            // Floating Add Button - moved outside VStack and updated to use isScrolling
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    FloatingActionButton(
+                        isCollapsed: isScrolling, // Now uses isScrolling state
+                        iconName: "plus",
+                        text: "Add Song",
+                        action: { showingAddSong = true }
                     )
-                    .padding(.horizontal, 12) // Extra padding to match the sound rows
-                    .padding(.vertical, 4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color("Background2"))
-                    )
-                    .padding(.horizontal, 12)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, songManager.currentlySelectedSong != nil ? 84 : 16)
                 }
-                .padding(.vertical, 12)
             }
         }
         .sheet(isPresented: $showingAddSong) {
@@ -809,23 +837,6 @@ struct SongsTabView: View {
                 Text("The metronome is currently playing. Do you want to stop it and apply \"\(song.title)\" settings, or apply the settings while continuing to play?")
             }
         }
-        .overlay(
-            // Floating Add Button - positioned like in sounds view
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    FloatingActionButton(
-                        isCollapsed: false,
-                        iconName: "plus",
-                        text: "Add Song",
-                        action: { showingAddSong = true }
-                    )
-                    .padding(.trailing, 16)
-                    .padding(.bottom, songManager.currentlySelectedSong != nil ? 84 : 16)
-                }
-            }
-        )
     }
     
     private var emptySongsView: some View {
@@ -849,7 +860,7 @@ struct SongsTabView: View {
             }) {
                 Text("Add Your First Song")
                     .font(.subheadline)
-                    .foregroundColor(Color("Accent1"))
+                    .foregroundColor(Color("AccentColor"))
                     .padding(.vertical, 8)
             }
         }
@@ -857,6 +868,8 @@ struct SongsTabView: View {
         .padding(.vertical, 16)
     }
 }
+
+
 
 // MARK: - Updated Song Row View (Simplified to match sounds view)
 struct LibrarySongRowView: View {
@@ -881,7 +894,7 @@ struct LibrarySongRowView: View {
                 HStack {
                     Text(song.title)
                         .font(.body) // Matches sound view font
-                        .foregroundColor(isCurrentlyApplied ? Color("Accent1") : .primary.opacity(0.8)) // Updated color logic to match sounds
+                        .foregroundColor(isCurrentlyApplied ? Color("AccentColor") : .primary.opacity(0.8)) // Updated color logic to match sounds
                         .lineLimit(1)
                     
                     if song.isFavorite {
@@ -1064,7 +1077,7 @@ struct SetlistsTabView: View {
                                 }) {
                                     Image(systemName: sortOption.iconName)
                                         .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(sortOption == .none ? .secondary : Color("Accent1"))
+                                        .foregroundColor(sortOption == .none ? .secondary : Color("AccentColor"))
                                 }
                                 .buttonStyle(.plain)
                                 .frame(minWidth: 28, minHeight: 28)
@@ -1085,7 +1098,7 @@ struct SetlistsTabView: View {
                                 } label: {
                                     Image(systemName: filterOption.iconName)
                                         .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(filterOption == .all ? .secondary : Color("Accent1"))
+                                        .foregroundColor(filterOption == .all ? .secondary : Color("AccentColor"))
                                 }
                                 .buttonStyle(.plain)
                                 .frame(minWidth: 28, minHeight: 28)
@@ -1210,7 +1223,7 @@ struct SetlistsTabView: View {
             }) {
                 Text("Create Your First Setlist")
                     .font(.subheadline)
-                    .foregroundColor(Color("Accent1"))
+                    .foregroundColor(Color("AccentColor"))
                     .padding(.vertical, 8)
             }
         }
@@ -1360,6 +1373,7 @@ struct LibrarySetlistRowView: View {
                 Text(setlist.name)
                     .font(.body)
                     .fontWeight(.regular)
+                    .foregroundColor(Color("AccentColor"))
                     .lineLimit(1)
                 
                 HStack(spacing: 8) {
@@ -1448,7 +1462,7 @@ struct FloatingActionButton: View {
             .frame(minHeight: 44)
             .background(
                 RoundedRectangle(cornerRadius: isCollapsed ? 22 : 22)
-                    .fill(Color("Accent1"))
+                    .fill(Color("AccentColor"))
                     .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
             )
         }
@@ -1468,7 +1482,7 @@ struct LibraryCurrentlyAppliedSoundView: View {
         HStack(spacing: 12) {
             Image(systemName: soundIcon(for: sound))
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(.white) // Changed from Color("Accent1") to .white
+                .foregroundColor(.white) // Changed from Color("AccentColor") to .white
                 .frame(width: 32, height: 32)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -1490,7 +1504,7 @@ struct LibraryCurrentlyAppliedSoundView: View {
             }) {
                 Image(systemName: isPreviewPlaying ? "waveform" : "play.circle.fill")
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.white) // Changed from Color("Accent1") to .white
+                    .foregroundColor(.white) // Changed from Color("AccentColor") to .white
             }
             .buttonStyle(.plain)
             .frame(minWidth: 44, minHeight: 44)

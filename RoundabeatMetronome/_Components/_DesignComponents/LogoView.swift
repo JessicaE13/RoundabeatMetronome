@@ -42,7 +42,7 @@ struct LogoView: View {
     // Adaptive shimmer color based on color scheme
     private var shimmerColor: Color {
         colorScheme == .dark
-            ? Color("Accent3")  // Light shimmer for dark mode
+            ? Color("AccentColor")  // Light shimmer for dark mode
             : Color(red: 120/255, green: 120/255, blue: 120/255)  // Darker shimmer for light mode
     }
 
