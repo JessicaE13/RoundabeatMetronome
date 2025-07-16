@@ -72,8 +72,8 @@ struct BeatArc: View {
                         Color(red: 1/255, green: 1/255, blue: 2/255).opacity(0.3) :
                         Color(red: 1/255, green: 1/255, blue: 2/255),
                         lineWidth: shouldShowNormalActive ? 1.0 : 2.75)
-                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.2 : 0.75),
-                        radius: 0.5, x: 0, y: 0)
+//                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.2 : 0.75),
+//                        radius: 0.5, x: 0, y: 0)
             
             // Special bright white glowing outline for non-first beats when emphasizeFirstBeatOnly is true
             if shouldShowOutlineGlow {
@@ -125,7 +125,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color("Background2"))
+                    .fill(Color("Gray1").opacity(0.2))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
                             radius: 0.5, x: 0, y: 0)
             }
@@ -177,35 +177,64 @@ struct CircularBeatIndicator: View {
                 ZStack {
                     let buttonSize = size * 0.28
                     
-                    // Inner elevated highlight
+// MARK: - Play button
+                    
+                // Play button background circle fill
+                    Circle()
+                        .fill(Color("Gray1").opacity(0.3))
+                        .frame(width: buttonSize, height: buttonSize)
+                        .shadow(color: Color.black.opacity(0.4),
+                                radius: 2, x: 0, y: 1)
+                
+                // Play button background circle outline
                     Circle()
                         .stroke(
                             LinearGradient(
                                 gradient: Gradient(stops: [
-                                    .init(color: Color(red: 80/255, green: 80/255, blue: 82/255).opacity(0.1), location: 0.0),
-                                    .init(color: Color(red: 80/255, green: 80/255, blue: 82/255).opacity(0.4), location: 1.0)
+                                    .init(color: Color("Gray1").opacity(0.6), location: 0.0),
+                                    .init(color: Color("Gray1").opacity(0.5), location: 1.0)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
                             lineWidth: 1.0
                         )
-                        .frame(width: buttonSize + 5, height: buttonSize + 5)
-
-                    
-                    // Main button circle
-                    Circle()
-                        .fill(Color("Background3"))
                         .frame(width: buttonSize, height: buttonSize)
-                        .shadow(color: Color.black.opacity(0.4),
-                                radius: 2, x: 0, y: 1)
                     
-                    // Play/stop icon
+                // Play button outer outline
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: Color("Gray1").opacity(0.4), location: 0.0),
+                                    .init(color: Color("Gray1").opacity(0.3), location: 1.0)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.0
+                        )
+                        .frame(width: buttonSize + 6, height: buttonSize + 6)
+                    
+                // Play/stop icon
                     Image(systemName: isPlaying ? "stop.fill" : "play.fill")
                         .font(.system(size: size * 0.12, weight: .bold))
-                        .foregroundColor(.white)
-                        .offset(x: isPlaying ? 0 : size * 0.006) // Slight offset for play button visual balance
-                        .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
+                        .foregroundStyle(
+                            RadialGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white,
+                                    Color.white.opacity(0.8),
+                                    Color.white.opacity(0.6)
+                                ]),
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: size * 0.06
+                            )
+                        )
+                        .offset(x: isPlaying ? 0 : size * 0.006)
+                        .shadow(color: Color.white.opacity(0.15), radius: 4, x: 0, y: 0) // soft outer glow
+                        .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1) // subtle depth
+
                 }
             }
             .buttonStyle(.plain)

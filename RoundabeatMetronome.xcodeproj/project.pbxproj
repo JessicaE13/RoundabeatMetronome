@@ -10,12 +10,16 @@
 		052B39D52E10C31000E3278E /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 052B39D42E10C31000E3278E /* GoogleMobileAds */; };
 		0542AE1D2E20B66800E7BBB6 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 0542AE1C2E20B66800E7BBB6 /* RevenueCat */; };
 		0542AE1F2E20B66800E7BBB6 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0542AE1E2E20B66800E7BBB6 /* RevenueCatUI */; };
+		05BC0E312E27657600ED0C28 /* DialMockup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BC0E302E27656B00ED0C28 /* DialMockup.swift */; };
+		05BC0E832E27F40200ED0C28 /* DJJogWheelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BC0E822E27F40200ED0C28 /* DJJogWheelView.swift */; };
 		05D7DC0A2E25393D00174941 /* Roundabeat Metronome.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 05D7DC092E25393D00174941 /* Roundabeat Metronome.storekit */; };
 		05D7DC0D2E25448E00174941 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D7DC0C2E25448E00174941 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		05628A5E2DAC430900277140 /* RoundabeatMetronome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoundabeatMetronome.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		05BC0E302E27656B00ED0C28 /* DialMockup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialMockup.swift; sourceTree = "<group>"; };
+		05BC0E822E27F40200ED0C28 /* DJJogWheelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DJJogWheelView.swift; sourceTree = "<group>"; };
 		05D7DC092E25393D00174941 /* Roundabeat Metronome.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Roundabeat Metronome.storekit"; sourceTree = "<group>"; };
 		05D7DC0C2E25448E00174941 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -59,6 +63,8 @@
 		05628A552DAC430900277140 = {
 			isa = PBXGroup;
 			children = (
+				05BC0E822E27F40200ED0C28 /* DJJogWheelView.swift */,
+				05BC0E302E27656B00ED0C28 /* DialMockup.swift */,
 				05D7DC092E25393D00174941 /* Roundabeat Metronome.storekit */,
 				05628A602DAC430900277140 /* RoundabeatMetronome */,
 				05D7DC0B2E25448E00174941 /* Frameworks */,
@@ -164,6 +170,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05BC0E832E27F40200ED0C28 /* DJJogWheelView.swift in Sources */,
+				05BC0E312E27657600ED0C28 /* DialMockup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

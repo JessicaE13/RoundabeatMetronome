@@ -2,7 +2,8 @@ import SwiftUI
 
 struct LogoView: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var shimmerOffset: CGFloat = 0.0
+    @State private var shimmerOffset: CGFloat = -1.0  // Start off-screen to the left
+    @State private var isAnimating = false  // Track animation state
     private let logoWidth: CGFloat = 700 // adjust this as needed
     
     // Get screen dimensions directly
@@ -35,7 +36,7 @@ struct LogoView: View {
     // Adaptive logo color based on color scheme
     private var logoColor: Color {
         colorScheme == .dark
-            ? Color("Background2")   // Dark gray for dark mode (subtle)
+            ? Color("Gray1")   // Dark gray for dark mode (subtle)
             : Color(red: 210/255, green: 211/255, blue: 211/255) // Light gray for light mode (subtle)
     }
     
@@ -78,9 +79,6 @@ struct LogoView: View {
                                 .frame(height: logoHeight)
                         )
                     )
-                    .onAppear {
-                        startShimmerAnimation()
-                    }
                     .opacity(shimmerOffset >= 1.0 ? 0 : 1)
             }
             .contentShape(Rectangle())
@@ -92,11 +90,19 @@ struct LogoView: View {
     }
 
     private func startShimmerAnimation() {
-        shimmerOffset = 0.0
-        DispatchQueue.main.async {
-            withAnimation(.easeInOut(duration: 3.0)) {
-                shimmerOffset = 1.0
-            }
+        // Stop any current animation and reset immediately
+        isAnimating = false
+        shimmerOffset = -1.0
+        
+        // Start new animation
+        isAnimating = true
+        withAnimation(.easeInOut(duration: 3.0)) {
+            shimmerOffset = 1.0
+        }
+        
+        // Reset animation state after completion
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            isAnimating = false
         }
     }
 }
