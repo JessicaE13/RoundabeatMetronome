@@ -18,8 +18,8 @@ struct EllipsePetal: Shape {
 struct EllipsePetalWithDynamicShadow: View {
     let rotationAngle: Double // The rotation angle of this specific ellipse
     
-    // Define light source direction (top-left)
-    private let lightSourceAngle: Double = 315 // degrees (top-left)
+    // Define light source direction (top-left) - adjusted for indented behavior
+    private let lightSourceAngle: Double = 225 // degrees (top-left, but for indented surfaces)
     
     // Calculate the relative angle between light source and this ellipse
     private var relativeAngle: Double {
@@ -28,39 +28,50 @@ struct EllipsePetalWithDynamicShadow: View {
     }
     
     // Calculate how much this ellipse faces the light (0 = facing away, 1 = facing toward)
+    // For indented surfaces, the lighting is inverted
     private var lightIntensity: Double {
         let radians = relativeAngle * .pi / 180
         let rawIntensity = max(0, cos(radians) * 0.5 + 0.5)
-        // Soften the contrast: reduce range from 0-1 to 0.2-0.8
-        return 0.2 + (rawIntensity * 0.6)
+        // Reduced intensity for darker overall appearance: 0.1-0.4 instead of 0.2-0.8
+        return 0.1 + (rawIntensity * 0.3)
     }
     
     // Calculate shadow intensity (inverse of light intensity, but also softened)
     private var shadowIntensity: Double {
-        let rawShadow = 1.0 - ((lightIntensity - 0.2) / 0.6) // Convert back to 0-1 range
-        // Soften shadows: reduce range from 0-1 to 0.15-0.85
-        return 0.15 + (rawShadow * 0.7)
+        let rawShadow = 1.0 - ((lightIntensity - 0.1) / 0.3) // Convert back to 0-1 range
+        // Increased shadow range for darker overall appearance: 0.3-0.9 instead of 0.15-0.85
+        return 0.3 + (rawShadow * 0.6)
     }
     
-    // Calculate highlight position based on light direction
+    // Calculate highlight position based on light direction - for indented surfaces
+    // The highlight appears on the side opposite to where it would on a raised surface
     private var highlightPosition: UnitPoint {
+        // Invert the direction for indented behavior (add 180 degrees)
+        let adjustedAngle = (lightSourceAngle - rotationAngle + 180) * .pi / 180
+        let x = 0.5 + cos(adjustedAngle) * 0.4 // Increased offset for more pronounced effect
+        let y = 0.5 + sin(adjustedAngle) * 0.4
+        return UnitPoint(x: max(0, min(1, x)), y: max(0, min(1, y)))
+    }
+    
+    // Calculate shadow position (opposite of highlight for indented surfaces)
+    private var shadowPosition: UnitPoint {
         let adjustedAngle = (lightSourceAngle - rotationAngle) * .pi / 180
-        let x = 0.5 + cos(adjustedAngle) * 0.3
-        let y = 0.5 + sin(adjustedAngle) * 0.3
+        let x = 0.5 + cos(adjustedAngle) * 0.4
+        let y = 0.5 + sin(adjustedAngle) * 0.4
         return UnitPoint(x: max(0, min(1, x)), y: max(0, min(1, y)))
     }
     
     var body: some View {
         ZStack {
-            // Main shadow fill — intensity varies with lighting
+            // Base darker fill - overall darker appearance
             EllipsePetal()
                 .fill(
                     RadialGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.black.opacity(0.1 + shadowIntensity * 0.15), location: 0.0),
-                            .init(color: Color.black.opacity(0.15 + shadowIntensity * 0.2), location: 0.3),
-                            .init(color: Color.black.opacity(0.25 + shadowIntensity * 0.25), location: 0.7),
-                            .init(color: Color.black.opacity(0.35 + shadowIntensity * 0.3), location: 1.0)
+                            .init(color: Color.black.opacity(0.4), location: 0.0),
+                            .init(color: Color.black.opacity(0.5), location: 0.3),
+                            .init(color: Color.black.opacity(0.6), location: 0.7),
+                            .init(color: Color.black.opacity(0.7), location: 1.0)
                         ]),
                         center: .center,
                         startRadius: 2,
@@ -68,73 +79,74 @@ struct EllipsePetalWithDynamicShadow: View {
                     )
                 )
             
-            // Directional shadow — varies based on light position
-            EllipsePetal()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(stops: [
-                            .init(color: Color.clear, location: 0.0),
-                            .init(color: Color.black.opacity(0.1 + shadowIntensity * 0.15), location: 0.3),
-                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.25), location: 0.7),
-                            .init(color: Color.black.opacity(0.15 + shadowIntensity * 0.2), location: 1.0)
-                        ]),
-                        startPoint: UnitPoint(x: highlightPosition.x, y: highlightPosition.y),
-                        endPoint: UnitPoint(x: 1 - highlightPosition.x, y: 1 - highlightPosition.y)
-                    )
-                )
-            
-            // Dynamic highlight — positioned based on light source
+            // Enhanced shadow on the light-facing side (for indented behavior)
             EllipsePetal()
                 .fill(
                     RadialGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white.opacity(0.15 + lightIntensity * 0.2), location: 0.0),
-                            .init(color: Color.white.opacity(0.1 + lightIntensity * 0.15), location: 0.4),
-                            .init(color: Color.white.opacity(0.05 + lightIntensity * 0.1), location: 0.7),
+                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.3), location: 0.0),
+                            .init(color: Color.black.opacity(0.3 + shadowIntensity * 0.4), location: 0.4),
+                            .init(color: Color.black.opacity(0.4 + shadowIntensity * 0.3), location: 0.8),
+                            .init(color: Color.clear, location: 1.0)
+                        ]),
+                        center: shadowPosition,
+                        startRadius: 1,
+                        endRadius: 20
+                    )
+                )
+            
+            // Subtle highlight on the shadow side (bottom-right when light is top-left)
+            EllipsePetal()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color.white.opacity(0.05 + lightIntensity * 0.1), location: 0.0),
+                            .init(color: Color.white.opacity(0.03 + lightIntensity * 0.08), location: 0.4),
+                            .init(color: Color.white.opacity(0.02 + lightIntensity * 0.05), location: 0.7),
                             .init(color: Color.clear, location: 1.0)
                         ]),
                         center: highlightPosition,
                         startRadius: 1,
-                        endRadius: 15
+                        endRadius: 18
                     )
                 )
             
-            // Dynamic highlight stroke — stronger on lit side
+            // Subtle highlight stroke - much less intense
             EllipsePetal()
                 .stroke(
                     LinearGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.white.opacity(0.2 + lightIntensity * 0.2), location: 0.0),
-                            .init(color: Color.white.opacity(0.15 + lightIntensity * 0.15), location: 0.5),
-                            .init(color: Color.white.opacity(0.1 + lightIntensity * 0.1), location: 1.0)
+                            .init(color: Color.white.opacity(0.08 + lightIntensity * 0.12), location: 0.0),
+                            .init(color: Color.white.opacity(0.05 + lightIntensity * 0.08), location: 0.5),
+                            .init(color: Color.white.opacity(0.02 + lightIntensity * 0.05), location: 1.0)
                         ]),
-                        startPoint: UnitPoint(x: highlightPosition.x, y: highlightPosition.y),
+                        startPoint: highlightPosition,
                         endPoint: UnitPoint(x: 1 - highlightPosition.x, y: 1 - highlightPosition.y)
                     ),
-                    lineWidth: 0.8
+                    lineWidth: 0.6
                 )
                 .scaleEffect(0.9)
             
-            // Inner shadow stroke — stronger on shadow side
+            // Enhanced inner shadow stroke
             EllipsePetal()
                 .stroke(
                     RadialGradient(
                         gradient: Gradient(stops: [
-                            .init(color: Color.black.opacity(0.1 + shadowIntensity * 0.2), location: 0.0),
-                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.3), location: 0.5),
-                            .init(color: Color.black.opacity(0.3 + shadowIntensity * 0.4), location: 1.0)
+                            .init(color: Color.black.opacity(0.2 + shadowIntensity * 0.3), location: 0.0),
+                            .init(color: Color.black.opacity(0.3 + shadowIntensity * 0.4), location: 0.5),
+                            .init(color: Color.black.opacity(0.4 + shadowIntensity * 0.5), location: 1.0)
                         ]),
-                        center: UnitPoint(x: 1 - highlightPosition.x, y: 1 - highlightPosition.y),
+                        center: shadowPosition,
                         startRadius: 1,
-                        endRadius: 12
+                        endRadius: 15
                     ),
-                    lineWidth: 0.4
+                    lineWidth: 0.5
                 )
                 .scaleEffect(0.8)
             
-            // Crisp edge definition
+            // Crisp edge definition - slightly more prominent
             EllipsePetal()
-                .stroke(Color.black.opacity(0.6), lineWidth: 0.5)
+                .stroke(Color.black.opacity(0.8), lineWidth: 0.6)
         }
     }
 }
@@ -183,21 +195,5 @@ struct CircularEllipseBorderView: View {
 struct EllipsePetalWithShadow: View {
     var body: some View {
         EllipsePetalWithDynamicShadow(rotationAngle: 0)
-    }
-}
-
-#Preview {
-    ZStack {
-        LinearGradient(
-            gradient: Gradient(colors: [
-                Color(red: 80/255, green: 80/255, blue: 90/255),
-                Color(red: 40/255, green: 40/255, blue: 50/255)
-            ]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
-        
-        CircularEllipseBorderView()
     }
 }

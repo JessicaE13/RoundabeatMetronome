@@ -255,7 +255,7 @@ struct TempoDialView: View {
     @State private var isDragging: Bool = false
     @State private var dragStartRotation: Double = 0
     
-    private let grayCircleMultiplier: CGFloat = 0.75    //Gray circle size multiplier - increased to make dial bigger
+    private let grayCircleMultiplier: CGFloat = 0.69    //Gray circle size multiplier - increased to make dial bigger
     private let petalCount = 30
     
     // BPM to rotation mapping - bottom center (180°) for both min/max, 5 rotations total
@@ -303,52 +303,69 @@ struct TempoDialView: View {
     
     var body: some View {
         ZStack {
-            // Outer elevated outline with shadows - using Background3 as base
+            // Thick gray outer border - NEW ADDITION
+
+            
             Circle()
-                .stroke(Color("Background3"), lineWidth: 3.0)
-                .frame(width: totalDialDiameter + 6, height: totalDialDiameter + 6)
-                .shadow(color: Color("Background3").opacity(0.8),
-                        radius: 1, x: 0, y: 1)
-                .shadow(color: Color.black.opacity(0.3),
-                        radius: 3, x: 0, y: 2)
-                .shadow(color: Color.black.opacity(0.15),
-                        radius: 6, x: 0, y: 4)
+                .fill(Color.black.opacity(0.4))
+                .frame(width: totalDialDiameter + 20, height: totalDialDiameter + 20)
+                .blur(radius: 2.6)
+                .offset(x: 1, y: 2) // Shadow offset opposite to light source (top-left)
+            
+            Circle()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [Color("Gray1").opacity(0.6), Color("Gray1").opacity(0.3)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 8
+                )
+                .frame(width: totalDialDiameter + 20, height: totalDialDiameter + 20)
+            
+            // Outer elevated outline with shadows - using Background3 as base
+//            Circle()
+//                .stroke(Color("Background3"), lineWidth: 3.0)
+//                .frame(width: totalDialDiameter + 6, height: totalDialDiameter + 6)
+//                .shadow(color: Color("Background3").opacity(0.8),
+//                        radius: 1, x: 0, y: 1)
+//                .shadow(color: Color.black.opacity(0.3),
+//                        radius: 3, x: 0, y: 2)
+//                .shadow(color: Color.black.opacity(0.15),
+//                        radius: 6, x: 0, y: 4)
             
             // Inner elevated highlight - lighter version of Background3
-            Circle()
-                .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
-                .frame(width: totalDialDiameter + 3, height: totalDialDiameter + 3)
-                .shadow(color: Color.white.opacity(0.2),
-                        radius: 1, x: 0, y: -1)
+//            Circle()
+//                .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
+//                .frame(width: totalDialDiameter + 3, height: totalDialDiameter + 3)
+//                .shadow(color: Color.white.opacity(0.2),
+//                        radius: 1, x: 0, y: -1)
             
             // Parabola background with concave depth effect - LIGHTER COLORS
             ZStack {
                 // Outer shadow for the recessed edge effect
-                Circle()
-                    .fill(Color.black.opacity(0.4))
-                    .frame(width: totalDialDiameter + 3.5, height: totalDialDiameter + 3.5)
-                    .blur(radius: 2.6)
-                    .offset(x: 1, y: 2) // Shadow offset opposite to light source (top-left)
+        
                 
+                // uncode this
                 // Main background circle with radial gradient for concave effect - using Background3 as base
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(stops: [
-                                // Center appears higher (lighter from top-left light) - lighter Background3
-                                .init(color: Color("Gray2").opacity(1.2), location: 0.0),
-                                .init(color: Color("Gray2").opacity(1.0), location: 0.3),
-                                .init(color: Color("Gray2").opacity(0.9), location: 0.6),
-                                // Edges appear lower (darker, in shadow) - darker Background3
-                                .init(color: Color("Gray2").opacity(0.8), location: 0.85),
-                                .init(color: Color("Gray2").opacity(0.7), location: 1.0)
-                            ]),
-                            center: UnitPoint(x: 0.35, y: 0.35), // Offset center toward top-left light source
-                            startRadius: 0,
-                            endRadius: totalDialDiameter * 0.6
-                        )
-                    )
-                    .frame(width: totalDialDiameter, height: totalDialDiameter)
+//                Circle()
+//                    .fill(
+//                        RadialGradient(
+//                            gradient: Gradient(stops: [
+//
+//                                .init(color: Color("Gray2").opacity(0.8), location: 0.0),
+//                                .init(color: Color("Gray2").opacity(0.7), location: 0.3),
+//                                .init(color: Color("Gray2").opacity(0.5), location: 0.6),
+//
+//                                .init(color: Color("Gray2").opacity(0.3), location: 0.85),
+//                                .init(color: Color("Gray2").opacity(0.4), location: 1.0)
+//                            ]),
+//                            center: UnitPoint(x: 0.35, y: 0.35),
+//                            startRadius: 0,
+//                            endRadius: totalDialDiameter * 0.6
+//                        )
+//                    )
+//                    .frame(width: totalDialDiameter + 5, height: totalDialDiameter + 5)
                 
  
             }
