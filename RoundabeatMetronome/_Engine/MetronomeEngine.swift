@@ -682,7 +682,7 @@ class MetronomeEngine: ObservableObject {
                 engine.connect(playerNode, to: engine.outputNode, format: format)
                 
                 // Generate very short tick buffer
-                let tickDuration: Double = 0.05 // Very short - 50ms
+                let tickDuration: Double = 0.04 // Very short - 50ms
                 let frameCount = UInt32(format.sampleRate * tickDuration)
                 
                 guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
@@ -692,40 +692,26 @@ class MetronomeEngine: ObservableObject {
                 buffer.frameLength = frameCount
                 let channelData = buffer.floatChannelData![0]
                 
-                // Generate tick sound - short, sharp, high-frequency
-                var phase: Float = 0.0
-                let sampleRate = Float(format.sampleRate)
-                let tickFrequency: Float = 3000.0 // High frequency for crisp tick
-                let attackTime = 0.005 // 5ms attack
+              
+                // Envelope timing
+                let attackTime = 0.002 // 2ms
                 let decayTime = tickDuration - attackTime
-                
+                let sampleRate = Float(format.sampleRate)
+
                 for frame in 0..<Int(frameCount) {
-                    let time = Double(frame) / Double(sampleRate)
-                    var sample: Float = 0.0
-                    
-                    // Sharp attack/decay envelope
+                    let time = Float(frame) / sampleRate
                     let envelope: Float
-                    if time < attackTime {
-                        // Quick attack
-                        envelope = Float(time / attackTime) * 0.3
+
+                    if time < Float(attackTime) {
+                        envelope = time / Float(attackTime)
                     } else {
-                        // Exponential decay
-                        let decayProgress = (time - attackTime) / decayTime
-                        envelope = 0.3 * exp(-Float(decayProgress) * 15.0)
+                        let decayProgress = (time - Float(attackTime)) / Float(decayTime)
+                        envelope = exp(-decayProgress * 12.0)
                     }
-                    
-                    // Generate tick waveform (combination of sine and harmonics for sharpness)
-                    phase += 2.0 * Float.pi * tickFrequency / sampleRate
-                    if phase >= 2.0 * Float.pi {
-                        phase -= 2.0 * Float.pi
-                    }
-                    
-                    let fundamental = sin(phase)
-                    let harmonic2 = sin(phase * 2.0) * 0.3
-                    let harmonic3 = sin(phase * 4.0) * 0.1
-                    
-                    sample = (fundamental + harmonic2 + harmonic3) * envelope
-                    channelData[frame] = sample
+
+                    // White noise (for woody tick-like percussive sound)
+                    let noise = (Float.random(in: -1...1))
+                    channelData[frame] = noise * envelope * 0.4
                 }
                 
                 // Start engine and schedule buffer
@@ -756,15 +742,10 @@ class MetronomeEngine: ObservableObject {
     // MARK: - Alternative Haptic Feedback Method
     func playDialTickHaptic() {
         DispatchQueue.main.async {
-            if #available(iOS 13.0, *) {
-                let impact = UIImpactFeedbackGenerator(style: .rigid)
-                impact.prepare()
-                impact.impactOccurred(intensity: 0.7)
-            } else if #available(iOS 10.0, *) {
-                let impact = UIImpactFeedbackGenerator(style: .light)
-                impact.prepare()
-                impact.impactOccurred()
-            }
+            // To this (since your deployment target is iOS 13.0 or higher):
+            let impact = UIImpactFeedbackGenerator(style: .rigid)
+            impact.prepare()
+            impact.impactOccurred(intensity: 0.7)
         }
     }
     
