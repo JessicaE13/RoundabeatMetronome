@@ -10,14 +10,14 @@ struct BeatArc: View {
     let emphasizeFirstBeatOnly: Bool
     
     // FIXED: Consistent stroke width calculations
-    private var arcWidth: CGFloat { size * 0.08 }
+    private var arcWidth: CGFloat { size * 0.06 }
     private var activeArcWidth: CGFloat { arcWidth * 1.0 } // Consistent with frame calculation
     
     // The maximum stroke width (for active state) determines the frame size needed
     private var maxStrokeWidth: CGFloat { activeArcWidth }
     
     // Frame size needs to account for stroke extending beyond the path
-    private var frameSize: CGFloat { size + maxStrokeWidth }
+    private var frameSize: CGFloat { size + maxStrokeWidth * 0.5 }
     
     // Calculate arc parameters
     private var center: CGPoint { CGPoint(x: frameSize / 2, y: frameSize / 2) }
@@ -125,7 +125,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color("Gray1").opacity(0.05))
+                    .fill(Color("Gray1").opacity(0.1))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.13),
                             radius: 0.5, x: 0, y: 0)
             }
@@ -255,7 +255,7 @@ struct TempoDialView: View {
     @State private var isDragging: Bool = false
     @State private var dragStartRotation: Double = 0
     
-    private let grayCircleMultiplier: CGFloat = 0.69    //Gray circle size multiplier - increased to make dial bigger
+    private let grayCircleMultiplier: CGFloat = 0.64    //Gray circle size multiplier - increased to make dial bigger
     private let petalCount = 30
     
     // BPM to rotation mapping - bottom center (180°) for both min/max, 5 rotations total
