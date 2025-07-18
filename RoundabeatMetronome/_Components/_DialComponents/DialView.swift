@@ -148,21 +148,27 @@ struct CircularBeatIndicator: View {
     @State private var lastAngle: Double = 0
     @State private var totalRotation: Double = 0
     
-    // FIXED: Consistent frame size calculations
+    // NEW: Arc circle size multiplier - adjust this to make the arc circle smaller/larger
+    private let arcCircleMultiplier: CGFloat = 0.92  // Experiment with values like 0.8, 0.9, 1.1, etc.
+    
+    // FIXED: Consistent frame size calculations with new multiplier
     private var arcWidth: CGFloat { size * 0.1 }
     private var activeArcWidth: CGFloat { arcWidth * 1.0 } // Match BeatArc
     private var maxStrokeWidth: CGFloat { activeArcWidth }
     private var arcFrameSize: CGFloat { size + maxStrokeWidth }
     
+    // Apply the multiplier to the arc size passed to BeatArc
+    private var adjustedArcSize: CGFloat { size * arcCircleMultiplier }
+    
     var body: some View {
         ZStack {
-            // Beat arc segments
+            // Beat arc segments - now using adjustedArcSize
             ForEach(1...beatsPerBar, id: \.self) { beatNumber in
                 BeatArc(
                     beatNumber: beatNumber,
                     totalBeats: beatsPerBar,
                     isActive: currentBeat == beatNumber && isPlaying,
-                    size: size,
+                    size: adjustedArcSize,  // Using adjusted size here
                     emphasizeFirstBeatOnly: emphasizeFirstBeatOnly
                 )
             }
