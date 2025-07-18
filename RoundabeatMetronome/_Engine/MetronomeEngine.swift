@@ -172,6 +172,11 @@ class MetronomeEngine: ObservableObject {
     private var previewEngine: AVAudioEngine?
     private var previewPlayerNode: AVAudioPlayerNode?
     
+    // MARK: - Dial Tick Audio Components
+    private var lastDialBPM: Int = 0
+    private var dialTickEngine: AVAudioEngine?
+    private var dialTickPlayerNode: AVAudioPlayerNode?
+    
     private var lastPreviewTime: Date = .distantPast
     private let minimumPreviewInterval: TimeInterval = 0.3
     
@@ -206,11 +211,15 @@ class MetronomeEngine: ObservableObject {
         updateTiming()
         checkHeadphonesConnected()
         updateScreenIdleTimer()
+        
+        // Initialize dial tick tracking
+        lastDialBPM = bpm
     }
     
     deinit {
         stopMetronome()
         cleanupPreviewEngine()
+        cleanupDialTickEngine() // NEW: Clean up dial tick engine
         removeAudioSessionNotifications()
         removeAppLifecycleNotifications()
         UIApplication.shared.isIdleTimerDisabled = false
@@ -630,6 +639,132 @@ class MetronomeEngine: ObservableObject {
         selectedSoundType = soundType
         if debugMode {
             print("🔊 Sound updated to: \(soundType.rawValue)")
+        }
+    }
+    
+    // MARK: - NEW: Dial Tick Sound Methods
+    
+    func handleBPMChangeForDialTick(newBPM: Int) {
+        // Only play tick if BPM actually changed (not on initial load)
+        if lastDialBPM != 0 && lastDialBPM != newBPM {
+            playDialTick()
+        }
+        lastDialBPM = newBPM
+    }
+    
+    private func playDialTick() {
+        // Clean up any existing dial tick engine
+        cleanupDialTickEngine()
+        
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            
+            do {
+                // Create a dedicated engine for dial ticks (separate from metronome and preview)
+                let engine = AVAudioEngine()
+                let playerNode = AVAudioPlayerNode()
+                
+                // Store references
+                self.dialTickEngine = engine
+                self.dialTickPlayerNode = playerNode
+                
+                // Setup engine
+                engine.attach(playerNode)
+                
+                let outputFormat = engine.outputNode.outputFormat(forBus: 0)
+                let format = AVAudioFormat(
+                    commonFormat: .pcmFormatFloat32,
+                    sampleRate: outputFormat.sampleRate,
+                    channels: 1,
+                    interleaved: false
+                )!
+                
+                engine.connect(playerNode, to: engine.outputNode, format: format)
+                
+                // Generate very short tick buffer
+                let tickDuration: Double = 0.05 // Very short - 50ms
+                let frameCount = UInt32(format.sampleRate * tickDuration)
+                
+                guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+                    return
+                }
+                
+                buffer.frameLength = frameCount
+                let channelData = buffer.floatChannelData![0]
+                
+                // Generate tick sound - short, sharp, high-frequency
+                var phase: Float = 0.0
+                let sampleRate = Float(format.sampleRate)
+                let tickFrequency: Float = 3000.0 // High frequency for crisp tick
+                let attackTime = 0.005 // 5ms attack
+                let decayTime = tickDuration - attackTime
+                
+                for frame in 0..<Int(frameCount) {
+                    let time = Double(frame) / Double(sampleRate)
+                    var sample: Float = 0.0
+                    
+                    // Sharp attack/decay envelope
+                    let envelope: Float
+                    if time < attackTime {
+                        // Quick attack
+                        envelope = Float(time / attackTime) * 0.3
+                    } else {
+                        // Exponential decay
+                        let decayProgress = (time - attackTime) / decayTime
+                        envelope = 0.3 * exp(-Float(decayProgress) * 15.0)
+                    }
+                    
+                    // Generate tick waveform (combination of sine and harmonics for sharpness)
+                    phase += 2.0 * Float.pi * tickFrequency / sampleRate
+                    if phase >= 2.0 * Float.pi {
+                        phase -= 2.0 * Float.pi
+                    }
+                    
+                    let fundamental = sin(phase)
+                    let harmonic2 = sin(phase * 2.0) * 0.3
+                    let harmonic3 = sin(phase * 4.0) * 0.1
+                    
+                    sample = (fundamental + harmonic2 + harmonic3) * envelope
+                    channelData[frame] = sample
+                }
+                
+                // Start engine and schedule buffer
+                try engine.start()
+                
+                playerNode.scheduleBuffer(buffer) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.cleanupDialTickEngine()
+                    }
+                }
+                
+                playerNode.play()
+                
+            } catch {
+                print("❌ Failed to play dial tick: \(error)")
+                self.cleanupDialTickEngine()
+            }
+        }
+    }
+    
+    private func cleanupDialTickEngine() {
+        dialTickPlayerNode?.stop()
+        dialTickEngine?.stop()
+        dialTickPlayerNode = nil
+        dialTickEngine = nil
+    }
+    
+    // MARK: - Alternative Haptic Feedback Method
+    func playDialTickHaptic() {
+        DispatchQueue.main.async {
+            if #available(iOS 13.0, *) {
+                let impact = UIImpactFeedbackGenerator(style: .rigid)
+                impact.prepare()
+                impact.impactOccurred(intensity: 0.7)
+            } else if #available(iOS 10.0, *) {
+                let impact = UIImpactFeedbackGenerator(style: .light)
+                impact.prepare()
+                impact.impactOccurred()
+            }
         }
     }
     
@@ -1258,7 +1393,7 @@ class MetronomeEngine: ObservableObject {
                 print("▶️ Manually resumed after interruption")
             }
         } catch {
-            print("❌ appraisers to resume after interruption: \(error)")
+            print("❌ Failed to resume after interruption: \(error)")
         }
     }
 }

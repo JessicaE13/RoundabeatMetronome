@@ -485,6 +485,7 @@ struct DialView: View {
             },
             onTempoChange: { newBPM in
                 metronome.bpm = newBPM
+                metronome.handleBPMChangeForDialTick(newBPM)
             }
         )
         .frame(width: frameSize, height: frameSize)
