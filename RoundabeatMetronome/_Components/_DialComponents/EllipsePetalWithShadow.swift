@@ -197,3 +197,59 @@ struct EllipsePetalWithShadow: View {
         EllipsePetalWithDynamicShadow(rotationAngle: 0)
     }
 }
+
+#Preview("Single Petal") {
+    ZStack {
+        Color.black
+        EllipsePetalWithDynamicShadow(rotationAngle: 0)
+            .frame(width: 50, height: 30)
+    }
+    .frame(width: 200, height: 200)
+}
+
+#Preview("Rotating Petals") {
+    ZStack {
+        Color.black
+        CircularEllipseBorderView()
+    }
+}
+
+#Preview("Multiple Angles") {
+    ZStack {
+        Color.black
+        VStack(spacing: 20) {
+            HStack(spacing: 20) {
+                EllipsePetalWithDynamicShadow(rotationAngle: 0)
+                    .frame(width: 40, height: 25)
+                Text("0°")
+                    .foregroundColor(.white)
+                    .font(.caption)
+            }
+            
+            HStack(spacing: 20) {
+                EllipsePetalWithDynamicShadow(rotationAngle: 90)
+                    .frame(width: 40, height: 25)
+                Text("90°")
+                    .foregroundColor(.white)
+                    .font(.caption)
+            }
+            
+            HStack(spacing: 20) {
+                EllipsePetalWithDynamicShadow(rotationAngle: 180)
+                    .frame(width: 40, height: 25)
+                Text("180°")
+                    .foregroundColor(.white)
+                    .font(.caption)
+            }
+            
+            HStack(spacing: 20) {
+                EllipsePetalWithDynamicShadow(rotationAngle: 270)
+                    .frame(width: 40, height: 25)
+                Text("270°")
+                    .foregroundColor(.white)
+                    .font(.caption)
+            }
+        }
+    }
+    .frame(width: 300, height: 400)
+}
