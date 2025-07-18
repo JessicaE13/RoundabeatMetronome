@@ -35,7 +35,7 @@ struct BeatArc: View {
     }
     
     private var arcAngles: (start: Double, end: Double) {
-        let fixedGapDegrees: Double = 16.0 // 16 degrees gap between segments
+        let fixedGapDegrees: Double = 12.0 // 16 degrees gap between segments
         let gapAsFraction: CGFloat = CGFloat(fixedGapDegrees / 360.0)
         let totalGapFraction = gapAsFraction * CGFloat(totalBeats)
         let availableSpaceForSegments = 1.0 - totalGapFraction
@@ -71,7 +71,7 @@ struct BeatArc: View {
                 .stroke(shouldShowNormalActive ?
                         Color(red: 1/255, green: 1/255, blue: 2/255).opacity(0.3) :
                         Color(red: 1/255, green: 1/255, blue: 2/255),
-                        lineWidth: shouldShowNormalActive ? 1.0 : 2.75)
+                        lineWidth: shouldShowNormalActive ? 1.0 : 1.75)
 //                .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.2 : 0.75),
 //                        radius: 0.5, x: 0, y: 0)
             
@@ -125,8 +125,8 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color("Gray1").opacity(0.2))
-                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.3),
+                    .fill(Color("Gray1").opacity(0.05))
+                    .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.13),
                             radius: 0.5, x: 0, y: 0)
             }
         }
@@ -191,8 +191,8 @@ struct CircularBeatIndicator: View {
                         .stroke(
                             LinearGradient(
                                 gradient: Gradient(stops: [
-                                    .init(color: Color("Gray1").opacity(0.6), location: 0.0),
-                                    .init(color: Color("Gray1").opacity(0.5), location: 1.0)
+                                    .init(color: Color.white.opacity(0.4), location: 0.0),
+                                    .init(color: Color.white.opacity(0.3), location: 1.0)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -206,8 +206,8 @@ struct CircularBeatIndicator: View {
                         .stroke(
                             LinearGradient(
                                 gradient: Gradient(stops: [
-                                    .init(color: Color("Gray1").opacity(0.4), location: 0.0),
-                                    .init(color: Color("Gray1").opacity(0.3), location: 1.0)
+                                    .init(color: Color("Gray1").opacity(0.1), location: 0.0),
+                                    .init(color: Color("Gray1").opacity(0.12), location: 1.0)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -315,7 +315,7 @@ struct TempoDialView: View {
             Circle()
                 .strokeBorder(
                     LinearGradient(
-                        colors: [Color("Gray1").opacity(0.6), Color("Gray1").opacity(0.3)],
+                        colors: [Color("Gray1").opacity(0.8), Color("Gray1").opacity(0.4)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
@@ -377,8 +377,8 @@ struct TempoDialView: View {
                     let totalRotation = baseRotation + currentRotation
                     
                     EllipsePetalWithDynamicShadow(rotationAngle: totalRotation)
-                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.06) // INCREASED SIZE: width from 0.05 to 0.08, height from 0.03 to 0.05
-                        .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.04)) // Position inside the dial circle
+                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.025) // INCREASED SIZE: width from 0.05 to 0.08, height from 0.03 to 0.05
+                        .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.02)) // Position inside the dial circle
                         .rotationEffect(.degrees(baseRotation))
                 }
             }
@@ -387,18 +387,18 @@ struct TempoDialView: View {
             // Inner dark/black circle that touches the tops of the parabolas - slightly lighter
             Circle()
                 .fill(Color(red: 15/255, green: 15/255, blue: 17/255))
-                .frame(width: innerCircleDiameter - 5, height: innerCircleDiameter - 5)
+                .frame(width: innerCircleDiameter + 8, height: innerCircleDiameter + 8)
 
             Circle()
                 .stroke(Color("AccentColor").opacity(0.6), lineWidth: 2)
-                .frame(width: innerCircleDiameter - 5, height: innerCircleDiameter - 5)
+                .frame(width: innerCircleDiameter + 12, height: innerCircleDiameter + 12)
 
             
             // Capsule indicator - positioned closer to outer edge and made as a rounded line
             Capsule()
                 .fill(Color.white) // Same white color as the play button
                 .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.08) // Width: extra skinny, Height: longer line
-                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.16)) // Position near outer edge
+                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.14)) // Position near outer edge
                 .rotationEffect(.degrees(currentRotation))
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
         }

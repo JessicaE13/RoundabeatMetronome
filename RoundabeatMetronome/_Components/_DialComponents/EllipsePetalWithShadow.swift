@@ -19,7 +19,7 @@ struct EllipsePetalWithDynamicShadow: View {
     let rotationAngle: Double // The rotation angle of this specific ellipse
     
     // Define light source direction (top-left) - adjusted for indented behavior
-    private let lightSourceAngle: Double = 225 // degrees (top-left, but for indented surfaces)
+    private let lightSourceAngle: Double = 135 // degrees (top-left, but for indented surfaces)
     
     // Calculate the relative angle between light source and this ellipse
     private var relativeAngle: Double {
@@ -209,7 +209,7 @@ struct EllipsePetalWithShadow: View {
 
 #Preview("Rotating Petals") {
     ZStack {
-        Color.black
+        Color.blue
         CircularEllipseBorderView()
     }
 }
