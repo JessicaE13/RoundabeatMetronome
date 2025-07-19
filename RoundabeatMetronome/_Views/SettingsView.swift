@@ -6,7 +6,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var currentColorScheme
     @State private var showingInfoPopup: InfoType? = nil
     
-    // Update the InfoType enum to include dial tick (around line 10)
+    // Updated InfoType enum to include vibration options
     enum InfoType: String, CaseIterable {
         case accentFirstBeat = "accent_first_beat"
         case emphasizeFirstBeat = "emphasize_first_beat"
@@ -14,7 +14,9 @@ struct SettingsView: View {
         case backgroundAudio = "background_audio"
         case pauseOnInterruption = "pause_on_interruption"
         case stayAwake = "stay_awake"
-        case dialTick = "dial_tick" // NEW
+        case dialTick = "dial_tick"
+        case vibration = "vibration"  // NEW
+        case vibrationIntensity = "vibration_intensity"  // NEW
         
         var title: String {
             switch self {
@@ -24,7 +26,9 @@ struct SettingsView: View {
             case .backgroundAudio: return "Background Audio"
             case .pauseOnInterruption: return "Pause on Interruption"
             case .stayAwake: return "Stay Awake"
-            case .dialTick: return "Dial Tick Sound" // NEW
+            case .dialTick: return "Dial Tick Sound"
+            case .vibration: return "Vibration"  // NEW
+            case .vibrationIntensity: return "Vibration Intensity"  // NEW
             }
         }
         
@@ -42,13 +46,17 @@ struct SettingsView: View {
                 return "Stops for calls and other audio interruptions"
             case .stayAwake:
                 return "Prevents screen from sleeping while playing"
-            case .dialTick: // NEW
+            case .dialTick:
                 return "Plays a subtle tick sound when adjusting the BPM dial"
+            case .vibration:  // NEW
+                return "Provides haptic feedback with each beat for tactile timing"
+            case .vibrationIntensity:  // NEW
+                return "Controls how strong the vibration feels. Light, medium, or heavy intensity."
             }
         }
     }
 
-    // Update the body of SettingsView to include the dial tick setting (around line 50)
+    // Updated body to include vibration controls
     var body: some View {
         NavigationView {
             Form {
@@ -67,6 +75,24 @@ struct SettingsView: View {
                         infoType: .dialTick,
                         showingInfoPopup: $showingInfoPopup
                     )
+                }
+                
+                // NEW: Haptic Settings Section
+                Section("Haptic Feedback") {
+                    SettingsToggleRow(
+                        title: "Vibration",
+                        isOn: $metronome.vibrationEnabled,
+                        infoType: .vibration,
+                        showingInfoPopup: $showingInfoPopup
+                    )
+                    
+                    // Show intensity slider only when vibration is enabled
+                    if metronome.vibrationEnabled {
+                        VibrationIntensitySlider(
+                            intensity: $metronome.vibrationIntensity,
+                            showingInfoPopup: $showingInfoPopup
+                        )
+                    }
                 }
                 
                 // Visual Settings Section
@@ -164,6 +190,169 @@ struct SettingsView: View {
         }
         .preferredColorScheme(.dark)
         .navigationViewStyle(StackNavigationViewStyle())
+    }
+}
+
+// MARK: - NEW: Custom Vibration Intensity Slider Component
+struct VibrationIntensitySlider: View {
+    @Binding var intensity: Double
+    @Binding var showingInfoPopup: SettingsView.InfoType?
+    @State private var isSliding: Bool = false
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Header row with title and info button
+            HStack(spacing: 8) {
+                Text("Vibration Intensity")
+                    .font(.body)
+                    .foregroundColor(.primary)
+                
+                Button(action: {
+                    showingInfoPopup = .vibrationIntensity
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.secondary)
+                        .font(.system(size: 14))
+                }
+                .buttonStyle(PlainButtonStyle())
+                .frame(width: 20, height: 20)
+                
+                Spacer()
+                
+                // Current intensity indicator
+                Text(intensityLabel)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(minWidth: 50, alignment: .trailing)
+            }
+            
+            // Custom slider with haptic feedback
+            HStack(spacing: 12) {
+                Text("Light")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                
+                GeometryReader { geometry in
+                    ZStack {
+                        // Track background
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.secondary.opacity(0.3))
+                            .frame(height: 8)
+                        
+                        // Active track
+                        HStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color("AccentColor").opacity(0.6),
+                                            Color("AccentColor").opacity(0.8)
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: geometry.size.width * CGFloat(intensity), height: 8)
+                            
+                            Spacer(minLength: 0)
+                        }
+                        
+                        // Slider thumb
+                        HStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white,
+                                            Color.white.opacity(0.95)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 20, height: 20)
+                                .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 1)
+                                .scaleEffect(isSliding ? 1.1 : 1.0)
+                                .animation(.easeInOut(duration: 0.1), value: isSliding)
+                            
+                            Spacer(minLength: 0)
+                        }
+                        .offset(x: (geometry.size.width - 20) * CGFloat(intensity))
+                    }
+                    .frame(height: 20)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                if !isSliding {
+                                    isSliding = true
+                                    // Trigger light haptic at start
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                }
+                                
+                                let sliderWidth = geometry.size.width
+                                let newValue = max(0, min(1, Double(value.location.x / sliderWidth)))
+                                let previousIntensity = intensity
+                                intensity = newValue
+                                
+                                // Trigger test vibration when crossing intensity thresholds
+                                let prevCategory = intensityCategory(for: previousIntensity)
+                                let newCategory = intensityCategory(for: intensity)
+                                
+                                if prevCategory != newCategory {
+                                    triggerTestVibration()
+                                }
+                            }
+                            .onEnded { _ in
+                                isSliding = false
+                                // Final test vibration
+                                triggerTestVibration()
+                            }
+                    )
+                }
+                .frame(height: 20)
+                
+                Text("Heavy")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
+        .animation(.easeInOut(duration: 0.15), value: intensity)
+    }
+    
+    private var intensityLabel: String {
+        if intensity < 0.33 {
+            return "Light"
+        } else if intensity < 0.67 {
+            return "Medium"
+        } else {
+            return "Heavy"
+        }
+    }
+    
+    private func intensityCategory(for value: Double) -> Int {
+        if value < 0.33 {
+            return 0  // Light
+        } else if value < 0.67 {
+            return 1  // Medium
+        } else {
+            return 2  // Heavy
+        }
+    }
+    
+    private func triggerTestVibration() {
+        let style: UIImpactFeedbackGenerator.FeedbackStyle
+        if intensity < 0.33 {
+            style = .light
+        } else if intensity < 0.67 {
+            style = .medium
+        } else {
+            style = .heavy
+        }
+        
+        let generator = UIImpactFeedbackGenerator(style: style)
+        generator.prepare()
+        generator.impactOccurred(intensity: CGFloat(intensity))
     }
 }
 

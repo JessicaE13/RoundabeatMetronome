@@ -38,6 +38,8 @@ private enum UserDefaultsKeys {
     static let pauseOnRouteChange = "metronome_pauseOnRouteChange"
     static let keepScreenAwake = "metronome_keepScreenAwake"
     static let dialTickEnabled = "metronome_dialTickEnabled"
+    static let vibrationEnabled = "metronome_vibrationEnabled"  // NEW
+    static let vibrationIntensity = "metronome_vibrationIntensity"  // NEW
 }
 
 // MARK: - Metronome Engine with Enhanced Audio-Visual Synchronization
@@ -82,6 +84,21 @@ class MetronomeEngine: ObservableObject {
     
     @AppStorage("metronome_dialTickEnabled") var dialTickEnabled: Bool = true {
         didSet { saveSettings() }
+    }
+    
+    // MARK: - NEW: Vibration Settings
+    @AppStorage("metronome_vibrationEnabled") var vibrationEnabled: Bool = false {
+        didSet {
+            saveSettings()
+            updateHapticGenerator()
+        }
+    }
+    
+    @AppStorage("metronome_vibrationIntensity") var vibrationIntensity: Double = 0.5 {
+        didSet {
+            saveSettings()
+            updateHapticGenerator()
+        }
     }
     
     @Published var isFlashing: Bool = false
@@ -176,6 +193,10 @@ class MetronomeEngine: ObservableObject {
     private var sourceNode: AVAudioSourceNode?
     private let mixerNode = AVAudioMixerNode()
     
+    // MARK: - NEW: Haptic Feedback Properties
+    private var hapticGenerator: UIImpactFeedbackGenerator?
+    private let hapticQueue = DispatchQueue(label: "com.metronome.haptic", qos: .userInteractive)
+    
     // MARK: - Improved Preview System
     private var previewQueue = DispatchQueue(label: "com.metronome.preview", qos: .userInitiated)
     private var previewEnginePool: [AVAudioEngine] = []
@@ -267,6 +288,7 @@ class MetronomeEngine: ObservableObject {
         updateTiming()
         checkHeadphonesConnected()
         updateScreenIdleTimer()
+        updateHapticGenerator()  // NEW: Initialize haptic generator
         
         // Initialize dial tick tracking
         lastDialBPM = bpm
@@ -279,6 +301,50 @@ class MetronomeEngine: ObservableObject {
         removeAudioSessionNotifications()
         removeAppLifecycleNotifications()
         UIApplication.shared.isIdleTimerDisabled = false
+    }
+    
+    // MARK: - NEW: Haptic Generator Setup
+    private func updateHapticGenerator() {
+        hapticQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            if self.vibrationEnabled {
+                // Create generator with appropriate style based on intensity
+                let style: UIImpactFeedbackGenerator.FeedbackStyle
+                if self.vibrationIntensity < 0.33 {
+                    style = .light
+                } else if self.vibrationIntensity < 0.67 {
+                    style = .medium
+                } else {
+                    style = .heavy
+                }
+                
+                self.hapticGenerator = UIImpactFeedbackGenerator(style: style)
+                self.hapticGenerator?.prepare()
+            } else {
+                self.hapticGenerator = nil
+            }
+        }
+    }
+    
+    // MARK: - NEW: Trigger Haptic Feedback
+    private func triggerHapticFeedback() {
+        guard vibrationEnabled else { return }
+        
+        hapticQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Ensure generator is ready
+            if self.hapticGenerator == nil {
+                self.updateHapticGenerator()
+            }
+            
+            // Trigger very short, precise haptic feedback
+            self.hapticGenerator?.impactOccurred(intensity: CGFloat(self.vibrationIntensity))
+            
+            // Prepare for next feedback (ensures responsiveness)
+            self.hapticGenerator?.prepare()
+        }
     }
     
     // MARK: - Enhanced Audio Session Setup
@@ -629,6 +695,15 @@ class MetronomeEngine: ObservableObject {
             dialTickEnabled = defaults.bool(forKey: UserDefaultsKeys.dialTickEnabled)
         }
         
+        // NEW: Load vibration settings
+        if defaults.object(forKey: UserDefaultsKeys.vibrationEnabled) != nil {
+            vibrationEnabled = defaults.bool(forKey: UserDefaultsKeys.vibrationEnabled)
+        }
+        
+        if defaults.object(forKey: UserDefaultsKeys.vibrationIntensity) != nil {
+            vibrationIntensity = defaults.double(forKey: UserDefaultsKeys.vibrationIntensity)
+        }
+        
         if debugMode {
             print("✅ Settings loaded from UserDefaults")
         }
@@ -643,6 +718,8 @@ class MetronomeEngine: ObservableObject {
         defaults.set(selectedSoundType.rawValue, forKey: UserDefaultsKeys.selectedSoundType)
         defaults.set(Double(subdivision), forKey: UserDefaultsKeys.subdivisionMultiplier)
         defaults.set(clickVolume, forKey: UserDefaultsKeys.clickVolume)
+        defaults.set(vibrationEnabled, forKey: UserDefaultsKeys.vibrationEnabled)  // NEW
+        defaults.set(vibrationIntensity, forKey: UserDefaultsKeys.vibrationIntensity)  // NEW
         
         if debugMode {
             print("💾 Settings saved to UserDefaults")
@@ -999,7 +1076,7 @@ class MetronomeEngine: ObservableObject {
         return noErr
     }
     
-    // MARK: - Precise Visual Synchronization
+    // MARK: - Precise Visual Synchronization (UPDATED with haptic feedback)
     
     private func scheduleVisualUpdate(beatNumber: Int, frameOffset: Int, totalFrames: Int) {
         beatStateQueue.async { [weak self] in
@@ -1020,6 +1097,9 @@ class MetronomeEngine: ObservableObject {
                     // Apply visual updates
                     self.currentBeat = beatNumber
                     self.beatIndicator.toggle()
+                    
+                    // NEW: Trigger haptic feedback at exact same time as visual/audio
+                    self.triggerHapticFeedback()
                     
                     // Trigger flash on first beat if enabled
                     if beatNumber == 1 && self.fullScreenFlashOnFirstBeat {
