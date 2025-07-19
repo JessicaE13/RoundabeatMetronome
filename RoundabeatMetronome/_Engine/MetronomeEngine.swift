@@ -877,37 +877,22 @@ class MetronomeEngine: ObservableObject {
 
             // Reset timing and audio state for immediate first beat
             currentSamplePosition = 0
-            lastBeatSample = 0 // First beat starts at sample 0
-            nextBeatSample = Int64(samplesPerBeat) // Second beat scheduled normally
-            beatCounter = 1 // Starting on beat 1
-            currentBeat = 1 // Display beat 1
+            lastBeatSample = -Int64(samplesPerBeat) // Move this back so first beat triggers immediately
+            nextBeatSample = 0 // First beat at sample 0
+            beatCounter = 0 // Will be incremented to 1 on first render
             clickPhase = 0.0
             snapPlaybackPosition = 0.0
             isPlayingSnap = false
 
-            // Initialize snap playback for first beat if needed
-            if selectedSoundType == .snap {
-                snapPlaybackPosition = 0.0
-                isPlayingSnap = true
-            }
-
-            // Update UI for first beat
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.currentBeat = 1
-                self.beatIndicator.toggle()
-                
-                if self.fullScreenFlashOnFirstBeat {
-                    self.triggerFlash()
-                }
-            }
+            // DON'T update UI here - let the render callback handle it consistently
+            // This ensures audio and visual are perfectly synchronized
 
             try audioEngine.start()
 
             if debugMode {
-                print("🎵 Metronome started at \(bpm) BPM on beat 1")
+                print("🎵 Metronome started at \(bpm) BPM")
                 print("🎵 Engine running: \(audioEngine.isRunning)")
-                print("🎵 Output node: \(audioEngine.outputNode)")
+                print("🎵 First beat will trigger in render callback")
             }
 
         } catch {
