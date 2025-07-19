@@ -21,6 +21,20 @@ struct MetronomeView: View {
         UIDevice.current.userInterfaceIdiom == .pad
     }
     
+    private var buttonFontSize: CGFloat {
+        if isIPad {
+            return screenWidth <= 768 ? 14 :
+                   screenWidth <= 834 ? 16 :
+                   screenWidth <= 1024 ? 18 :
+                   20
+        } else {
+            return screenWidth <= 320 ? 10 :
+                   screenWidth <= 375 ? 11 :
+                   screenWidth <= 393 ? 12 :
+                   13
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             
@@ -47,6 +61,15 @@ struct MetronomeView: View {
                 metronome: metronome,
                 showingNumberPad: $showingNumberPad
             )
+            
+      
+            
+            // BPM Label
+            Text("BEATS PER MINUTE (BPM)")
+                .font(.system(size: buttonFontSize, weight: .medium))
+                .foregroundStyle(Color("Gray1"))
+                .kerning(1.2)
+                .padding(.top, 16)
             
             Spacer()
             

@@ -35,7 +35,7 @@ struct UniformButton: View {
             height: uniformButtonHeight
         )
         .background(Color("Background2"))
-        .cornerRadius(16)
+        .cornerRadius(12)
 //        .overlay(
 //            RoundedRectangle(cornerRadius: 16)
 //                .stroke(Color.primary.opacity(0.01), lineWidth: 1)
@@ -83,8 +83,8 @@ struct UniformButton: View {
         } else {
             return screenWidth <= 320 ? 34 :
             screenWidth <= 375 ? 36 :
-            screenWidth <= 393 ? 40 :
-            44
+            screenWidth <= 393 ? 38 :
+            40
         }
     }
 
@@ -125,7 +125,7 @@ struct UniformButtonWithIcon: View {
             height: uniformButtonHeight
         )
         .background(Color("Background2"))
-        .cornerRadius(16)
+        .cornerRadius(12)
         
 //        .overlay(
 //            RoundedRectangle(cornerRadius: 16)
@@ -174,8 +174,8 @@ struct UniformButtonWithIcon: View {
         } else {
             return screenWidth <= 320 ? 34 :
             screenWidth <= 375 ? 36 :
-            screenWidth <= 393 ? 40 :
-            44
+            screenWidth <= 393 ? 38 :
+            40
         }
     }
 
@@ -250,10 +250,10 @@ struct UniformButtonsView: View {
             screenWidth <= 1024 ? 20 :
             24
         } else {
-            return screenWidth <= 320 ? 4 :
-            screenWidth <= 375 ? 6 :
-            screenWidth <= 393 ? 8 :
-            10
+            return screenWidth <= 320 ? 8 :
+            screenWidth <= 375 ? 10 :
+            screenWidth <= 393 ? 12 :
+            14
         }
     }
 
