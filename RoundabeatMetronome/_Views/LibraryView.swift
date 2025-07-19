@@ -304,31 +304,22 @@ struct SoundsViewForLibrary: View {
         }
     }
     
-    // **MARK: - Fixed Preview Function**
+    // **MARK: - Simplified Preview Function (Allows Overlapping Sounds)**
     private func playPreview(_ sound: SyntheticSound) {
-        // Cancel any existing preview work item
-        previewWorkItem?.cancel()
-        
-        // Set the currently previewing sound immediately
+        // Set visual feedback immediately
         currentlyPreviewingSound = sound
         
-        // Play the preview
+        // Play the preview - multiple sounds can overlap
         metronome.playSoundPreviewAdvanced(sound)
         
-        // Create a new work item to reset the preview state
-        let workItem = DispatchWorkItem {
-            // Only reset if this sound is still the current one being previewed
+        // Reset visual feedback after a short duration
+        let previewDuration: TimeInterval = 0.25
+        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration) {
+            // Only reset if this sound is still the current one being shown
             if self.currentlyPreviewingSound == sound {
                 self.currentlyPreviewingSound = nil
             }
         }
-        
-        // Store the work item
-        previewWorkItem = workItem
-        
-        // Schedule the reset - using a shorter duration for more responsive UI
-        let previewDuration: TimeInterval = 0.3
-        DispatchQueue.main.asyncAfter(deadline: .now() + previewDuration, execute: workItem)
     }
     
     private func soundIcon(for sound: SyntheticSound) -> String {
