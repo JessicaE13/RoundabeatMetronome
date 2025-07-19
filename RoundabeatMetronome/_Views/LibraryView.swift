@@ -128,7 +128,7 @@ struct LibraryView: View {
                                     AnyShapeStyle(LinearGradient(
                                         gradient: Gradient(colors: [
                                             Color("AccentColor"),
-                                            Color("AccentColor").opacity(0.8)
+                                            Color("AccentColor").opacity(0.9)
                                         ]),
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
@@ -1467,7 +1467,7 @@ struct FloatingActionButton: View {
                     .fill(LinearGradient(
                         gradient: Gradient(colors: [
                             Color("AccentColor"),
-                            Color("AccentColor").opacity(0.8)
+                            Color("AccentColor").opacity(0.9)
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing

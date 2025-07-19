@@ -176,7 +176,13 @@ class MetronomeEngine: ObservableObject {
     private var sourceNode: AVAudioSourceNode?
     private let mixerNode = AVAudioMixerNode()
     
-    // Preview audio components - separate from main metronome
+    // MARK: - Improved Preview System
+    private var previewQueue = DispatchQueue(label: "com.metronome.preview", qos: .userInitiated)
+    private var previewEnginePool: [AVAudioEngine] = []
+    private let maxPreviewEngines = 3
+    private var isCleaningUp = false
+    
+    // Legacy preview components (kept for compatibility during transition)
     private var previewEngine: AVAudioEngine?
     private var previewPlayerNode: AVAudioPlayerNode?
     
@@ -1099,7 +1105,6 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-
     private func generateSample(for soundType: SyntheticSound, frequency: Float, envelope: Float, progress: Float) -> Float {
         // Use the stored clickPhase for consistency
         let fundamental = sin(clickPhase) * envelope
@@ -1175,146 +1180,213 @@ class MetronomeEngine: ObservableObject {
         print("🐛 Debug mode: \(debugMode ? "ON" : "OFF")")
     }
     
-    // Add this updated method to your MetronomeEngine class
-    // Replace the existing playSoundPreviewAdvanced method with this one:
-
+    // MARK: - Improved Preview Sound System
+    
     func playSoundPreviewAdvanced(_ soundType: SyntheticSound? = nil) {
         let previewSoundType = soundType ?? selectedSoundType
         
-        // Clean up any existing preview engine first
-        cleanupPreviewEngine()
-        
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
-            
-            do {
-                // Create a fresh engine for preview
-                let engine = AVAudioEngine()
-                let playerNode = AVAudioPlayerNode()
-                
-                // Store references
-                self.previewEngine = engine
-                self.previewPlayerNode = playerNode
-                
-                // Setup engine
-                engine.attach(playerNode)
-                
-                let outputFormat = engine.outputNode.outputFormat(forBus: 0)
-                let format = AVAudioFormat(
-                    commonFormat: .pcmFormatFloat32,
-                    sampleRate: outputFormat.sampleRate,
-                    channels: 1,
-                    interleaved: false
-                )!
-                
-                engine.connect(playerNode, to: engine.outputNode, format: format)
-                
-                // Generate preview buffer using EXACT same parameters as metronome
-                let previewDuration: Double = 0.25
-                let frameCount = UInt32(format.sampleRate * previewDuration)
-                
-                guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
-                    DispatchQueue.main.async {
-                        if #available(iOS 10.0, *) {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        }
-                    }
-                    return
-                }
-                
-                buffer.frameLength = frameCount
-                let channelData = buffer.floatChannelData![0]
-                
-                // Use EXACT same audio generation logic as the metronome
-                let clickDurationSamples = Int(self.clickDuration * format.sampleRate)
-                var localClickPhase: Float = 0.0
-                var snapPlaybackPosition: Double = 0.0
-                var isPlayingSnap = false
-                let newBeatNumber = 1 // For preview, treat as first beat for accent testing
-                
-                // Start snap playback if snap sound is selected (matching metronome logic)
-                if previewSoundType == .snap {
-                    snapPlaybackPosition = 0.0
-                    isPlayingSnap = true
-                }
-                
-                for frameIndex in 0..<Int(frameCount) {
-                    var sample: Float = 0.0
-                    
-                    // Generate audio using EXACT same logic as renderAudio method
-                    if previewSoundType == .snap {
-                        if isPlayingSnap && snapPlaybackPosition < Double(self.snapWaveform.count) {
-                            let baseSampleRateRatio = self.snapOriginalSampleRate / format.sampleRate
-                            let pitchShiftRatio: Double = (self.accentFirstBeat && newBeatNumber == 1) ? 1.15 : 1.0
-                            let adjustedRatio = baseSampleRateRatio * pitchShiftRatio
-                            let adjustedPosition = snapPlaybackPosition * adjustedRatio
-                            let index = Int(adjustedPosition)
-                            
-                            if index < self.snapWaveform.count {
-                                let baseAmplitude: Float = 0.8
-                                let accentMultiplier: Float = (self.accentFirstBeat && newBeatNumber == 1) ? 1.1 : 1.0
-                                sample = self.snapWaveform[index] * baseAmplitude * accentMultiplier
-                            }
-                            
-                            snapPlaybackPosition += 1.0
-                            
-                            if adjustedPosition >= Double(self.snapWaveform.count - 1) {
-                                isPlayingSnap = false
-                            }
-                        }
-                    } else {
-                        // For synthetic sounds, generate the entire click duration
-                        if frameIndex < clickDurationSamples {
-                            let clickProgress = Float(frameIndex) / Float(clickDurationSamples)
-                            
-                            // Use EXACT same helper methods as metronome
-                            let envelope = self.generateEnvelope(for: previewSoundType, progress: clickProgress)
-                            let frequency = self.generateFrequency(for: previewSoundType,
-                                                                  isAccent: self.accentFirstBeat && newBeatNumber == 1,
-                                                                  progress: clickProgress)
-                            sample = self.generatePreviewSample(for: previewSoundType,
-                                                               frequency: frequency,
-                                                               envelope: envelope,
-                                                               progress: clickProgress,
-                                                               phase: &localClickPhase,
-                                                               sampleRate: Float(format.sampleRate))
-                        }
-                    }
-                    
-                    channelData[frameIndex] = sample
-                }
-                
-                // Start engine and schedule buffer
-                try engine.start()
-                
-                playerNode.scheduleBuffer(buffer) {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        self.cleanupPreviewEngine()
-                    }
-                }
-                
-                playerNode.play()
-                
-                // Add haptic feedback
-                DispatchQueue.main.async {
-                    if #available(iOS 10.0, *) {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    }
-                }
-                
-            } catch {
-                print("❌ Failed to play sound preview: \(error)")
-                DispatchQueue.main.async {
-                    if #available(iOS 10.0, *) {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    }
-                }
-                self.cleanupPreviewEngine()
+        // Immediate haptic feedback for better responsiveness
+        DispatchQueue.main.async {
+            if #available(iOS 10.0, *) {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }
         }
+        
+        previewQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Prevent concurrent cleanup operations
+            guard !self.isCleaningUp else {
+                print("⚠️ Preview blocked due to cleanup in progress")
+                return
+            }
+            
+            // Get or create an available engine
+            let engine = self.getAvailablePreviewEngine()
+            let playerNode = AVAudioPlayerNode()
+            
+            // Setup engine
+            engine.attach(playerNode)
+            
+            // Use a more conservative format that's likely to be supported
+            let outputFormat = engine.outputNode.outputFormat(forBus: 0)
+            let sampleRate = outputFormat.sampleRate
+            let format = AVAudioFormat(
+                commonFormat: .pcmFormatFloat32,
+                sampleRate: sampleRate,
+                channels: 1,
+                interleaved: false
+            )
+            
+            guard let audioFormat = format else {
+                print("❌ Failed to create audio format")
+                self.returnEngineToPool(engine)
+                return
+            }
+            
+            engine.connect(playerNode, to: engine.outputNode, format: audioFormat)
+            
+            // Generate preview buffer
+            let previewDuration: Double = 0.25
+            let frameCount = UInt32(sampleRate * previewDuration)
+            
+            guard let buffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCount) else {
+                print("❌ Failed to create audio buffer")
+                self.returnEngineToPool(engine)
+                return
+            }
+            
+            buffer.frameLength = frameCount
+            let channelData = buffer.floatChannelData![0]
+            
+            // Generate audio samples
+            self.generatePreviewAudio(
+                into: channelData,
+                frameCount: Int(frameCount),
+                soundType: previewSoundType,
+                sampleRate: sampleRate
+            )
+            
+            // Start engine with retry logic
+            var engineStarted = false
+            for attempt in 1...3 {
+                do {
+                    if !engine.isRunning {
+                        try engine.start()
+                    }
+                    engineStarted = true
+                    break
+                } catch {
+                    print("❌ Engine start attempt \(attempt) failed: \(error)")
+                    if attempt < 3 {
+                        Thread.sleep(forTimeInterval: 0.01) // Brief pause before retry
+                    }
+                }
+            }
+            
+            guard engineStarted else {
+                print("❌ Failed to start engine after 3 attempts")
+                self.returnEngineToPool(engine)
+                return
+            }
+            
+            // Schedule buffer with completion handler
+            playerNode.scheduleBuffer(buffer) { [weak self, weak engine] in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    if let engine = engine {
+                        self?.returnEngineToPool(engine)
+                    }
+                }
+            }
+            
+            // Start playback
+            playerNode.play()
+        }
     }
-
-    // Add this new method for preview sample generation that properly handles phase:
+    
+    // MARK: - Preview Engine Pool Management
+    
+    private func getAvailablePreviewEngine() -> AVAudioEngine {
+        // Clean up any stopped engines first
+        previewEnginePool.removeAll { !$0.isRunning && $0.attachedNodes.isEmpty }
+        
+        // Try to find an available engine
+        for engine in previewEnginePool {
+            if !engine.isRunning && engine.attachedNodes.isEmpty {
+                return engine
+            }
+        }
+        
+        // Create new engine if pool not full
+        if previewEnginePool.count < maxPreviewEngines {
+            let newEngine = AVAudioEngine()
+            previewEnginePool.append(newEngine)
+            return newEngine
+        }
+        
+        // Use the first engine if all are busy (shouldn't happen often)
+        return previewEnginePool.first ?? AVAudioEngine()
+    }
+    
+    private func returnEngineToPool(_ engine: AVAudioEngine) {
+        previewQueue.async {
+            // Stop the engine and detach all nodes
+            if engine.isRunning {
+                engine.stop()
+            }
+            
+            // Clean up all attached nodes
+            for node in engine.attachedNodes {
+                if let playerNode = node as? AVAudioPlayerNode {
+                    playerNode.stop()
+                }
+                engine.detach(node)
+            }
+            
+            // Reset to clean state
+            engine.reset()
+        }
+    }
+    
+    private func generatePreviewAudio(into buffer: UnsafeMutablePointer<Float>, frameCount: Int, soundType: SyntheticSound, sampleRate: Double) {
+        let clickDurationSamples = Int(self.clickDuration * sampleRate)
+        var localClickPhase: Float = 0.0
+        var snapPlaybackPosition: Double = 0.0
+        var isPlayingSnap = false
+        let newBeatNumber = 1 // For preview, treat as first beat for accent testing
+        
+        // Start snap playback if snap sound is selected
+        if soundType == .snap {
+            snapPlaybackPosition = 0.0
+            isPlayingSnap = true
+        }
+        
+        for frameIndex in 0..<frameCount {
+            var sample: Float = 0.0
+            
+            // Generate audio using same logic as metronome
+            if soundType == .snap {
+                if isPlayingSnap && snapPlaybackPosition < Double(self.snapWaveform.count) {
+                    let baseSampleRateRatio = self.snapOriginalSampleRate / sampleRate
+                    let pitchShiftRatio: Double = (self.accentFirstBeat && newBeatNumber == 1) ? 1.15 : 1.0
+                    let adjustedRatio = baseSampleRateRatio * pitchShiftRatio
+                    let adjustedPosition = snapPlaybackPosition * adjustedRatio
+                    let index = Int(adjustedPosition)
+                    
+                    if index < self.snapWaveform.count {
+                        let baseAmplitude: Float = 0.8
+                        let accentMultiplier: Float = (self.accentFirstBeat && newBeatNumber == 1) ? 1.1 : 1.0
+                        sample = self.snapWaveform[index] * baseAmplitude * accentMultiplier
+                    }
+                    
+                    snapPlaybackPosition += 1.0
+                    
+                    if adjustedPosition >= Double(self.snapWaveform.count - 1) {
+                        isPlayingSnap = false
+                    }
+                }
+            } else {
+                // For synthetic sounds, generate the entire click duration
+                if frameIndex < clickDurationSamples {
+                    let clickProgress = Float(frameIndex) / Float(clickDurationSamples)
+                    
+                    let envelope = self.generateEnvelope(for: soundType, progress: clickProgress)
+                    let frequency = self.generateFrequency(for: soundType,
+                                                          isAccent: self.accentFirstBeat && newBeatNumber == 1,
+                                                          progress: clickProgress)
+                    sample = self.generatePreviewSample(for: soundType,
+                                                       frequency: frequency,
+                                                       envelope: envelope,
+                                                       progress: clickProgress,
+                                                       phase: &localClickPhase,
+                                                       sampleRate: Float(sampleRate))
+                }
+            }
+            
+            buffer[frameIndex] = sample
+        }
+    }
+    
     private func generatePreviewSample(for soundType: SyntheticSound, frequency: Float, envelope: Float, progress: Float, phase: inout Float, sampleRate: Float) -> Float {
         // Update phase for this sample
         phase += 2.0 * Float.pi * frequency / sampleRate
@@ -1340,58 +1412,39 @@ class MetronomeEngine: ObservableObject {
             return primary + harmonic + highHarmonic + fingerRes + crack + crackle
         }
     }
-
-
-    // MARK: - Preview-specific sound generation methods
-
-    private func generatePreviewEnvelope(for soundType: SyntheticSound, progress: Float) -> Float {
-        let baseAmplitude: Float = 0.6 // Higher base amplitude for preview
-        
-        switch soundType {
-        case .click, .beep:
-            // Exponential decay with longer sustain
-            return exp(-progress * 8.0) * baseAmplitude
-            
-        case .snap:
-            // This won't be used since snap uses the waveform
-            if progress < 0.02 {
-                return baseAmplitude * 2.0
-            } else {
-                return exp(-progress * 12.0) * baseAmplitude * 1.5
-            }
-               
-        case .blip:
-            // Sharp attack, quick decay but more sustained
-            return exp(-progress * 15.0) * (1.0 - progress * 0.5) * baseAmplitude * 1.2
-        }
-    }
-
-    private func generatePreviewFrequency(for soundType: SyntheticSound, progress: Float) -> Float {
-        switch soundType {
-        case .click:
-            return 1200.0 // Slightly higher for better audibility
-            
-        case .snap:
-            // This won't be used since snap uses the waveform
-            let primaryFreq: Float = 900.0
-            let sweep = primaryFreq * (1.0 + (1.0 - progress) * 0.3)
-            return sweep
-            
-        case .beep:
-            return 900.0 // Higher frequency for better audibility
-            
-        case .blip:
-            return 2600.0 // Higher frequency
-        }
-    }
-
-
+    
+    // MARK: - Comprehensive Cleanup
     
     private func cleanupPreviewEngine() {
-        previewPlayerNode?.stop()
-        previewEngine?.stop()
-        previewPlayerNode = nil
-        previewEngine = nil
+        previewQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.isCleaningUp = true
+            
+            // Clean up old-style preview engine references
+            self.previewPlayerNode?.stop()
+            self.previewEngine?.stop()
+            self.previewPlayerNode = nil
+            self.previewEngine = nil
+            
+            // Clean up engine pool
+            for engine in self.previewEnginePool {
+                if engine.isRunning {
+                    engine.stop()
+                }
+                for node in engine.attachedNodes {
+                    if let playerNode = node as? AVAudioPlayerNode {
+                        playerNode.stop()
+                    }
+                    engine.detach(node)
+                }
+                engine.reset()
+            }
+            
+            self.previewEnginePool.removeAll()
+            
+            self.isCleaningUp = false
+        }
     }
     
     // MARK: - Public Audio Session Status Methods

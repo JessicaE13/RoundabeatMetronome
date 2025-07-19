@@ -82,6 +82,7 @@ struct MetronomeView: View {
             Spacer()
          
             LogoView()
+                .padding(.top, 16)
   
             Spacer()
             
