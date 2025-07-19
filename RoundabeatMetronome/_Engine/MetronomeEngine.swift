@@ -643,15 +643,13 @@ class MetronomeEngine: ObservableObject {
     }
 
     
-    // MARK: - NEW: Dial Tick Sound Methods with Overlap Support
+    // MARK: - NEW: Fixed Dial Tick Sound Methods with Overlap Support
 
     // Add these properties to store multiple dial tick engines
     private var dialTickEngines: [AVAudioEngine] = []
     private var dialTickPlayers: [AVAudioPlayerNode] = []
     private let maxConcurrentDialTicks = 3 // Limit concurrent sounds to avoid audio overload
 
-    
-    
     func handleBPMChangeForDialTick(newBPM: Int) {
         // Only play tick if BPM actually changed (not on initial load)
         if lastDialBPM != 0 && lastDialBPM != newBPM {
@@ -667,15 +665,15 @@ class MetronomeEngine: ObservableObject {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             
+            // Create a new engine for this tick (don't reuse)
+            let engine = AVAudioEngine()
+            let playerNode = AVAudioPlayerNode()
+            
+            // Store references in arrays for concurrent playback
+            self.dialTickEngines.append(engine)
+            self.dialTickPlayers.append(playerNode)
+            
             do {
-                // Create a new engine for this tick (don't reuse)
-                let engine = AVAudioEngine()
-                let playerNode = AVAudioPlayerNode()
-                
-                // Store references in arrays for concurrent playback
-                self.dialTickEngines.append(engine)
-                self.dialTickPlayers.append(playerNode)
-                
                 // Setup engine
                 engine.attach(playerNode)
                 
@@ -753,7 +751,7 @@ class MetronomeEngine: ObservableObject {
                 
             } catch {
                 print("❌ Failed to play dial tick: \(error)")
-                // Remove failed engine from arrays
+                // Remove failed engine from arrays since they're now accessible here
                 if let engineIndex = self.dialTickEngines.firstIndex(of: engine) {
                     self.dialTickEngines.remove(at: engineIndex)
                 }
@@ -810,6 +808,7 @@ class MetronomeEngine: ObservableObject {
         dialTickPlayerNode = nil
         dialTickEngine = nil
     }
+    
     
     // MARK: - Alternative Haptic Feedback Method
     func playDialTickHaptic() {
