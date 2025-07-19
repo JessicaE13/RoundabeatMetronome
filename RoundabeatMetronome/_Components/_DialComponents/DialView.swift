@@ -254,7 +254,7 @@ struct CircularBeatIndicator: View {
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: 1.0
+                            lineWidth: 2.0
                         )
                         .frame(width: buttonSize, height: buttonSize)
                     
@@ -263,8 +263,8 @@ struct CircularBeatIndicator: View {
                         .stroke(
                             LinearGradient(
                                 gradient: Gradient(stops: [
-                                    .init(color: Color("Gray1").opacity(0.5), location: 0.0),
-                                    .init(color: Color("Gray1").opacity(0.42), location: 1.0)
+                                    .init(color: Color("Gray1").opacity(0.2), location: 0.0),
+                                    .init(color: Color("Gray1").opacity(0.12), location: 1.0)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing

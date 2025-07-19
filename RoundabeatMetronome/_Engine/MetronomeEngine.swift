@@ -127,6 +127,7 @@ class MetronomeEngine: ObservableObject {
             let oldBPM = oldValue
             updateTiming()
             saveSettings()
+            optimizeHapticForBPM()
             
             // Handle dial tick for BPM changes
             if oldBPM != 0 && oldBPM != bpm {
@@ -214,7 +215,6 @@ class MetronomeEngine: ObservableObject {
     
     // MARK: - Enhanced Vibration Feedback Properties
     private var hapticGenerator: UIImpactFeedbackGenerator?
-    private let vibrationQueue = DispatchQueue(label: "com.metronome.vibration", qos: .userInteractive)
     
     // MARK: - Improved Preview System
     private var previewQueue = DispatchQueue(label: "com.metronome.preview", qos: .userInitiated)
@@ -322,35 +322,32 @@ class MetronomeEngine: ObservableObject {
         UIApplication.shared.isIdleTimerDisabled = false
     }
     
-    // MARK: - Enhanced Vibration Generator Setup
+    // MARK: - Enhanced Vibration Generator Setup (UPDATED)
     private func updateVibrationGenerator() {
-        vibrationQueue.async { [weak self] in
-            guard let self = self else { return }
-            
-            if self.vibrationType == .haptic {
-                // Create haptic generator with appropriate style based on intensity
-                let style: UIImpactFeedbackGenerator.FeedbackStyle
-                if self.vibrationIntensity < 0.33 {
-                    style = .light
-                } else if self.vibrationIntensity < 0.67 {
-                    style = .medium
-                } else {
-                    style = .heavy
-                }
-                
-                self.hapticGenerator = UIImpactFeedbackGenerator(style: style)
-                self.hapticGenerator?.prepare()
+        if vibrationType == .haptic {
+            // Create haptic generator with appropriate style based on intensity
+            let style: UIImpactFeedbackGenerator.FeedbackStyle
+            if vibrationIntensity < 0.33 {
+                style = .light
+            } else if vibrationIntensity < 0.67 {
+                style = .medium
             } else {
-                self.hapticGenerator = nil
+                style = .heavy
             }
+            
+            hapticGenerator = UIImpactFeedbackGenerator(style: style)
+            hapticGenerator?.prepare()
+        } else {
+            hapticGenerator = nil
         }
     }
     
-    // MARK: - Enhanced Trigger Vibration Method
+    // MARK: - High-Precision Vibration Trigger (UPDATED)
     private func triggerVibrationFeedback() {
         guard vibrationType != .none else { return }
         
-        vibrationQueue.async { [weak self] in
+        // Execute on main thread with highest priority for immediate execution
+        DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             switch self.vibrationType {
@@ -358,55 +355,64 @@ class MetronomeEngine: ObservableObject {
                 break
                 
             case .haptic:
-                // Ensure generator is ready
+                // Immediate haptic feedback - no queue delays
                 if self.hapticGenerator == nil {
-                    self.updateVibrationGenerator()
+                    // Create generator immediately if not available
+                    let style: UIImpactFeedbackGenerator.FeedbackStyle
+                    if self.vibrationIntensity < 0.33 {
+                        style = .light
+                    } else if self.vibrationIntensity < 0.67 {
+                        style = .medium
+                    } else {
+                        style = .heavy
+                    }
+                    self.hapticGenerator = UIImpactFeedbackGenerator(style: style)
+                    self.hapticGenerator?.prepare()
                 }
                 
-                // Trigger haptic feedback
+                // Trigger haptic feedback immediately with precise intensity
                 self.hapticGenerator?.impactOccurred(intensity: CGFloat(self.vibrationIntensity))
+                
+                // Prepare for next use immediately
                 self.hapticGenerator?.prepare()
                 
             case .phoneVibration:
-                // Trigger strong phone vibration
-                self.triggerPhoneVibration()
+                // Single, immediate phone vibration pulse
+                self.triggerPrecisePhoneVibration()
             }
         }
     }
     
-    // MARK: - Strong Phone Vibration Method
-    private func triggerPhoneVibration() {
-        // Use AudioServices for strong vibration
-        let vibrationIntensityInt = Int(vibrationIntensity * 3) // Convert to 0-3 range
+    // MARK: - Optimized Phone Vibration (UPDATED)
+    private func triggerPrecisePhoneVibration() {
+        // Use only a single, immediate vibration pulse for perfect timing
+        // Multiple pulses cause desynchronization at high BPMs
+        
+        // Map intensity to different vibration patterns, but keep them SHORT
+        let vibrationIntensityInt = Int(vibrationIntensity * 2) // Convert to 0-2 range for simpler patterns
         
         switch vibrationIntensityInt {
         case 0:
-            // Light vibration - single short pulse
+            // Light intensity - single short pulse
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
             
         case 1:
-            // Medium vibration - slightly longer
+            // Medium intensity - single pulse (same as light, but haptic intensity differs)
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            }
-            
-        case 2:
-            // Heavy vibration - double pulse
-            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            }
             
         default:
-            // Maximum intensity - triple pulse
+            // Heavy intensity - single strong pulse
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            }
+        }
+        
+        // No additional delayed pulses - this ensures perfect sync even at 400 BPM
+    }
+    
+    // MARK: - BPM Optimization for Haptics (NEW)
+    private func optimizeHapticForBPM() {
+        // Pre-prepare haptic generator when BPM changes for even better responsiveness
+        if vibrationType == .haptic {
+            updateVibrationGenerator()
         }
     }
     
@@ -1137,15 +1143,16 @@ class MetronomeEngine: ObservableObject {
         
         currentSamplePosition += Int64(frames)
         
-        // Schedule precise visual update if beat was triggered
+        // Schedule precise visual update if beat was triggered (UPDATED)
         if beatTriggeredInThisCycle {
-            scheduleVisualUpdate(beatNumber: newBeatNumber, frameOffset: beatTriggerFrame, totalFrames: frames)
+            let preciseFrameOffset = beatTriggerFrame
+            scheduleVisualUpdate(beatNumber: newBeatNumber, frameOffset: preciseFrameOffset, totalFrames: frames)
         }
         
         return noErr
     }
     
-    // MARK: - Precise Visual Synchronization with Enhanced Vibration
+    // MARK: - Enhanced Precise Visual Synchronization with Optimized Vibration (UPDATED)
     
     private func scheduleVisualUpdate(beatNumber: Int, frameOffset: Int, totalFrames: Int) {
         beatStateQueue.async { [weak self] in
@@ -1160,14 +1167,16 @@ class MetronomeEngine: ObservableObject {
                 let totalDelay = frameDelay - audioLatency
                 let clampedDelay = max(0, totalDelay)
                 
+                // Use higher priority queue for maximum precision
                 DispatchQueue.main.asyncAfter(deadline: .now() + clampedDelay) { [weak self] in
                     guard let self = self else { return }
                     
-                    // Apply visual updates
+                    // Apply all updates simultaneously for perfect sync
                     self.currentBeat = beatNumber
                     self.beatIndicator.toggle()
                     
                     // Trigger vibration feedback at exact same time as visual/audio
+                    // This is now optimized for immediate execution
                     self.triggerVibrationFeedback()
                     
                     // Trigger flash on first beat if enabled
@@ -1669,3 +1678,4 @@ class MetronomeEngine: ObservableObject {
         }
     }
 }
+

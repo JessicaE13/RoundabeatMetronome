@@ -103,7 +103,7 @@ struct TempoMarkingView: View {
                     .fill(isSelected ? Color.clear : Color.clear)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color("AccentColor").opacity(isSelected ? 1.0 : 0), lineWidth: 1)
+                            .stroke(Color("AccentColor").opacity(isSelected ? 1.0 : 0), lineWidth: 1.2)
                     )
             )
             .padding(.vertical, 1)
