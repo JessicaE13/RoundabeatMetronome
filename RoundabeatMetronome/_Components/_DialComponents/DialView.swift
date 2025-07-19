@@ -302,7 +302,7 @@ struct CircularBeatIndicator: View {
 
 
 
-// MARK: - Tempo Dial Component with Capsule Indicator and Rotating Parabola Outline
+// MARK: - Enhanced Tempo Dial Component with Haptics
 struct TempoDialView: View {
     let size: CGFloat
     let bpm: Int
@@ -313,11 +313,14 @@ struct TempoDialView: View {
     @State private var lastDragAngle: Double = 0
     @State private var accumulatedRotation: Double = 0
     
+    // NEW: Haptic feedback state
+    @State private var lastHapticBPM: Int = 0
+    @State private var hapticFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+    
     private let grayCircleMultiplier: CGFloat = 0.64
     private let petalCount = 30
     
     // BPM to rotation mapping - 5 complete rotations from 40 to 400 BPM
-    // 40 BPM starts at bottom (180°), 400 BPM ends after 5 full rotations (180° + 1800° = 1980°)
     private func bpmToRotation(_ bpm: Int) -> Double {
         let bpmRange = 400.0 - 40.0  // 360 BPM range
         let totalRotations = 5.0     // 5 full rotations
@@ -355,6 +358,15 @@ struct TempoDialView: View {
             return diff + 360
         }
         return diff
+    }
+    
+    // NEW: Trigger haptic feedback for BPM changes
+    private func triggerHapticForBPMChange(_ newBPM: Int) {
+        // Only trigger haptic if BPM actually changed and we're dragging
+        if isDragging && newBPM != lastHapticBPM {
+            hapticFeedbackGenerator.impactOccurred(intensity: 0.5)
+            lastHapticBPM = newBPM
+        }
     }
     
     // Dial size variables
@@ -426,10 +438,12 @@ struct TempoDialView: View {
                     let currentAngle = angleFromCenter(value.location, center: center)
                     
                     if !isDragging {
-                        // Start of drag
+                        // Start of drag - prepare haptic generator and set initial state
                         isDragging = true
                         lastDragAngle = currentAngle
                         accumulatedRotation = currentRotation
+                        lastHapticBPM = bpm
+                        hapticFeedbackGenerator.prepare() // Prepare for responsive haptics
                     } else {
                         // Calculate the angular change
                         let angleDelta = angleDifference(from: lastDragAngle, to: currentAngle)
@@ -446,6 +460,10 @@ struct TempoDialView: View {
                         if newBPM >= 40 && newBPM <= 400 {
                             currentRotation = clampedRotation
                             accumulatedRotation = clampedRotation
+                            
+                            // NEW: Trigger haptic feedback for BPM change
+                            triggerHapticForBPMChange(newBPM)
+                            
                             onTempoChange(newBPM)
                         }
                         
@@ -455,18 +473,21 @@ struct TempoDialView: View {
                 .onEnded { _ in
                     isDragging = false
                     lastDragAngle = 0
+                    lastHapticBPM = 0 // Reset haptic tracking
                 }
         )
         .onAppear {
             let initialRotation = bpmToRotation(bpm)
             currentRotation = initialRotation
             accumulatedRotation = initialRotation
+            lastHapticBPM = bpm
         }
         .onChange(of: bpm) { _, newBPM in
             if !isDragging {
                 let newRotation = bpmToRotation(newBPM)
                 currentRotation = newRotation
                 accumulatedRotation = newRotation
+                lastHapticBPM = newBPM
             }
         }
     }
