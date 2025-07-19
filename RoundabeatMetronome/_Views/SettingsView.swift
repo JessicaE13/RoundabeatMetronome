@@ -209,7 +209,7 @@ struct SettingsToggleRow: View {
     }
 }
 
-// MARK: - Custom Toggle Style with AccentColor Background
+// MARK: - Custom Toggle Style with Gradient Background
 struct CustomToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack {
@@ -218,11 +218,38 @@ struct CustomToggleStyle: ToggleStyle {
             Spacer()
             
             RoundedRectangle(cornerRadius: 16)
-                .fill(configuration.isOn ? Color("AccentColor") : Color.secondary.opacity(0.3))
+                .fill(
+                    configuration.isOn ?
+                    AnyShapeStyle(LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color("AccentColor"),
+                            Color("AccentColor").opacity(0.7)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottomLeading
+                    )) :
+                    AnyShapeStyle(LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.secondary.opacity(0.4),
+                            Color.secondary.opacity(0.2)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                )
                 .frame(width: 51, height: 31)
                 .overlay(
                     Circle()
-                        .fill(Color.white)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white,
+                                    Color.white.opacity(0.95)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                         .shadow(color: Color.black.opacity(0.15), radius: 1, x: 0, y: 1)
                         .frame(width: 27, height: 27)
                         .offset(x: configuration.isOn ? 10 : -10)
@@ -234,6 +261,7 @@ struct CustomToggleStyle: ToggleStyle {
         }
     }
 }
+
 // MARK: - Audio Status Information View
 struct AudioStatusInfoView: View {
     @ObservedObject var metronome: MetronomeEngine

@@ -123,7 +123,18 @@ struct LibraryView: View {
                         .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 24)
-                                .fill(Color(selectedTab == tab ? Color("AccentColor") : Color("Background2")))
+                                .fill(
+                                    selectedTab == tab ?
+                                    AnyShapeStyle(LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color("AccentColor"),
+                                            Color("AccentColor").opacity(0.8)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )) :
+                                    AnyShapeStyle(Color("Background2"))
+                                )
                         )
                     }
                     .buttonStyle(.plain)
@@ -231,7 +242,7 @@ struct SoundsViewForLibrary: View {
                             .fill(Color("Background2"))
                     )
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 16)
                 .padding(.vertical, 16)
             }
             
@@ -703,7 +714,7 @@ struct SongsTabView: View {
                                 .fill(Color("Background2"))
                         )
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 16)
                     .padding(.vertical, 16)
                 }
                 .background(Color(.systemBackground)) // Added background like setlists view
@@ -1108,10 +1119,10 @@ struct SetlistsTabView: View {
                         .padding(.vertical, 5)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(.systemGray6))
+                                .fill(Color("Background2"))
                         )
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 16)
                     .padding(.vertical, 16)
                 }
                 .background(Color(.systemBackground))
@@ -1462,7 +1473,14 @@ struct FloatingActionButton: View {
             .frame(minHeight: 44)
             .background(
                 RoundedRectangle(cornerRadius: isCollapsed ? 22 : 22)
-                    .fill(Color("AccentColor"))
+                    .fill(LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color("AccentColor"),
+                            Color("AccentColor").opacity(0.8)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
                     .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
             )
         }
