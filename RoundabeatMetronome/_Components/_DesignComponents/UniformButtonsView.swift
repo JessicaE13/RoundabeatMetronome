@@ -24,7 +24,7 @@ struct UniformButton: View {
                     .foregroundColor(.primary.opacity(0.4)) // Gray label
                 Text(value)
                     .font(.system(size: buttonFontSize, weight: .medium))
-                    .foregroundColor(.white) // White value
+                    .foregroundColor(Color("AccentColor")) // White value
             }
             .kerning(1.2)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -114,7 +114,7 @@ struct UniformButtonWithIcon: View {
                     .foregroundColor(.primary.opacity(0.4)) // Gray text
                 Image(systemName: iconName)
                     .font(.system(size: buttonFontSize - 1))
-                    .foregroundColor(.white) // White icon
+                    .foregroundColor(Color("AccentColor")) // White icon
             }
             .kerning(1.2)
             .frame(maxWidth: .infinity, maxHeight: .infinity)

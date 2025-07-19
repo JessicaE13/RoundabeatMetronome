@@ -125,7 +125,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color("Gray1").opacity(0.2))
+                    .fill(Color("Background2").opacity(1.0))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.13),
                             radius: 0.5, x: 0, y: 0)
             }
@@ -187,7 +187,7 @@ struct CircularBeatIndicator: View {
                     
                 // Play button background circle fill
                     Circle()
-                        .fill(Color("Gray1").opacity(0.3))
+                        .fill(Color("Background2").opacity(1.0))
                         .frame(width: buttonSize, height: buttonSize)
                         .shadow(color: Color.black.opacity(0.4),
                                 radius: 2, x: 0, y: 1)
