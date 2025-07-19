@@ -1099,7 +1099,9 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
+
     private func generateSample(for soundType: SyntheticSound, frequency: Float, envelope: Float, progress: Float) -> Float {
+        // Use the stored clickPhase for consistency
         let fundamental = sin(clickPhase) * envelope
         
         switch soundType {
@@ -1173,26 +1175,9 @@ class MetronomeEngine: ObservableObject {
         print("🐛 Debug mode: \(debugMode ? "ON" : "OFF")")
     }
     
-    // MARK: - Sound Preview Methods
-    
-    func playSoundPreview(_ soundType: SyntheticSound? = nil) {
-        let previewSoundType = soundType ?? selectedSoundType
-        
-        cleanupPreviewEngine()
-        
-        DispatchQueue.main.async {
-            if #available(iOS 10.0, *) {
-                let impact = UIImpactFeedbackGenerator(style: .light)
-                impact.prepare()
-                impact.impactOccurred()
-            }
-        }
-        
-        if debugMode {
-            print("🔊 Sound preview: \(previewSoundType.rawValue)")
-        }
-    }
-    
+    // Add this updated method to your MetronomeEngine class
+    // Replace the existing playSoundPreviewAdvanced method with this one:
+
     func playSoundPreviewAdvanced(_ soundType: SyntheticSound? = nil) {
         let previewSoundType = soundType ?? selectedSoundType
         
@@ -1224,8 +1209,8 @@ class MetronomeEngine: ObservableObject {
                 
                 engine.connect(playerNode, to: engine.outputNode, format: format)
                 
-                // Generate preview buffer with improved parameters
-                let previewDuration: Double = 0.25 // Longer duration for better audibility
+                // Generate preview buffer using EXACT same parameters as metronome
+                let previewDuration: Double = 0.25
                 let frameCount = UInt32(format.sampleRate * previewDuration)
                 
                 guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
@@ -1240,45 +1225,63 @@ class MetronomeEngine: ObservableObject {
                 buffer.frameLength = frameCount
                 let channelData = buffer.floatChannelData![0]
                 
-                // Generate sound data based on type
+                // Use EXACT same audio generation logic as the metronome
+                let clickDurationSamples = Int(self.clickDuration * format.sampleRate)
+                var localClickPhase: Float = 0.0
+                var snapPlaybackPosition: Double = 0.0
+                var isPlayingSnap = false
+                let newBeatNumber = 1 // For preview, treat as first beat for accent testing
+                
+                // Start snap playback if snap sound is selected (matching metronome logic)
                 if previewSoundType == .snap {
-                    // Use snap waveform with proper sample rate handling
-                    let sampleRateRatio = self.snapOriginalSampleRate / format.sampleRate
+                    snapPlaybackPosition = 0.0
+                    isPlayingSnap = true
+                }
+                
+                for frameIndex in 0..<Int(frameCount) {
+                    var sample: Float = 0.0
                     
-                    for i in 0..<Int(frameCount) {
-                        let adjustedPosition = Double(i) * sampleRateRatio
-                        let index = Int(adjustedPosition)
-                        
-                        if index < self.snapWaveform.count {
-                            channelData[i] = self.snapWaveform[index] * 0.8 // Higher volume for preview
-                        } else {
-                            channelData[i] = 0.0
+                    // Generate audio using EXACT same logic as renderAudio method
+                    if previewSoundType == .snap {
+                        if isPlayingSnap && snapPlaybackPosition < Double(self.snapWaveform.count) {
+                            let baseSampleRateRatio = self.snapOriginalSampleRate / format.sampleRate
+                            let pitchShiftRatio: Double = (self.accentFirstBeat && newBeatNumber == 1) ? 1.15 : 1.0
+                            let adjustedRatio = baseSampleRateRatio * pitchShiftRatio
+                            let adjustedPosition = snapPlaybackPosition * adjustedRatio
+                            let index = Int(adjustedPosition)
+                            
+                            if index < self.snapWaveform.count {
+                                let baseAmplitude: Float = 0.8
+                                let accentMultiplier: Float = (self.accentFirstBeat && newBeatNumber == 1) ? 1.1 : 1.0
+                                sample = self.snapWaveform[index] * baseAmplitude * accentMultiplier
+                            }
+                            
+                            snapPlaybackPosition += 1.0
+                            
+                            if adjustedPosition >= Double(self.snapWaveform.count - 1) {
+                                isPlayingSnap = false
+                            }
+                        }
+                    } else {
+                        // For synthetic sounds, generate the entire click duration
+                        if frameIndex < clickDurationSamples {
+                            let clickProgress = Float(frameIndex) / Float(clickDurationSamples)
+                            
+                            // Use EXACT same helper methods as metronome
+                            let envelope = self.generateEnvelope(for: previewSoundType, progress: clickProgress)
+                            let frequency = self.generateFrequency(for: previewSoundType,
+                                                                  isAccent: self.accentFirstBeat && newBeatNumber == 1,
+                                                                  progress: clickProgress)
+                            sample = self.generatePreviewSample(for: previewSoundType,
+                                                               frequency: frequency,
+                                                               envelope: envelope,
+                                                               progress: clickProgress,
+                                                               phase: &localClickPhase,
+                                                               sampleRate: Float(format.sampleRate))
                         }
                     }
-                } else {
-                    // Generate synthetic sounds with improved parameters
-                    var phase: Float = 0.0
-                    let sampleRate = Float(format.sampleRate)
-                    let clickDuration = 0.15 // Longer click duration
-                    let clickDurationSamples = Int(clickDuration * Double(sampleRate))
                     
-                    for frame in 0..<Int(frameCount) {
-                        var sample: Float = 0.0
-                        
-                        // Generate sound for the initial portion
-                        if frame < clickDurationSamples {
-                            let progress = Float(frame) / Float(clickDurationSamples)
-                            
-                            // Generate envelope and frequency based on sound type
-                            let envelope = self.generatePreviewEnvelope(for: previewSoundType, progress: progress)
-                            let frequency = self.generatePreviewFrequency(for: previewSoundType, progress: progress)
-                            
-                            // Generate the sample
-                            sample = self.generatePreviewSample(for: previewSoundType, frequency: frequency, envelope: envelope, progress: progress, phase: &phase, sampleRate: sampleRate)
-                        }
-                        
-                        channelData[frame] = sample * 0.7 // Adjust volume for preview
-                    }
+                    channelData[frameIndex] = sample
                 }
                 
                 // Start engine and schedule buffer
@@ -1310,6 +1313,34 @@ class MetronomeEngine: ObservableObject {
             }
         }
     }
+
+    // Add this new method for preview sample generation that properly handles phase:
+    private func generatePreviewSample(for soundType: SyntheticSound, frequency: Float, envelope: Float, progress: Float, phase: inout Float, sampleRate: Float) -> Float {
+        // Update phase for this sample
+        phase += 2.0 * Float.pi * frequency / sampleRate
+        if phase >= 2.0 * Float.pi {
+            phase -= 2.0 * Float.pi
+        }
+        
+        let fundamental = sin(phase) * envelope
+        
+        switch soundType {
+        case .click, .beep, .blip:
+            return fundamental
+            
+        case .snap:
+            // For snap, we use the waveform data, but this shouldn't be called for snap
+            let primary = sin(phase) * envelope
+            let harmonic = sin(phase * 2.5) * 0.4 * envelope
+            let highHarmonic = sin(phase * 6.0 + 0.01) * 0.2 * envelope
+            let fingerRes = sin(phase * 0.3 - 0.02) * 0.5 * envelope
+            let crackIntensity = progress < 0.03 ? (1.0 - progress * 33.0) : 0.0
+            let crack = Float.random(in: -0.2...0.2) * envelope * crackIntensity * 0.3
+            let crackle = progress < 0.05 ? Float.random(in: -1...1) * envelope * 0.6 : 0.0
+            return primary + harmonic + highHarmonic + fingerRes + crack + crackle
+        }
+    }
+
 
     // MARK: - Preview-specific sound generation methods
 
@@ -1354,39 +1385,7 @@ class MetronomeEngine: ObservableObject {
         }
     }
 
-    private func generatePreviewSample(for soundType: SyntheticSound, frequency: Float, envelope: Float, progress: Float, phase: inout Float, sampleRate: Float) -> Float {
-        // Update phase
-        phase += 2.0 * Float.pi * frequency / sampleRate
-        if phase >= 2.0 * Float.pi {
-            phase -= 2.0 * Float.pi
-        }
-        
-        let fundamental = sin(phase) * envelope
-        
-        switch soundType {
-        case .click:
-            // Add some harmonics for richer sound
-            let harmonic2 = sin(phase * 2.0) * envelope * 0.3
-            let harmonic3 = sin(phase * 3.0) * envelope * 0.1
-            return fundamental + harmonic2 + harmonic3
-            
-        case .beep:
-            // Clean sine wave with slight harmonic
-            let harmonic = sin(phase * 2.0) * envelope * 0.2
-            return fundamental + harmonic
-            
-        case .blip:
-            // Multiple harmonics for digital sound
-            let harmonic2 = sin(phase * 2.0) * envelope * 0.4
-            let harmonic3 = sin(phase * 4.0) * envelope * 0.2
-            let harmonic4 = sin(phase * 8.0) * envelope * 0.1
-            return fundamental + harmonic2 + harmonic3 + harmonic4
-            
-        case .snap:
-            // This won't be used since snap uses the waveform
-            return fundamental
-        }
-    }
+
     
     private func cleanupPreviewEngine() {
         previewPlayerNode?.stop()
