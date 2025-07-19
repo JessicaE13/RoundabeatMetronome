@@ -91,12 +91,63 @@ struct BeatArc: View {
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(shouldShowNormalActive ? 0.1 : 0.3), radius: 12, x: 0, y: 0)
             }
             
+            // Replace the "Normal active state" section in BeatArc with this enhanced version:
+
             // Normal active state (only for first beat when emphasizeFirstBeatOnly is true, or all beats when false)
             if shouldShowNormalActive {
-                // Inner light core - brightest white
+                // Base gradient fill with gray shadows - simulates natural lighting on a raised surface
                 arcPath
-                    .strokedPath(StrokeStyle(lineWidth: lineWidth * 0.98, lineCap: .round))
-                    .fill(Color.white)
+                    .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.white, location: 0.0),                                    // Bright center
+                                .init(color: Color.white.opacity(0.95), location: 0.15),                    // Near-white
+                                .init(color: Color.white.opacity(0.8), location: 0.3),                      // Light area
+                                .init(color: Color(white: 0.85).opacity(0.9), location: 0.5),               // Light gray transition
+                                .init(color: Color(white: 0.7).opacity(0.8), location: 0.7),                // Medium gray
+                                .init(color: Color(white: 0.55).opacity(0.7), location: 0.85),              // Darker gray shadow
+                                .init(color: Color(white: 0.4).opacity(0.5), location: 1.0)                 // Dark edge shadow
+                            ]),
+                            center: UnitPoint(x: 0.35, y: 0.25), // Light source from top-left
+                            startRadius: 0,
+                            endRadius: lineWidth * 1.2
+                        )
+                    )
+                
+                // Shadow area on the opposite side from light source
+                arcPath
+                    .strokedPath(StrokeStyle(lineWidth: lineWidth * 0.8, lineCap: .round))
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.clear, location: 0.0),
+                                .init(color: Color(white: 0.3).opacity(0.2), location: 0.4),
+                                .init(color: Color(white: 0.2).opacity(0.4), location: 0.7),
+                                .init(color: Color(white: 0.1).opacity(0.3), location: 1.0)
+                            ]),
+                            center: UnitPoint(x: 0.7, y: 0.8), // Shadow area bottom-right
+                            startRadius: 0,
+                            endRadius: lineWidth * 0.6
+                        )
+                    )
+                
+                // Inner bright core - the "hot spot" of the light
+                arcPath
+                    .strokedPath(StrokeStyle(lineWidth: lineWidth * 0.5, lineCap: .round))
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Color.white, location: 0.0),
+                                .init(color: Color.white.opacity(0.95), location: 0.3),
+                                .init(color: Color(white: 0.9).opacity(0.8), location: 0.7),
+                                .init(color: Color(white: 0.8).opacity(0.6), location: 1.0)
+                            ]),
+                            center: UnitPoint(x: 0.3, y: 0.2), // Bright spot offset toward light
+                            startRadius: 0,
+                            endRadius: lineWidth * 0.25
+                        )
+                    )
                 
                 // Medium glow layer that bleeds over the outline
                 arcPath
@@ -125,7 +176,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color("Background2").opacity(1.0))
+                    .fill(Color("Background2").opacity(0.7))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.13),
                             radius: 0.5, x: 0, y: 0)
             }
