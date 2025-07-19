@@ -61,15 +61,15 @@ struct TempoMarkingView: View {
     // Device-responsive font sizes
     private var smallFontSize: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 13 :
-                   screenWidth <= 834 ? 14 :
-                   screenWidth <= 1024 ? 15 :
-                   16
-        } else {
-            return screenWidth <= 320 ? 10 :
-                   screenWidth <= 375 ? 11 :
-                   screenWidth <= 393 ? 12 :
+            return screenWidth <= 768 ? 10 :
+                   screenWidth <= 834 ? 11 :
+                   screenWidth <= 1024 ? 12 :
                    13
+        } else {
+            return screenWidth <= 320 ? 8 :
+                   screenWidth <= 375 ? 9 :
+                   screenWidth <= 393 ? 10 :
+                   11
         }
     }
     
@@ -99,10 +99,10 @@ struct TempoMarkingView: View {
             .frame(maxHeight: .infinity) // Content fills available space
         
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(isSelected ? Color.clear : Color.clear)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.primary.opacity(isSelected ? 0.3 : 0), lineWidth: 1)
                     )
             )
@@ -144,15 +144,15 @@ struct TempoScrollView: View {
     // Device-responsive height
     private var tempoMarkingHeight: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 45 :
-                   screenWidth <= 834 ? 50 :
-                   screenWidth <= 1024 ? 55 :
-                   60
+            return screenWidth <= 768 ? 40 :
+                   screenWidth <= 834 ? 45 :
+                   screenWidth <= 1024 ? 50 :
+                   55
         } else {
-            return screenWidth <= 320 ? 32 :
-                   screenWidth <= 375 ? 36 :
-                   screenWidth <= 393 ? 40 :
-                   42
+            return screenWidth <= 320 ? 28 :
+                   screenWidth <= 375 ? 32 :
+                   screenWidth <= 393 ? 36 :
+                   38
         }
     }
     

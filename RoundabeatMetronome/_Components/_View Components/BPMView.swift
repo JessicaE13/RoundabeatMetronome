@@ -77,7 +77,7 @@ struct BPMView: View {
                     ))
                     .foregroundStyle(Color("Gray1"))
                     .kerning(1.2)
-                    .offset(y: isIPad ? 4 : -8)
+                    .offset(y: isIPad ? 4 : -24)
             }
             .frame(maxWidth: .infinity, maxHeight: bpmViewHeight, alignment: .center)
             .offset(y: isIPad ? -10 : 6)
@@ -102,14 +102,14 @@ struct BPMView: View {
         // Simplified font size calculation based on display width
         if isIPad {
             return screenWidth <= 768 ? 100 :
-                   screenWidth <= 834 ? 120 :
-                   screenWidth <= 1024 ? 130 :
-                   150
+                   screenWidth <= 834 ? 110 :
+                   screenWidth <= 1024 ? 120 :
+                   140
         } else {
-            return screenWidth <= 320 ? 65 :
-                   screenWidth <= 375 ? 75 :
-                   screenWidth <= 393 ? 90 :
-                   95
+            return screenWidth <= 320 ? 60 :
+                   screenWidth <= 375 ? 65 :
+                   screenWidth <= 393 ? 70 :
+                   75
         }
     }
     

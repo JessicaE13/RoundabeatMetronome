@@ -46,45 +46,48 @@ struct UniformButton: View {
     
     private var buttonFontSize: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 16 :
-            screenWidth <= 834 ? 18 :
-            screenWidth <= 1024 ? 20 :
-            22
+            return screenWidth <= 768 ? 14 :
+            screenWidth <= 834 ? 16 :
+            screenWidth <= 1024 ? 18 :
+            20
         } else {
-            return screenWidth <= 320 ? 10 :
-            screenWidth <= 375 ? 11 :
-            screenWidth <= 393 ? 12 :
-            14
+            return screenWidth <= 320 ? 9 :
+            screenWidth <= 375 ? 10 :
+            screenWidth <= 393 ? 11 :
+            13
         }
     }
+
     
     private var uniformButtonWidth: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 130 :
-            screenWidth <= 834 ? 140 :
-            screenWidth <= 1024 ? 150 :
-            160
+            return screenWidth <= 768 ? 120 :
+            screenWidth <= 834 ? 130 :
+            screenWidth <= 1024 ? 140 :
+            150
         } else {
-            return screenWidth <= 320 ? 90 :
-            screenWidth <= 375 ? 95 :
-            screenWidth <= 393 ? 100 :
-            105
+            return screenWidth <= 320 ? 80 :
+            screenWidth <= 375 ? 85 :
+            screenWidth <= 393 ? 90 :
+            95
         }
     }
+
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 50 :
-            screenWidth <= 834 ? 54 :
-            screenWidth <= 1024 ? 58 :
-            62
+            return screenWidth <= 768 ? 46 :
+            screenWidth <= 834 ? 50 :
+            screenWidth <= 1024 ? 54 :
+            58
         } else {
-            return screenWidth <= 320 ? 36 :
-            screenWidth <= 375 ? 38 :
-            screenWidth <= 393 ? 42 :
-            46
+            return screenWidth <= 320 ? 34 :
+            screenWidth <= 375 ? 36 :
+            screenWidth <= 393 ? 40 :
+            44
         }
     }
+
 }
 
 // MARK: - Uniform Button with Icon Component
@@ -134,45 +137,48 @@ struct UniformButtonWithIcon: View {
     
     private var buttonFontSize: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 16 :
-            screenWidth <= 834 ? 18 :
-            screenWidth <= 1024 ? 20 :
-            22
+            return screenWidth <= 768 ? 14 :
+            screenWidth <= 834 ? 16 :
+            screenWidth <= 1024 ? 18 :
+            20
         } else {
-            return screenWidth <= 320 ? 10 :
-            screenWidth <= 375 ? 11 :
-            screenWidth <= 393 ? 12 :
-            14
+            return screenWidth <= 320 ? 9 :
+            screenWidth <= 375 ? 10 :
+            screenWidth <= 393 ? 11 :
+            13
         }
     }
+
     
     private var uniformButtonWidth: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 130 :
-            screenWidth <= 834 ? 140 :
-            screenWidth <= 1024 ? 150 :
-            160
+            return screenWidth <= 768 ? 120 :
+            screenWidth <= 834 ? 130 :
+            screenWidth <= 1024 ? 140 :
+            150
         } else {
-            return screenWidth <= 320 ? 90 :
-            screenWidth <= 375 ? 95 :
-            screenWidth <= 393 ? 100 :
-            105
+            return screenWidth <= 320 ? 80 :
+            screenWidth <= 375 ? 85 :
+            screenWidth <= 393 ? 90 :
+            95
         }
     }
+
     
     private var uniformButtonHeight: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 50 :
-            screenWidth <= 834 ? 54 :
-            screenWidth <= 1024 ? 58 :
-            62
+            return screenWidth <= 768 ? 46 :
+            screenWidth <= 834 ? 50 :
+            screenWidth <= 1024 ? 54 :
+            58
         } else {
-            return screenWidth <= 320 ? 36 :
-            screenWidth <= 375 ? 38 :
-            screenWidth <= 393 ? 42 :
-            46
+            return screenWidth <= 320 ? 34 :
+            screenWidth <= 375 ? 36 :
+            screenWidth <= 393 ? 40 :
+            44
         }
     }
+
 }
 
 // MARK: - Uniform Buttons View
@@ -239,31 +245,32 @@ struct UniformButtonsView: View {
     
     private var buttonSpacing: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 16 :
-            screenWidth <= 834 ? 20 :
-            screenWidth <= 1024 ? 24 :
-            28
+            return screenWidth <= 768 ? 14 :
+            screenWidth <= 834 ? 16 :
+            screenWidth <= 1024 ? 20 :
+            24
         } else {
-            return screenWidth <= 320 ? 6 :
-            screenWidth <= 375 ? 8 :
-            screenWidth <= 393 ? 10 :
-            12
+            return screenWidth <= 320 ? 4 :
+            screenWidth <= 375 ? 6 :
+            screenWidth <= 393 ? 8 :
+            10
         }
     }
-    
+
     private var uniformButtonHeight: CGFloat {
         if isIPad {
-            return screenWidth <= 768 ? 50 :
-            screenWidth <= 834 ? 54 :
-            screenWidth <= 1024 ? 58 :
-            62
+            return screenWidth <= 768 ? 46 :
+            screenWidth <= 834 ? 50 :
+            screenWidth <= 1024 ? 54 :
+            58
         } else {
-            return screenWidth <= 320 ? 38 :
-            screenWidth <= 375 ? 42 :
-            screenWidth <= 393 ? 46 :
-            48
+            return screenWidth <= 320 ? 34 :
+            screenWidth <= 375 ? 36 :
+            screenWidth <= 393 ? 40 :
+            44
         }
     }
+
 }
 
 #Preview {
