@@ -310,33 +310,35 @@ struct TempoDialView: View {
     
     @State private var currentRotation: Double = 0
     @State private var isDragging: Bool = false
-    @State private var dragStartRotation: Double = 0
+    @State private var lastDragAngle: Double = 0
+    @State private var accumulatedRotation: Double = 0
     
-    private let grayCircleMultiplier: CGFloat = 0.64    //Gray circle size multiplier - increased to make dial bigger
+    private let grayCircleMultiplier: CGFloat = 0.64
     private let petalCount = 30
     
-    // BPM to rotation mapping - bottom center (180°) for both min/max, 5 rotations total
+    // BPM to rotation mapping - 5 complete rotations from 40 to 400 BPM
+    // 40 BPM starts at bottom (180°), 400 BPM ends after 5 full rotations (180° + 1800° = 1980°)
     private func bpmToRotation(_ bpm: Int) -> Double {
-        // Map BPM range (40-400) to 5 full rotations (1800°)
-        // Both min and max BPM at bottom center (180°)
         let bpmRange = 400.0 - 40.0  // 360 BPM range
         let totalRotations = 5.0     // 5 full rotations
         let rotationRange = totalRotations * 360.0  // 1800° total range
         let bpmProgress = (Double(bpm) - 40.0) / bpmRange
-        return 180.0 + (bpmProgress * rotationRange) // Start at 180° (bottom center)
+        return 180.0 + (bpmProgress * rotationRange) // 180° to 1980°
     }
     
     private func rotationToBpm(_ rotation: Double) -> Int {
-        // Convert rotation back to BPM
         let totalRotations = 5.0
         let rotationRange = totalRotations * 360.0
         let bpmRange = 400.0 - 40.0
-        let rotationProgress = (rotation - 180.0) / rotationRange
+        
+        // Normalize rotation to 180-1980° range
+        let adjustedRotation = max(180.0, min(1980.0, rotation))
+        let rotationProgress = (adjustedRotation - 180.0) / rotationRange
         let bpm = 40.0 + (rotationProgress * bpmRange)
         return max(40, min(400, Int(bpm.rounded())))
     }
     
-    // Calculate angle from center to a point
+    // Calculate angle from center to a point (0-360°)
     private func angleFromCenter(_ location: CGPoint, center: CGPoint) -> Double {
         let vector = CGPoint(x: location.x - center.x, y: location.y - center.y)
         let angle = atan2(vector.y, vector.x) * 180 / .pi
@@ -344,15 +346,23 @@ struct TempoDialView: View {
         return angle < 0 ? angle + 360 : angle
     }
     
-    // Dial size variables - make circle fit exactly in the square outline
+    // Calculate the shortest angular distance between two angles
+    private func angleDifference(from: Double, to: Double) -> Double {
+        let diff = to - from
+        if diff > 180 {
+            return diff - 360
+        } else if diff < -180 {
+            return diff + 360
+        }
+        return diff
+    }
+    
+    // Dial size variables
     private var totalDialDiameter: CGFloat { size * grayCircleMultiplier }
     private var donutHoleDiameter: CGFloat { size * 0.45 }
     private var dialWidth: CGFloat { (totalDialDiameter - donutHoleDiameter) / 2 }
     
-    // Calculate the size of the inner circle that touches the parabola tops
     private var innerCircleDiameter: CGFloat {
-        // The parabolas are positioned at -(totalDialDiameter/2 - totalDialDiameter * 0.05)
-        // So the inner circle should have a diameter that reaches to their tops
         let parabolaOffset = totalDialDiameter/2 - totalDialDiameter * 0.05
         let parabolaHeight = totalDialDiameter * 0.06
         return (parabolaOffset - parabolaHeight/2) * 2
@@ -360,14 +370,12 @@ struct TempoDialView: View {
     
     var body: some View {
         ZStack {
-            // Thick gray outer border - NEW ADDITION
-
-            
+            // Thick gray outer border
             Circle()
                 .fill(Color.black.opacity(0.4))
                 .frame(width: totalDialDiameter + 20, height: totalDialDiameter + 20)
                 .blur(radius: 2.6)
-                .offset(x: 1, y: 2) // Shadow offset opposite to light source (top-left)
+                .offset(x: 1, y: 2)
             
             Circle()
                 .strokeBorder(
@@ -380,68 +388,21 @@ struct TempoDialView: View {
                 )
                 .frame(width: totalDialDiameter + 20, height: totalDialDiameter + 20)
             
-            // Outer elevated outline with shadows - using Background3 as base
-//            Circle()
-//                .stroke(Color("Background3"), lineWidth: 3.0)
-//                .frame(width: totalDialDiameter + 6, height: totalDialDiameter + 6)
-//                .shadow(color: Color("Background3").opacity(0.8),
-//                        radius: 1, x: 0, y: 1)
-//                .shadow(color: Color.black.opacity(0.3),
-//                        radius: 3, x: 0, y: 2)
-//                .shadow(color: Color.black.opacity(0.15),
-//                        radius: 6, x: 0, y: 4)
-            
-            // Inner elevated highlight - lighter version of Background3
-//            Circle()
-//                .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
-//                .frame(width: totalDialDiameter + 3, height: totalDialDiameter + 3)
-//                .shadow(color: Color.white.opacity(0.2),
-//                        radius: 1, x: 0, y: -1)
-            
-            // Parabola background with concave depth effect - LIGHTER COLORS
-            ZStack {
-                // Outer shadow for the recessed edge effect
-        
-                
-                // uncode this
-                // Main background circle with radial gradient for concave effect - using Background3 as base
-//                Circle()
-//                    .fill(
-//                        RadialGradient(
-//                            gradient: Gradient(stops: [
-//
-//                                .init(color: Color("Gray2").opacity(0.8), location: 0.0),
-//                                .init(color: Color("Gray2").opacity(0.7), location: 0.3),
-//                                .init(color: Color("Gray2").opacity(0.5), location: 0.6),
-//
-//                                .init(color: Color("Gray2").opacity(0.3), location: 0.85),
-//                                .init(color: Color("Gray2").opacity(0.4), location: 1.0)
-//                            ]),
-//                            center: UnitPoint(x: 0.35, y: 0.35),
-//                            startRadius: 0,
-//                            endRadius: totalDialDiameter * 0.6
-//                        )
-//                    )
-//                    .frame(width: totalDialDiameter + 5, height: totalDialDiameter + 5)
-                
- 
-            }
-            
-            // Rotating parabola outline - positioned inside the dial circle (on top of dark gray circle)
+            // Rotating parabola outline
             ZStack {
                 ForEach(0..<petalCount, id: \.self) { i in
                     let baseRotation = Double(i) * (360.0 / Double(petalCount))
                     let totalRotation = baseRotation + currentRotation
                     
                     EllipsePetalWithDynamicShadow(rotationAngle: totalRotation)
-                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.025) // INCREASED SIZE: width from 0.05 to 0.08, height from 0.03 to 0.05
-                        .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.02)) // Position inside the dial circle
+                        .frame(width: totalDialDiameter * 0.08, height: totalDialDiameter * 0.025)
+                        .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.02))
                         .rotationEffect(.degrees(baseRotation))
                 }
             }
-            .rotationEffect(.degrees(currentRotation)) // Rotate with the dial
+            .rotationEffect(.degrees(currentRotation))
             
-            // Inner dark/black circle that touches the tops of the parabolas - slightly lighter
+            // Inner dark/black circle
             Circle()
                 .fill(Color(red: 15/255, green: 15/255, blue: 17/255))
                 .frame(width: innerCircleDiameter + 8, height: innerCircleDiameter + 8)
@@ -449,13 +410,12 @@ struct TempoDialView: View {
             Circle()
                 .stroke(Color("AccentColor").opacity(0.9), lineWidth: 2)
                 .frame(width: innerCircleDiameter + 12, height: innerCircleDiameter + 12)
-
             
-            // Capsule indicator - positioned closer to outer edge and made as a rounded line
+            // Capsule indicator
             Capsule()
-                .fill(Color.white) // Same white color as the play button
-                .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.08) // Width: extra skinny, Height: longer line
-                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.14)) // Position near outer edge
+                .fill(Color.white)
+                .frame(width: totalDialDiameter * 0.01, height: totalDialDiameter * 0.08)
+                .offset(y: -(totalDialDiameter/2 - totalDialDiameter * 0.14))
                 .rotationEffect(.degrees(currentRotation))
                 .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
         }
@@ -466,35 +426,47 @@ struct TempoDialView: View {
                     let currentAngle = angleFromCenter(value.location, center: center)
                     
                     if !isDragging {
-                        // Start of drag - store the initial rotation offset
+                        // Start of drag
                         isDragging = true
-                        dragStartRotation = currentRotation - currentAngle
-                    }
-                    
-                    // Calculate new rotation by adding the drag angle to the start offset
-                    let newRotation = dragStartRotation + currentAngle
-                    
-                    // Clamp rotation to valid range and check BPM limits
-                    let clampedRotation = max(180.0, min(1980.0, newRotation))
-                    let newBPM = rotationToBpm(clampedRotation)
-                    
-                    // Only update if within BPM limits
-                    if newBPM >= 40 && newBPM <= 400 {
-                        currentRotation = clampedRotation
-                        onTempoChange(newBPM)
+                        lastDragAngle = currentAngle
+                        accumulatedRotation = currentRotation
+                    } else {
+                        // Calculate the angular change
+                        let angleDelta = angleDifference(from: lastDragAngle, to: currentAngle)
+                        
+                        // Update accumulated rotation
+                        accumulatedRotation += angleDelta
+                        
+                        // Apply constraints: 180° to 1980° (bottom position + 5 full rotations)
+                        let clampedRotation = max(180.0, min(1980.0, accumulatedRotation))
+                        
+                        // Convert to BPM and check if it's valid
+                        let newBPM = rotationToBpm(clampedRotation)
+                        
+                        if newBPM >= 40 && newBPM <= 400 {
+                            currentRotation = clampedRotation
+                            accumulatedRotation = clampedRotation
+                            onTempoChange(newBPM)
+                        }
+                        
+                        lastDragAngle = currentAngle
                     }
                 }
                 .onEnded { _ in
                     isDragging = false
-                    dragStartRotation = 0
+                    lastDragAngle = 0
                 }
         )
         .onAppear {
-            currentRotation = bpmToRotation(bpm)
+            let initialRotation = bpmToRotation(bpm)
+            currentRotation = initialRotation
+            accumulatedRotation = initialRotation
         }
         .onChange(of: bpm) { _, newBPM in
             if !isDragging {
-                currentRotation = bpmToRotation(newBPM)
+                let newRotation = bpmToRotation(newBPM)
+                currentRotation = newRotation
+                accumulatedRotation = newRotation
             }
         }
     }
