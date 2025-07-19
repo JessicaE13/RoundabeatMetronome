@@ -695,32 +695,33 @@ class MetronomeEngine: ObservableObject {
                 let channelData = buffer.floatChannelData![0]
 
                 let attackTime: Float = 0.001
-                let decayTime = Float(tickDuration) - attackTime
+             //   let decayTime = Float(tickDuration) - attackTime
                 let sampleRate = Float(format.sampleRate)
 
+                
+    //
+                
+                
+                
                 for frame in 0..<Int(frameCount) {
                     let time = Float(frame) / sampleRate
-                    let envelope: Float
-
-                    if time < attackTime {
-                        envelope = time / attackTime
-                    } else {
-                        let decayProgress = (time - attackTime) / decayTime
-                        envelope = exp(-decayProgress * 30.0)
-                    }
-
-                    // Create a short triangle wave (gives a sharper, slightly woody character)
-                    let triangleFreq: Float = 1300.0
-                    let phase = triangleFreq * time
-                    let triangle = 2.0 * abs(2.0 * (phase - floor(phase + 0.5))) - 1.0
-
-                    // Add gently filtered noise — less random, more natural
-                    let noiseSeed = sin(2 * .pi * 7500.0 * time) // smoother than random
-                    let softNoise = noiseSeed * (Float.random(in: 0.8...1.0)) * 0.7
-
-                    let sample = (triangle * 0.6 + softNoise * 0.4) * envelope * 0.5
+                    
+                    // Very short, sharp envelope
+                    let envelope = exp(-time * 100.0) // Rapid decay
+                    
+                    // High frequency sine wave for sharp click
+                    let clickFreq: Float = 2000.0
+                    let phase = 2.0 * .pi * clickFreq * time
+                    let click = sin(phase)
+                    
+                    let sample = click * envelope * 0.12
                     channelData[frame] = sample
                 }
+                
+                
+                
+                
+                //
 
 
                 try engine.start()
