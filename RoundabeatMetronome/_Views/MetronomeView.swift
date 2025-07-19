@@ -29,9 +29,9 @@ struct MetronomeView: View {
                    20
         } else {
             return screenWidth <= 320 ? 10 :
-                   screenWidth <= 375 ? 11 :
-                   screenWidth <= 393 ? 12 :
-                   13
+                   screenWidth <= 375 ? 10 :
+                   screenWidth <= 393 ? 11 :
+                   11
         }
     }
     
@@ -67,7 +67,7 @@ struct MetronomeView: View {
             // BPM Label
             Text("BEATS PER MINUTE (BPM)")
                 .font(.system(size: buttonFontSize, weight: .medium))
-                .foregroundStyle(Color("Gray1"))
+                .foregroundStyle(Color("Gray1").opacity(0.8))
                 .kerning(1.2)
                 .padding(.top, 16)
             

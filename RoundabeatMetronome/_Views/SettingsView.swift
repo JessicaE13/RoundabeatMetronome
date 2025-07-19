@@ -222,8 +222,8 @@ struct CustomToggleStyle: ToggleStyle {
                     configuration.isOn ?
                     AnyShapeStyle(LinearGradient(
                         gradient: Gradient(colors: [
-                            Color("AccentColor"),
-                            Color("AccentColor").opacity(0.7)
+                            Color("AccentColor").opacity(0.5),
+                            Color("AccentColor").opacity(0.4)
                         ]),
                         startPoint: .top,
                         endPoint: .bottomLeading

@@ -36,7 +36,7 @@ struct LogoView: View {
     // Adaptive logo color based on color scheme
     private var logoColor: Color {
         colorScheme == .dark
-            ? Color("Gray1")   // Dark gray for dark mode (subtle)
+        ? Color("AccentColor").opacity(0.1)   // Dark gray for dark mode (subtle)
             : Color(red: 210/255, green: 211/255, blue: 211/255) // Light gray for light mode (subtle)
     }
     

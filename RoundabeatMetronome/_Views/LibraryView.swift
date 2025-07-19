@@ -127,8 +127,8 @@ struct LibraryView: View {
                                     selectedTab == tab ?
                                     AnyShapeStyle(LinearGradient(
                                         gradient: Gradient(colors: [
-                                            Color("AccentColor"),
-                                            Color("AccentColor").opacity(0.9)
+                                            Color("AccentColor").opacity(0.8),
+                                            Color("AccentColor").opacity(0.75)
                                         ]),
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
@@ -1466,8 +1466,8 @@ struct FloatingActionButton: View {
                 RoundedRectangle(cornerRadius: isCollapsed ? 22 : 22)
                     .fill(LinearGradient(
                         gradient: Gradient(colors: [
-                            Color("AccentColor"),
-                            Color("AccentColor").opacity(0.9)
+                            Color("AccentColor").opacity(0.8),
+                            Color("AccentColor").opacity(0.75)
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
