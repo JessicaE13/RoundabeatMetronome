@@ -242,12 +242,12 @@ struct SetlistDetailView: View {
     }
 }
 
-// MARK: - Setlist Song Row View (Updated)
+// MARK: - Setlist Song Row View (Updated to hide Apply and Remove buttons on default screen)
 struct SetlistSongRowView: View {
     let song: Song
     let position: Int
     let isCurrentlyApplied: Bool
-    let isEditMode: Bool // New parameter
+    let isEditMode: Bool
     let onTap: () -> Void
     let onRemove: () -> Void
     
@@ -303,46 +303,10 @@ struct SetlistSongRowView: View {
             
             Spacer()
             
-            // Apply button (only show if not currently applied and not in edit mode)
-            if !isCurrentlyApplied && !isEditMode {
-                Button(action: onTap) {
-                    Text("Apply")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.accentColor)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.accentColor.opacity(0.1))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
-                                )
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-            
-            // Remove button (only show when not in edit mode, since edit mode has swipe-to-delete)
-            if !isEditMode {
-                Button(action: onRemove) {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.red)
-                }
-                .buttonStyle(.plain)
-            }
+            // REMOVED: Apply button and Remove button are no longer shown on default screen
+            // They are only available through edit mode (swipe to delete, etc.)
         }
         .padding(.vertical, 4)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isCurrentlyApplied ? Color.white.opacity(0.05) : Color.clear)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isCurrentlyApplied ? Color.white.opacity(0.2) : Color.clear, lineWidth: 1)
-        )
         .contentShape(Rectangle()) // Makes the entire row tappable
         .onTapGesture {
             // Only allow tap when not in edit mode
