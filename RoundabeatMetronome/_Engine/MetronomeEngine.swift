@@ -642,7 +642,7 @@ class MetronomeEngine: ObservableObject {
         }
     }
 
-    
+
     // MARK: - NEW: Fixed Dial Tick Sound Methods with Overlap Support
 
     // Add these properties to store multiple dial tick engines
@@ -659,24 +659,20 @@ class MetronomeEngine: ObservableObject {
     }
 
     private func playDialTick() {
-        // Clean up old engines if we have too many
         cleanupOldDialTickEngines()
-        
+
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            
+
             // Create a new engine for this tick (don't reuse)
             let engine = AVAudioEngine()
             let playerNode = AVAudioPlayerNode()
-            
-            // Store references in arrays for concurrent playback
             self.dialTickEngines.append(engine)
             self.dialTickPlayers.append(playerNode)
-            
+
             do {
-                // Setup engine
                 engine.attach(playerNode)
-                
+
                 let outputFormat = engine.outputNode.outputFormat(forBus: 0)
                 let format = AVAudioFormat(
                     commonFormat: .pcmFormatFloat32,
@@ -684,93 +680,75 @@ class MetronomeEngine: ObservableObject {
                     channels: 1,
                     interleaved: false
                 )!
-                
+
                 engine.connect(playerNode, to: engine.outputNode, format: format)
-                
-                // Generate much shorter, softer tick buffer
-                let tickDuration: Double = 0.015 // Short duration (15ms)
+
+                let tickDuration: Double = 0.012 // ~12ms
                 let frameCount = UInt32(format.sampleRate * tickDuration)
-                
+
                 guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
-                    // Remove from arrays if buffer creation fails
-                    if let engineIndex = self.dialTickEngines.firstIndex(of: engine) {
-                        self.dialTickEngines.remove(at: engineIndex)
-                    }
-                    if let playerIndex = self.dialTickPlayers.firstIndex(of: playerNode) {
-                        self.dialTickPlayers.remove(at: playerIndex)
-                    }
+                    self.removeEngineAndPlayer(engine: engine, player: playerNode)
                     return
                 }
-                
+
                 buffer.frameLength = frameCount
                 let channelData = buffer.floatChannelData![0]
-                
-                // Envelope timing - gentler attack and faster decay
-                let attackTime = 0.003 // Slightly longer attack for softer onset (3ms)
-                let decayTime = tickDuration - attackTime
+
+                let attackTime: Float = 0.001
+                let decayTime = Float(tickDuration) - attackTime
                 let sampleRate = Float(format.sampleRate)
 
                 for frame in 0..<Int(frameCount) {
                     let time = Float(frame) / sampleRate
                     let envelope: Float
 
-                    if time < Float(attackTime) {
-                        // Softer attack curve using sine-based envelope
-                        let attackProgress = time / Float(attackTime)
-                        envelope = sin(attackProgress * Float.pi * 0.5)
+                    if time < attackTime {
+                        envelope = time / attackTime
                     } else {
-                        let decayProgress = (time - Float(attackTime)) / Float(decayTime)
-                        envelope = exp(-decayProgress * 18.0)
+                        let decayProgress = (time - attackTime) / decayTime
+                        envelope = exp(-decayProgress * 30.0)
                     }
 
-                    // Generate lower-pitched, less sharp sound
-                    let lowFreqSine = sin(2.0 * Float.pi * 200.0 * time) // Low sine wave at 200Hz
-                    let filteredNoise = Float.random(in: -1...1) * 0.3 // Reduced noise amplitude
-                    
-                    // Combine with emphasis on the sine wave for softer character
-                    let sample = (lowFreqSine * 0.7 + filteredNoise * 0.3) * envelope * 0.25
-                    
+                    // Create a short triangle wave (gives a sharper, slightly woody character)
+                    let triangleFreq: Float = 1300.0
+                    let phase = triangleFreq * time
+                    let triangle = 2.0 * abs(2.0 * (phase - floor(phase + 0.5))) - 1.0
+
+                    // Add gently filtered noise — less random, more natural
+                    let noiseSeed = sin(2 * .pi * 7500.0 * time) // smoother than random
+                    let softNoise = noiseSeed * (Float.random(in: 0.8...1.0)) * 0.7
+
+                    let sample = (triangle * 0.6 + softNoise * 0.4) * envelope * 0.5
                     channelData[frame] = sample
                 }
-                
-                // Start engine and schedule buffer
+
+
                 try engine.start()
-                
-                // Store weak references for cleanup
+
                 weak var weakEngine = engine
                 weak var weakPlayer = playerNode
-                
+
                 playerNode.scheduleBuffer(buffer) {
-                    // Clean up this specific engine after playback
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                         self.cleanupSpecificDialTickEngine(engine: weakEngine, player: weakPlayer)
                     }
                 }
-                
+
                 playerNode.play()
-                
+
             } catch {
                 print("❌ Failed to play dial tick: \(error)")
-                // Remove failed engine from arrays since they're now accessible here
-                if let engineIndex = self.dialTickEngines.firstIndex(of: engine) {
-                    self.dialTickEngines.remove(at: engineIndex)
-                }
-                if let playerIndex = self.dialTickPlayers.firstIndex(of: playerNode) {
-                    self.dialTickPlayers.remove(at: playerIndex)
-                }
+                self.removeEngineAndPlayer(engine: engine, player: playerNode)
             }
         }
     }
 
     private func cleanupOldDialTickEngines() {
-        // If we have too many concurrent engines, clean up the oldest ones
         while dialTickEngines.count >= maxConcurrentDialTicks {
             if let oldestEngine = dialTickEngines.first,
                let oldestPlayer = dialTickPlayers.first {
-                
                 oldestPlayer.stop()
                 oldestEngine.stop()
-                
                 dialTickEngines.removeFirst()
                 dialTickPlayers.removeFirst()
             }
@@ -779,11 +757,10 @@ class MetronomeEngine: ObservableObject {
 
     private func cleanupSpecificDialTickEngine(engine: AVAudioEngine?, player: AVAudioPlayerNode?) {
         guard let engine = engine, let player = player else { return }
-        
+
         player.stop()
         engine.stop()
-        
-        // Remove from arrays
+
         if let engineIndex = dialTickEngines.firstIndex(of: engine) {
             dialTickEngines.remove(at: engineIndex)
         }
@@ -793,21 +770,30 @@ class MetronomeEngine: ObservableObject {
     }
 
     private func cleanupDialTickEngine() {
-        // Clean up all dial tick engines
         for player in dialTickPlayers {
             player.stop()
         }
         for engine in dialTickEngines {
             engine.stop()
         }
-        
+
         dialTickEngines.removeAll()
         dialTickPlayers.removeAll()
-        
-        // Keep the old properties nil for compatibility
+
         dialTickPlayerNode = nil
         dialTickEngine = nil
     }
+
+    // Helper to avoid duplication on cleanup
+    private func removeEngineAndPlayer(engine: AVAudioEngine, player: AVAudioPlayerNode) {
+        if let engineIndex = dialTickEngines.firstIndex(of: engine) {
+            dialTickEngines.remove(at: engineIndex)
+        }
+        if let playerIndex = dialTickPlayers.firstIndex(of: player) {
+            dialTickPlayers.remove(at: playerIndex)
+        }
+    }
+
     
     
     // MARK: - Alternative Haptic Feedback Method
