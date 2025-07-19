@@ -212,8 +212,8 @@ struct CircularBeatIndicator: View {
                         .stroke(
                             LinearGradient(
                                 gradient: Gradient(stops: [
-                                    .init(color: Color("Gray1").opacity(0.1), location: 0.0),
-                                    .init(color: Color("Gray1").opacity(0.12), location: 1.0)
+                                    .init(color: Color("Gray1").opacity(0.5), location: 0.0),
+                                    .init(color: Color("Gray1").opacity(0.42), location: 1.0)
                                 ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -396,7 +396,7 @@ struct TempoDialView: View {
                 .frame(width: innerCircleDiameter + 8, height: innerCircleDiameter + 8)
 
             Circle()
-                .stroke(Color("AccentColor").opacity(0.6), lineWidth: 2)
+                .stroke(Color("AccentColor").opacity(0.9), lineWidth: 2)
                 .frame(width: innerCircleDiameter + 12, height: innerCircleDiameter + 12)
 
             

@@ -1180,7 +1180,7 @@ class MetronomeEngine: ObservableObject {
         print("🐛 Debug mode: \(debugMode ? "ON" : "OFF")")
     }
     
-    // MARK: - Improved Preview Sound System
+    // MARK: - Fixed Preview Sound System
     
     func playSoundPreviewAdvanced(_ soundType: SyntheticSound? = nil) {
         let previewSoundType = soundType ?? selectedSoundType
@@ -1205,8 +1205,12 @@ class MetronomeEngine: ObservableObject {
             let engine = self.getAvailablePreviewEngine()
             let playerNode = AVAudioPlayerNode()
             
+            // Store reference to manually attached nodes for safe cleanup
+            var manuallyAttachedNodes: [AVAudioNode] = []
+            
             // Setup engine
             engine.attach(playerNode)
+            manuallyAttachedNodes.append(playerNode)
             
             // Use a more conservative format that's likely to be supported
             let outputFormat = engine.outputNode.outputFormat(forBus: 0)
@@ -1220,7 +1224,7 @@ class MetronomeEngine: ObservableObject {
             
             guard let audioFormat = format else {
                 print("❌ Failed to create audio format")
-                self.returnEngineToPool(engine)
+                self.returnEngineToPool(engine, manualNodes: manuallyAttachedNodes)
                 return
             }
             
@@ -1232,7 +1236,7 @@ class MetronomeEngine: ObservableObject {
             
             guard let buffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCount) else {
                 print("❌ Failed to create audio buffer")
-                self.returnEngineToPool(engine)
+                self.returnEngineToPool(engine, manualNodes: manuallyAttachedNodes)
                 return
             }
             
@@ -1266,7 +1270,7 @@ class MetronomeEngine: ObservableObject {
             
             guard engineStarted else {
                 print("❌ Failed to start engine after 3 attempts")
-                self.returnEngineToPool(engine)
+                self.returnEngineToPool(engine, manualNodes: manuallyAttachedNodes)
                 return
             }
             
@@ -1274,7 +1278,7 @@ class MetronomeEngine: ObservableObject {
             playerNode.scheduleBuffer(buffer) { [weak self, weak engine] in
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     if let engine = engine {
-                        self?.returnEngineToPool(engine)
+                        self?.returnEngineToPool(engine, manualNodes: manuallyAttachedNodes)
                     }
                 }
             }
@@ -1288,12 +1292,22 @@ class MetronomeEngine: ObservableObject {
     
     private func getAvailablePreviewEngine() -> AVAudioEngine {
         // Clean up any stopped engines first
-        previewEnginePool.removeAll { !$0.isRunning && $0.attachedNodes.isEmpty }
+        previewEnginePool.removeAll { engine in
+            !engine.isRunning && engine.attachedNodes.allSatisfy { node in
+                // Only consider manually attached nodes (not internal ones)
+                node is AVAudioPlayerNode || node is AVAudioMixerNode || node is AVAudioSourceNode
+            }
+        }
         
         // Try to find an available engine
         for engine in previewEnginePool {
-            if !engine.isRunning && engine.attachedNodes.isEmpty {
-                return engine
+            if !engine.isRunning {
+                let hasManualNodes = engine.attachedNodes.contains { node in
+                    node is AVAudioPlayerNode || node is AVAudioMixerNode || node is AVAudioSourceNode
+                }
+                if !hasManualNodes {
+                    return engine
+                }
             }
         }
         
@@ -1308,22 +1322,25 @@ class MetronomeEngine: ObservableObject {
         return previewEnginePool.first ?? AVAudioEngine()
     }
     
-    private func returnEngineToPool(_ engine: AVAudioEngine) {
+    private func returnEngineToPool(_ engine: AVAudioEngine, manualNodes: [AVAudioNode] = []) {
         previewQueue.async {
-            // Stop the engine and detach all nodes
+            // Stop the engine first
             if engine.isRunning {
                 engine.stop()
             }
             
-            // Clean up all attached nodes
-            for node in engine.attachedNodes {
+            // Only detach nodes that we manually attached
+            for node in manualNodes {
                 if let playerNode = node as? AVAudioPlayerNode {
                     playerNode.stop()
                 }
-                engine.detach(node)
+                // Check if node is still attached before trying to detach
+                if engine.attachedNodes.contains(node) {
+                    engine.detach(node)
+                }
             }
             
-            // Reset to clean state
+            // Reset to clean state - this is safer than manually detaching all nodes
             engine.reset()
         }
     }
@@ -1427,17 +1444,20 @@ class MetronomeEngine: ObservableObject {
             self.previewPlayerNode = nil
             self.previewEngine = nil
             
-            // Clean up engine pool
+            // Clean up engine pool safely
             for engine in self.previewEnginePool {
                 if engine.isRunning {
                     engine.stop()
                 }
+                
+                // Stop all player nodes first
                 for node in engine.attachedNodes {
                     if let playerNode = node as? AVAudioPlayerNode {
                         playerNode.stop()
                     }
-                    engine.detach(node)
                 }
+                
+                // Use reset instead of manually detaching nodes
                 engine.reset()
             }
             
