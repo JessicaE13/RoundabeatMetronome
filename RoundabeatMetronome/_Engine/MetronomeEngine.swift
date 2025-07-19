@@ -641,8 +641,16 @@ class MetronomeEngine: ObservableObject {
             print("🔊 Sound updated to: \(soundType.rawValue)")
         }
     }
+
     
-    // MARK: - NEW: Dial Tick Sound Methods
+    // MARK: - NEW: Dial Tick Sound Methods with Overlap Support
+
+    // Add these properties to store multiple dial tick engines
+    private var dialTickEngines: [AVAudioEngine] = []
+    private var dialTickPlayers: [AVAudioPlayerNode] = []
+    private let maxConcurrentDialTicks = 3 // Limit concurrent sounds to avoid audio overload
+
+    
     
     func handleBPMChangeForDialTick(newBPM: Int) {
         // Only play tick if BPM actually changed (not on initial load)
@@ -651,22 +659,22 @@ class MetronomeEngine: ObservableObject {
         }
         lastDialBPM = newBPM
     }
-    
+
     private func playDialTick() {
-        // Clean up any existing dial tick engine
-        cleanupDialTickEngine()
+        // Clean up old engines if we have too many
+        cleanupOldDialTickEngines()
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             
             do {
-                // Create a dedicated engine for dial ticks (separate from metronome and preview)
+                // Create a new engine for this tick (don't reuse)
                 let engine = AVAudioEngine()
                 let playerNode = AVAudioPlayerNode()
                 
-                // Store references
-                self.dialTickEngine = engine
-                self.dialTickPlayerNode = playerNode
+                // Store references in arrays for concurrent playback
+                self.dialTickEngines.append(engine)
+                self.dialTickPlayers.append(playerNode)
                 
                 // Setup engine
                 engine.attach(playerNode)
@@ -681,20 +689,26 @@ class MetronomeEngine: ObservableObject {
                 
                 engine.connect(playerNode, to: engine.outputNode, format: format)
                 
-                // Generate very short tick buffer
-                let tickDuration: Double = 0.04 // Very short - 50ms
+                // Generate much shorter, softer tick buffer
+                let tickDuration: Double = 0.015 // Short duration (15ms)
                 let frameCount = UInt32(format.sampleRate * tickDuration)
                 
                 guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+                    // Remove from arrays if buffer creation fails
+                    if let engineIndex = self.dialTickEngines.firstIndex(of: engine) {
+                        self.dialTickEngines.remove(at: engineIndex)
+                    }
+                    if let playerIndex = self.dialTickPlayers.firstIndex(of: playerNode) {
+                        self.dialTickPlayers.remove(at: playerIndex)
+                    }
                     return
                 }
                 
                 buffer.frameLength = frameCount
                 let channelData = buffer.floatChannelData![0]
                 
-              
-                // Envelope timing
-                let attackTime = 0.002 // 2ms
+                // Envelope timing - gentler attack and faster decay
+                let attackTime = 0.003 // Slightly longer attack for softer onset (3ms)
                 let decayTime = tickDuration - attackTime
                 let sampleRate = Float(format.sampleRate)
 
@@ -703,23 +717,35 @@ class MetronomeEngine: ObservableObject {
                     let envelope: Float
 
                     if time < Float(attackTime) {
-                        envelope = time / Float(attackTime)
+                        // Softer attack curve using sine-based envelope
+                        let attackProgress = time / Float(attackTime)
+                        envelope = sin(attackProgress * Float.pi * 0.5)
                     } else {
                         let decayProgress = (time - Float(attackTime)) / Float(decayTime)
-                        envelope = exp(-decayProgress * 12.0)
+                        envelope = exp(-decayProgress * 18.0)
                     }
 
-                    // White noise (for woody tick-like percussive sound)
-                    let noise = (Float.random(in: -1...1))
-                    channelData[frame] = noise * envelope * 0.4
+                    // Generate lower-pitched, less sharp sound
+                    let lowFreqSine = sin(2.0 * Float.pi * 200.0 * time) // Low sine wave at 200Hz
+                    let filteredNoise = Float.random(in: -1...1) * 0.3 // Reduced noise amplitude
+                    
+                    // Combine with emphasis on the sine wave for softer character
+                    let sample = (lowFreqSine * 0.7 + filteredNoise * 0.3) * envelope * 0.25
+                    
+                    channelData[frame] = sample
                 }
                 
                 // Start engine and schedule buffer
                 try engine.start()
                 
+                // Store weak references for cleanup
+                weak var weakEngine = engine
+                weak var weakPlayer = playerNode
+                
                 playerNode.scheduleBuffer(buffer) {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        self.cleanupDialTickEngine()
+                    // Clean up this specific engine after playback
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        self.cleanupSpecificDialTickEngine(engine: weakEngine, player: weakPlayer)
                     }
                 }
                 
@@ -727,14 +753,60 @@ class MetronomeEngine: ObservableObject {
                 
             } catch {
                 print("❌ Failed to play dial tick: \(error)")
-                self.cleanupDialTickEngine()
+                // Remove failed engine from arrays
+                if let engineIndex = self.dialTickEngines.firstIndex(of: engine) {
+                    self.dialTickEngines.remove(at: engineIndex)
+                }
+                if let playerIndex = self.dialTickPlayers.firstIndex(of: playerNode) {
+                    self.dialTickPlayers.remove(at: playerIndex)
+                }
             }
         }
     }
-    
+
+    private func cleanupOldDialTickEngines() {
+        // If we have too many concurrent engines, clean up the oldest ones
+        while dialTickEngines.count >= maxConcurrentDialTicks {
+            if let oldestEngine = dialTickEngines.first,
+               let oldestPlayer = dialTickPlayers.first {
+                
+                oldestPlayer.stop()
+                oldestEngine.stop()
+                
+                dialTickEngines.removeFirst()
+                dialTickPlayers.removeFirst()
+            }
+        }
+    }
+
+    private func cleanupSpecificDialTickEngine(engine: AVAudioEngine?, player: AVAudioPlayerNode?) {
+        guard let engine = engine, let player = player else { return }
+        
+        player.stop()
+        engine.stop()
+        
+        // Remove from arrays
+        if let engineIndex = dialTickEngines.firstIndex(of: engine) {
+            dialTickEngines.remove(at: engineIndex)
+        }
+        if let playerIndex = dialTickPlayers.firstIndex(of: player) {
+            dialTickPlayers.remove(at: playerIndex)
+        }
+    }
+
     private func cleanupDialTickEngine() {
-        dialTickPlayerNode?.stop()
-        dialTickEngine?.stop()
+        // Clean up all dial tick engines
+        for player in dialTickPlayers {
+            player.stop()
+        }
+        for engine in dialTickEngines {
+            engine.stop()
+        }
+        
+        dialTickEngines.removeAll()
+        dialTickPlayers.removeAll()
+        
+        // Keep the old properties nil for compatibility
         dialTickPlayerNode = nil
         dialTickEngine = nil
     }

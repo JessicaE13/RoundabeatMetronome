@@ -10,7 +10,7 @@ struct BeatArc: View {
     let emphasizeFirstBeatOnly: Bool
     
     // FIXED: Consistent stroke width calculations
-    private var arcWidth: CGFloat { size * 0.06 }
+    private var arcWidth: CGFloat { size * 0.08 }
     private var activeArcWidth: CGFloat { arcWidth * 1.0 } // Consistent with frame calculation
     
     // The maximum stroke width (for active state) determines the frame size needed
@@ -35,7 +35,7 @@ struct BeatArc: View {
     }
     
     private var arcAngles: (start: Double, end: Double) {
-        let fixedGapDegrees: Double = 12.0 // 16 degrees gap between segments
+        let fixedGapDegrees: Double = 14.0 // 16 degrees gap between segments
         let gapAsFraction: CGFloat = CGFloat(fixedGapDegrees / 360.0)
         let totalGapFraction = gapAsFraction * CGFloat(totalBeats)
         let availableSpaceForSegments = 1.0 - totalGapFraction
@@ -125,7 +125,7 @@ struct BeatArc: View {
                 // Inactive state - subtle fill
                 arcPath
                     .strokedPath(StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(Color("Gray1").opacity(0.1))
+                    .fill(Color("Gray1").opacity(0.2))
                     .shadow(color: Color(red: 101/255, green: 101/255, blue: 102/255).opacity(0.13),
                             radius: 0.5, x: 0, y: 0)
             }
