@@ -110,12 +110,15 @@ struct ContentView: View {
     @StateObject private var songManager = SongManager()
     @StateObject private var setlistManager = SetlistManager()
     @State private var selectedTab: NavigationTab = .metronome
+    @State private var showBanner = false
+    @State private var bannerIsVisible = false
+
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 BackgroundView()
-          
+                
                 VStack(spacing: 0) {
                     Group {
                         switch selectedTab {
@@ -132,38 +135,48 @@ struct ContentView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                       
+     
                     BottomNavigationBar(selectedTab: $selectedTab)
                     
+                    // 👇 Banner appears here, above nav bar, after 2 seconds
                     BannerContentView(navigationTitle: "Banner")
+                        .frame(height: bannerIsVisible ? nil : 0)
+                        .clipped()
+                        .opacity(bannerIsVisible ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.4), value: bannerIsVisible)
+
                     
+     
                 }
                 
                 FlashOverlay(isFlashing: metronome.isFlashing)
             }
             .preferredColorScheme(.dark)
-        }
-        .onDisappear {
-            metronome.isPlaying = false
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    bannerIsVisible = true
+                }
+
+                if songManager.songs.isEmpty {
+                    songManager.addSampleSongs()
+                }
+                if setlistManager.setlists.isEmpty {
+                    setlistManager.createSampleSetlists(with: songManager)
+                }
+            }
+
+            .onDisappear {
+                metronome.isPlaying = false
+            }
         }
         .ignoresSafeArea(.container, edges: .bottom)
-        .onAppear {
-            // Initialize sample data if none exists
-            if songManager.songs.isEmpty {
-                songManager.addSampleSongs()
-            }
-            if setlistManager.setlists.isEmpty {
-                setlistManager.createSampleSetlists(with: songManager)
-            }
-        }
-
-        .onChange(of: metronome.bpm) { oldValue, newValue in
+        .onChange(of: metronome.bpm) { _, _ in
             songManager.validateSelectedSongAgainstMetronome(metronome: metronome)
         }
-        .onChange(of: metronome.beatsPerMeasure) { oldValue, newValue in
+        .onChange(of: metronome.beatsPerMeasure) { _, _ in
             songManager.validateSelectedSongAgainstMetronome(metronome: metronome)
         }
-        .onChange(of: metronome.beatUnit) { oldValue, newValue in
+        .onChange(of: metronome.beatUnit) { _, _ in
             songManager.validateSelectedSongAgainstMetronome(metronome: metronome)
         }
     }

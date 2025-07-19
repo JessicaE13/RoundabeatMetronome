@@ -6,7 +6,7 @@ struct BannerContentView: View {
 
   // [START add_banner_to_view]
   var body: some View {
-    Spacer()
+   // Spacer()
     // Request an anchored adaptive banner with a width of 375.
     let adSize = currentOrientationAnchoredAdaptiveBanner(width: 375)
     BannerViewContainer(adSize)
