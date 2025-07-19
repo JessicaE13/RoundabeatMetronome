@@ -149,7 +149,7 @@ struct CircularBeatIndicator: View {
     @State private var totalRotation: Double = 0
     
     // NEW: Arc circle size multiplier - adjust this to make the arc circle smaller/larger
-    private let arcCircleMultiplier: CGFloat = 0.92  // Experiment with values like 0.8, 0.9, 1.1, etc.
+    private let arcCircleMultiplier: CGFloat = 0.96  // Experiment with values like 0.8, 0.9, 1.1, etc.
     
     // FIXED: Consistent frame size calculations with new multiplier
     private var arcWidth: CGFloat { size * 0.1 }

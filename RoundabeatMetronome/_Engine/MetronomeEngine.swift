@@ -37,6 +37,7 @@ private enum UserDefaultsKeys {
     static let pauseOnInterruption = "metronome_pauseOnInterruption"
     static let pauseOnRouteChange = "metronome_pauseOnRouteChange"
     static let keepScreenAwake = "metronome_keepScreenAwake"
+    static let dialTickEnabled = "metronome_dialTickEnabled" // NEW
 }
 
 // MARK: - Metronome Engine with Enhanced Audio Session Handling
@@ -77,6 +78,10 @@ class MetronomeEngine: ObservableObject {
             saveSettings()
             updateScreenIdleTimer()
         }
+    }
+    
+    @AppStorage("metronome_dialTickEnabled") var dialTickEnabled: Bool = true {
+        didSet { saveSettings() }
     }
     
     @Published var isFlashing: Bool = false
@@ -451,6 +456,9 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
+    
+    
+    
     @objc private func handleAudioSessionRouteChange(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
@@ -547,6 +555,7 @@ class MetronomeEngine: ObservableObject {
     
     // MARK: - Persistent Storage Methods
     
+    // Update the loadSettings method to include the new setting (around line 320)
     private func loadSettings() {
         let defaults = UserDefaults.standard
         
@@ -585,6 +594,11 @@ class MetronomeEngine: ObservableObject {
             clickVolume = defaults.double(forKey: UserDefaultsKeys.clickVolume)
         }
         
+        // Load dial tick setting (defaults to true if not set)
+        if defaults.object(forKey: UserDefaultsKeys.dialTickEnabled) != nil {
+            dialTickEnabled = defaults.bool(forKey: UserDefaultsKeys.dialTickEnabled)
+        }
+        
         if debugMode {
             print("✅ Settings loaded from UserDefaults")
             print("   BPM: \(bpm)")
@@ -599,8 +613,10 @@ class MetronomeEngine: ObservableObject {
             print("   Pause on Interruption: \(pauseOnInterruption)")
             print("   Pause on Route Change: \(pauseOnRouteChange)")
             print("   Keep Screen Awake: \(keepScreenAwake)")
+            print("   Dial Tick Enabled: \(dialTickEnabled)") // NEW
         }
     }
+
     
     private func saveSettings() {
         let defaults = UserDefaults.standard
@@ -651,8 +667,8 @@ class MetronomeEngine: ObservableObject {
     private let maxConcurrentDialTicks = 3 // Limit concurrent sounds to avoid audio overload
 
     func handleBPMChangeForDialTick(newBPM: Int) {
-        // Only play tick if BPM actually changed (not on initial load)
-        if lastDialBPM != 0 && lastDialBPM != newBPM {
+        // Only play tick if setting is enabled, BPM actually changed (not on initial load)
+        if dialTickEnabled && lastDialBPM != 0 && lastDialBPM != newBPM {
             playDialTick()
         }
         lastDialBPM = newBPM
@@ -694,7 +710,7 @@ class MetronomeEngine: ObservableObject {
                 buffer.frameLength = frameCount
                 let channelData = buffer.floatChannelData![0]
 
-                let attackTime: Float = 0.001
+           //     let attackTime: Float = 0.001
              //   let decayTime = Float(tickDuration) - attackTime
                 let sampleRate = Float(format.sampleRate)
 

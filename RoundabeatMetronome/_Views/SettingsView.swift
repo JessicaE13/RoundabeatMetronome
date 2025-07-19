@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var currentColorScheme
     @State private var showingInfoPopup: InfoType? = nil
     
+    // Update the InfoType enum to include dial tick (around line 10)
     enum InfoType: String, CaseIterable {
         case accentFirstBeat = "accent_first_beat"
         case emphasizeFirstBeat = "emphasize_first_beat"
@@ -13,6 +14,7 @@ struct SettingsView: View {
         case backgroundAudio = "background_audio"
         case pauseOnInterruption = "pause_on_interruption"
         case stayAwake = "stay_awake"
+        case dialTick = "dial_tick" // NEW
         
         var title: String {
             switch self {
@@ -22,6 +24,7 @@ struct SettingsView: View {
             case .backgroundAudio: return "Background Audio"
             case .pauseOnInterruption: return "Pause on Interruption"
             case .stayAwake: return "Stay Awake"
+            case .dialTick: return "Dial Tick Sound" // NEW
             }
         }
         
@@ -39,10 +42,13 @@ struct SettingsView: View {
                 return "Stops for calls and other audio interruptions"
             case .stayAwake:
                 return "Prevents screen from sleeping while playing"
+            case .dialTick: // NEW
+                return "Plays a subtle tick sound when adjusting the BPM dial"
             }
         }
     }
-    
+
+    // Update the body of SettingsView to include the dial tick setting (around line 50)
     var body: some View {
         NavigationView {
             Form {
@@ -51,7 +57,14 @@ struct SettingsView: View {
                     SettingsToggleRow(
                         title: "Higher Pitch on First Beat",
                         isOn: $metronome.accentFirstBeat,
-                        infoType: .accentFirstBeat, // Set to nil to remove info button
+                        infoType: .accentFirstBeat,
+                        showingInfoPopup: $showingInfoPopup
+                    )
+                    
+                    SettingsToggleRow(
+                        title: "Dial Tick Sound",
+                        isOn: $metronome.dialTickEnabled,
+                        infoType: .dialTick,
                         showingInfoPopup: $showingInfoPopup
                     )
                 }
@@ -61,13 +74,13 @@ struct SettingsView: View {
                     SettingsToggleRow(
                         title: "Flash Screen on First Beat",
                         isOn: $metronome.fullScreenFlashOnFirstBeat,
-                        infoType: .fullScreenFlash, // Set to nil to remove info button
+                        infoType: .fullScreenFlash,
                         showingInfoPopup: $showingInfoPopup
                     )
                     SettingsToggleRow(
                     title: "Outline Offbeats",
                     isOn: $metronome.emphasizeFirstBeatOnly,
-                    infoType: .emphasizeFirstBeat, // Set to nil to remove info button
+                    infoType: .emphasizeFirstBeat,
                     showingInfoPopup: $showingInfoPopup
                 )
                 }
@@ -77,21 +90,21 @@ struct SettingsView: View {
                     SettingsToggleRow(
                         title: "Background Audio",
                         isOn: $metronome.backgroundAudioEnabled,
-                        infoType: .backgroundAudio, // Set to nil to remove info button
+                        infoType: .backgroundAudio,
                         showingInfoPopup: $showingInfoPopup
                     )
                     
                     SettingsToggleRow(
                         title: "Pause on Interruption",
                         isOn: $metronome.pauseOnInterruption,
-                        infoType: .pauseOnInterruption, // Set to nil to remove info button
+                        infoType: .pauseOnInterruption,
                         showingInfoPopup: $showingInfoPopup
                     )
                     
                     SettingsToggleRow(
                         title: "Stay Awake",
                         isOn: $metronome.keepScreenAwake,
-                        infoType: .stayAwake, // Set to nil to remove info button
+                        infoType: .stayAwake,
                         showingInfoPopup: $showingInfoPopup
                     )
                 }
@@ -151,7 +164,6 @@ struct SettingsView: View {
         }
         .preferredColorScheme(.dark)
         .navigationViewStyle(StackNavigationViewStyle())
-
     }
 }
 
