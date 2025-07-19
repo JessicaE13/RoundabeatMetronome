@@ -37,10 +37,10 @@ private enum UserDefaultsKeys {
     static let pauseOnInterruption = "metronome_pauseOnInterruption"
     static let pauseOnRouteChange = "metronome_pauseOnRouteChange"
     static let keepScreenAwake = "metronome_keepScreenAwake"
-    static let dialTickEnabled = "metronome_dialTickEnabled" // NEW
+    static let dialTickEnabled = "metronome_dialTickEnabled"
 }
 
-// MARK: - Metronome Engine with Enhanced Audio Session Handling
+// MARK: - Metronome Engine with Enhanced Audio-Visual Synchronization
 
 class MetronomeEngine: ObservableObject {
     
@@ -57,7 +57,7 @@ class MetronomeEngine: ObservableObject {
         didSet { saveSettings() }
     }
     
-    // MARK: - New Audio Session Settings
+    // MARK: - Audio Session Settings
     @AppStorage("metronome_backgroundAudioEnabled") var backgroundAudioEnabled: Bool = true {
         didSet {
             saveSettings()
@@ -88,8 +88,14 @@ class MetronomeEngine: ObservableObject {
     
     @Published var bpm: Int = 120 {
         didSet {
+            let oldBPM = oldValue
             updateTiming()
             saveSettings()
+            
+            // Handle dial tick for BPM changes
+            if oldBPM != 0 && oldBPM != bpm {
+                handleBPMChangeForDialTick(newBPM: bpm)
+            }
         }
     }
     
@@ -111,7 +117,6 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // ADD: Support for beat unit (denominator)
     @Published var beatUnit: Int = 4 {
         didSet {
             resetBeatPosition()
@@ -119,7 +124,7 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // ADD: Computed property for beatsPerMeasure (alias for beatsPerBar for compatibility)
+    // Computed property for beatsPerMeasure (alias for beatsPerBar for compatibility)
     var beatsPerMeasure: Int {
         get { beatsPerBar }
         set { beatsPerBar = newValue }
@@ -128,7 +133,6 @@ class MetronomeEngine: ObservableObject {
     @Published var currentBeat: Int = 0
     @Published var beatIndicator: Bool = false
     
-    // ADD: Sound selection property
     @Published var selectedSoundType: SyntheticSound = .click {
         didSet { saveSettings() }
     }
@@ -160,7 +164,6 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // ADD: Subdivision multiplier support
     var subdivisionMultiplier: Double {
         get { Double(subdivision) }
         set {
@@ -179,8 +182,9 @@ class MetronomeEngine: ObservableObject {
     
     // MARK: - Dial Tick Audio Components
     private var lastDialBPM: Int = 0
-    private var dialTickEngine: AVAudioEngine?
-    private var dialTickPlayerNode: AVAudioPlayerNode?
+    private var dialTickEngines: [AVAudioEngine] = []
+    private var dialTickPlayers: [AVAudioPlayerNode] = []
+    private let maxConcurrentDialTicks = 3
     
     private var lastPreviewTime: Date = .distantPast
     private let minimumPreviewInterval: TimeInterval = 0.3
@@ -204,8 +208,49 @@ class MetronomeEngine: ObservableObject {
     private var isPlayingSnap: Bool = false
     private let snapOriginalSampleRate: Double = 24000.0
     
+    // MARK: - Enhanced Synchronization Properties
+    private let beatStateQueue = DispatchQueue(label: "com.metronome.beatstate", qos: .userInteractive)
+    private var _pendingBeatNumber: Int = 0
+    private var _pendingBeatTrigger: Bool = false
+    private var beatUpdateScheduled = false
+    
     // Debug flag
     private var debugMode = false
+    
+    // MARK: - Snap Waveform Data
+    private lazy var snapWaveform: [Float] = {
+        return generateSnapWaveform()
+    }()
+    
+    private func generateSnapWaveform() -> [Float] {
+        let sampleRate = 24000.0
+        let duration = 0.15
+        let samples = Int(sampleRate * duration)
+        var waveform: [Float] = []
+        waveform.reserveCapacity(samples)
+        
+        for i in 0..<samples {
+            let t = Double(i) / sampleRate
+            let envelope = exp(-t * 25.0)
+            
+            // Multiple frequency components for realistic snap
+            let freq1 = sin(2.0 * Double.pi * 800.0 * t) * 0.6
+            let freq2 = sin(2.0 * Double.pi * 1600.0 * t) * 0.3
+            let freq3 = sin(2.0 * Double.pi * 3200.0 * t) * 0.15
+            
+            // Generate noise with explicit type
+            let noiseAmplitude: Double = (t < 0.01) ? 1.0 : 0.1
+            let noise = Double.random(in: -0.2...0.2) * noiseAmplitude
+            
+            let combinedFreq = freq1 + freq2 + freq3
+            let sampleValue = (combinedFreq * envelope) + noise
+            let sample = Float(sampleValue)
+            
+            waveform.append(sample)
+        }
+        
+        return waveform
+    }
     
     init() {
         loadSettings()
@@ -224,7 +269,7 @@ class MetronomeEngine: ObservableObject {
     deinit {
         stopMetronome()
         cleanupPreviewEngine()
-        cleanupDialTickEngine() // NEW: Clean up dial tick engine
+        cleanupDialTickEngine()
         removeAudioSessionNotifications()
         removeAppLifecycleNotifications()
         UIApplication.shared.isIdleTimerDisabled = false
@@ -266,7 +311,6 @@ class MetronomeEngine: ObservableObject {
                 try audioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers])
                 try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
             } else {
-                // When background audio is disabled, ensure audio stops in background
                 try audioSession.setCategory(.playback, mode: .default, options: [])
                 if UIApplication.shared.applicationState != .active {
                     try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
@@ -367,7 +411,6 @@ class MetronomeEngine: ObservableObject {
     private func setupAudioSessionNotifications() {
         let notificationCenter = NotificationCenter.default
         
-        // Interruption handling
         notificationCenter.addObserver(
             self,
             selector: #selector(handleAudioSessionInterruption(_:)),
@@ -375,7 +418,6 @@ class MetronomeEngine: ObservableObject {
             object: AVAudioSession.sharedInstance()
         )
         
-        // Route change handling
         notificationCenter.addObserver(
             self,
             selector: #selector(handleAudioSessionRouteChange(_:)),
@@ -383,7 +425,6 @@ class MetronomeEngine: ObservableObject {
             object: AVAudioSession.sharedInstance()
         )
         
-        // Media services reset handling
         notificationCenter.addObserver(
             self,
             selector: #selector(handleMediaServicesReset),
@@ -432,11 +473,9 @@ class MetronomeEngine: ObservableObject {
                 
                 self.audioSessionInterrupted = false
                 
-                // Check if we should resume
                 if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
                     let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
                     if options.contains(.shouldResume) && self.wasPlayingBeforeInterruption && !self.pauseOnInterruption {
-                        // Reactivate audio session and resume
                         do {
                             try AVAudioSession.sharedInstance().setActive(true)
                             self.isPlaying = true
@@ -455,9 +494,6 @@ class MetronomeEngine: ObservableObject {
             }
         }
     }
-    
-    
-    
     
     @objc private func handleAudioSessionRouteChange(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
@@ -482,7 +518,6 @@ class MetronomeEngine: ObservableObject {
                 }
                 self.checkHeadphonesConnected()
                 
-                // Pause if configured to do so and headphones were disconnected
                 if let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
                     let wasUsingHeadphones = previousRoute.outputs.contains { output in
                         [.headphones, .bluetoothA2DP, .bluetoothHFP, .bluetoothLE].contains(output.portType)
@@ -523,15 +558,12 @@ class MetronomeEngine: ObservableObject {
                 print("🔄 Media services reset - reinitializing audio")
             }
             
-            // Stop current playback
             let wasPlaying = self.isPlaying
             self.isPlaying = false
             
-            // Reinitialize audio session and engine
             self.setupAudioSession()
             self.setupAudioEngine()
             
-            // Resume if was playing
             if wasPlaying && !self.pauseOnInterruption {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     self.isPlaying = true
@@ -555,68 +587,46 @@ class MetronomeEngine: ObservableObject {
     
     // MARK: - Persistent Storage Methods
     
-    // Update the loadSettings method to include the new setting (around line 320)
     private func loadSettings() {
         let defaults = UserDefaults.standard
         
-        // Load BPM (with bounds checking)
         let savedBPM = defaults.integer(forKey: UserDefaultsKeys.bpm)
         if savedBPM > 0 {
             bpm = max(40, min(400, savedBPM))
         }
         
-        // Load beats per bar
         let savedBeatsPerBar = defaults.integer(forKey: UserDefaultsKeys.beatsPerBar)
         if savedBeatsPerBar > 0 {
             beatsPerBar = savedBeatsPerBar
         }
         
-        // Load beat unit
         let savedBeatUnit = defaults.integer(forKey: UserDefaultsKeys.beatUnit)
         if savedBeatUnit > 0 {
             beatUnit = savedBeatUnit
         }
         
-        // Load sound type
         if let savedSoundTypeRawValue = defaults.string(forKey: UserDefaultsKeys.selectedSoundType),
            let savedSoundType = SyntheticSound(rawValue: savedSoundTypeRawValue) {
             selectedSoundType = savedSoundType
         }
         
-        // Load subdivision multiplier
         let savedSubdivision = defaults.double(forKey: UserDefaultsKeys.subdivisionMultiplier)
         if savedSubdivision > 0 {
             subdivision = Int(savedSubdivision)
         }
         
-        // Load volume
         if defaults.object(forKey: UserDefaultsKeys.clickVolume) != nil {
             clickVolume = defaults.double(forKey: UserDefaultsKeys.clickVolume)
         }
         
-        // Load dial tick setting (defaults to true if not set)
         if defaults.object(forKey: UserDefaultsKeys.dialTickEnabled) != nil {
             dialTickEnabled = defaults.bool(forKey: UserDefaultsKeys.dialTickEnabled)
         }
         
         if debugMode {
             print("✅ Settings loaded from UserDefaults")
-            print("   BPM: \(bpm)")
-            print("   Time Signature: \(beatsPerBar)/\(beatUnit)")
-            print("   Sound: \(selectedSoundType.rawValue)")
-            print("   Subdivision: \(subdivision)")
-            print("   Accent First Beat: \(accentFirstBeat)")
-            print("   Emphasize First Beat Only: \(emphasizeFirstBeatOnly)")
-            print("   Full Screen Flash: \(fullScreenFlashOnFirstBeat)")
-            print("   Volume: \(clickVolume)")
-            print("   Background Audio: \(backgroundAudioEnabled)")
-            print("   Pause on Interruption: \(pauseOnInterruption)")
-            print("   Pause on Route Change: \(pauseOnRouteChange)")
-            print("   Keep Screen Awake: \(keepScreenAwake)")
-            print("   Dial Tick Enabled: \(dialTickEnabled)") // NEW
         }
     }
-
     
     private func saveSettings() {
         let defaults = UserDefaults.standard
@@ -633,7 +643,8 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // ADD: Method to update time signature
+    // MARK: - Public API Methods
+    
     func updateTimeSignature(numerator: Int, denominator: Int) {
         beatsPerMeasure = numerator
         beatUnit = denominator
@@ -642,7 +653,6 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // ADD: Method to update subdivision
     func updateSubdivision(to multiplier: Double) {
         subdivisionMultiplier = multiplier
         if debugMode {
@@ -650,45 +660,36 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // ADD: Method to update sound type
     func updateSoundType(to soundType: SyntheticSound) {
         selectedSoundType = soundType
         if debugMode {
             print("🔊 Sound updated to: \(soundType.rawValue)")
         }
     }
-
-
-    // MARK: - NEW: Fixed Dial Tick Sound Methods with Overlap Support
-
-    // Add these properties to store multiple dial tick engines
-    private var dialTickEngines: [AVAudioEngine] = []
-    private var dialTickPlayers: [AVAudioPlayerNode] = []
-    private let maxConcurrentDialTicks = 3 // Limit concurrent sounds to avoid audio overload
-
+    
+    // MARK: - Dial Tick Sound Methods
+    
     func handleBPMChangeForDialTick(newBPM: Int) {
-        // Only play tick if setting is enabled, BPM actually changed (not on initial load)
         if dialTickEnabled && lastDialBPM != 0 && lastDialBPM != newBPM {
             playDialTick()
         }
         lastDialBPM = newBPM
     }
-
+    
     private func playDialTick() {
         cleanupOldDialTickEngines()
-
+        
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-
-            // Create a new engine for this tick (don't reuse)
+            
             let engine = AVAudioEngine()
             let playerNode = AVAudioPlayerNode()
             self.dialTickEngines.append(engine)
             self.dialTickPlayers.append(playerNode)
-
+            
             do {
                 engine.attach(playerNode)
-
+                
                 let outputFormat = engine.outputNode.outputFormat(forBus: 0)
                 let format = AVAudioFormat(
                     commonFormat: .pcmFormatFloat32,
@@ -696,70 +697,51 @@ class MetronomeEngine: ObservableObject {
                     channels: 1,
                     interleaved: false
                 )!
-
+                
                 engine.connect(playerNode, to: engine.outputNode, format: format)
-
-                let tickDuration: Double = 0.012 // ~12ms
+                
+                let tickDuration: Double = 0.012
                 let frameCount = UInt32(format.sampleRate * tickDuration)
-
+                
                 guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
                     self.removeEngineAndPlayer(engine: engine, player: playerNode)
                     return
                 }
-
+                
                 buffer.frameLength = frameCount
                 let channelData = buffer.floatChannelData![0]
-
-           //     let attackTime: Float = 0.001
-             //   let decayTime = Float(tickDuration) - attackTime
                 let sampleRate = Float(format.sampleRate)
-
-                
-    //
-                
-                
                 
                 for frame in 0..<Int(frameCount) {
                     let time = Float(frame) / sampleRate
-                    
-                    // Very short, sharp envelope
-                    let envelope = exp(-time * 100.0) // Rapid decay
-                    
-                    // High frequency sine wave for sharp click
+                    let envelope = exp(-time * 100.0)
                     let clickFreq: Float = 2000.0
                     let phase = 2.0 * .pi * clickFreq * time
                     let click = sin(phase)
-                    
                     let sample = click * envelope * 0.12
                     channelData[frame] = sample
                 }
                 
-                
-                
-                
-                //
-
-
                 try engine.start()
-
+                
                 weak var weakEngine = engine
                 weak var weakPlayer = playerNode
-
+                
                 playerNode.scheduleBuffer(buffer) {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                         self.cleanupSpecificDialTickEngine(engine: weakEngine, player: weakPlayer)
                     }
                 }
-
+                
                 playerNode.play()
-
+                
             } catch {
                 print("❌ Failed to play dial tick: \(error)")
                 self.removeEngineAndPlayer(engine: engine, player: playerNode)
             }
         }
     }
-
+    
     private func cleanupOldDialTickEngines() {
         while dialTickEngines.count >= maxConcurrentDialTicks {
             if let oldestEngine = dialTickEngines.first,
@@ -771,13 +753,13 @@ class MetronomeEngine: ObservableObject {
             }
         }
     }
-
+    
     private func cleanupSpecificDialTickEngine(engine: AVAudioEngine?, player: AVAudioPlayerNode?) {
         guard let engine = engine, let player = player else { return }
-
+        
         player.stop()
         engine.stop()
-
+        
         if let engineIndex = dialTickEngines.firstIndex(of: engine) {
             dialTickEngines.remove(at: engineIndex)
         }
@@ -785,7 +767,7 @@ class MetronomeEngine: ObservableObject {
             dialTickPlayers.remove(at: playerIndex)
         }
     }
-
+    
     private func cleanupDialTickEngine() {
         for player in dialTickPlayers {
             player.stop()
@@ -793,15 +775,11 @@ class MetronomeEngine: ObservableObject {
         for engine in dialTickEngines {
             engine.stop()
         }
-
+        
         dialTickEngines.removeAll()
         dialTickPlayers.removeAll()
-
-        dialTickPlayerNode = nil
-        dialTickEngine = nil
     }
-
-    // Helper to avoid duplication on cleanup
+    
     private func removeEngineAndPlayer(engine: AVAudioEngine, player: AVAudioPlayerNode) {
         if let engineIndex = dialTickEngines.firstIndex(of: engine) {
             dialTickEngines.remove(at: engineIndex)
@@ -810,18 +788,16 @@ class MetronomeEngine: ObservableObject {
             dialTickPlayers.remove(at: playerIndex)
         }
     }
-
     
-    
-    // MARK: - Alternative Haptic Feedback Method
     func playDialTickHaptic() {
         DispatchQueue.main.async {
-            // To this (since your deployment target is iOS 13.0 or higher):
             let impact = UIImpactFeedbackGenerator(style: .rigid)
             impact.prepare()
             impact.impactOccurred(intensity: 0.7)
         }
     }
+    
+    // MARK: - Audio Engine Setup
     
     private func setupAudioEngine() {
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
@@ -863,6 +839,8 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
+    // MARK: - Enhanced Start/Stop Methods with Perfect Sync
+    
     private func startMetronome() {
         guard !audioEngine.isRunning else {
             if debugMode {
@@ -870,31 +848,31 @@ class MetronomeEngine: ObservableObject {
             }
             return
         }
-
+        
         do {
-            // Ensure audio session is active
             try AVAudioSession.sharedInstance().setActive(true)
-
+            
             // Reset timing and audio state for immediate first beat
             currentSamplePosition = 0
-            lastBeatSample = -Int64(samplesPerBeat) // Move this back so first beat triggers immediately
-            nextBeatSample = 0 // First beat at sample 0
-            beatCounter = 0 // Will be incremented to 1 on first render
+            lastBeatSample = -Int64(samplesPerBeat)
+            nextBeatSample = 0
+            beatCounter = 0
             clickPhase = 0.0
             snapPlaybackPosition = 0.0
             isPlayingSnap = false
-
-            // DON'T update UI here - let the render callback handle it consistently
-            // This ensures audio and visual are perfectly synchronized
-
-            try audioEngine.start()
-
-            if debugMode {
-                print("🎵 Metronome started at \(bpm) BPM")
-                print("🎵 Engine running: \(audioEngine.isRunning)")
-                print("🎵 First beat will trigger in render callback")
+            
+            // Reset synchronization state
+            beatStateQueue.async { [weak self] in
+                self?._pendingBeatTrigger = false
+                self?.beatUpdateScheduled = false
             }
-
+            
+            try audioEngine.start()
+            
+            if debugMode {
+                print("🎵 Metronome started at \(bpm) BPM with enhanced sync")
+            }
+            
         } catch {
             print("❌ Failed to start audio engine: \(error)")
             DispatchQueue.main.async { [weak self] in
@@ -923,9 +901,9 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // MARK: - Updated Real-Time Audio Render Callback with Flash Trigger
+    // MARK: - Enhanced Audio Render Callback with Perfect Synchronization
+    
     private func renderAudio(frameCount: UInt32, audioBufferList: UnsafeMutablePointer<AudioBufferList>) -> OSStatus {
-        
         let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
         guard let buffer = ablPointer[0].mData?.assumingMemoryBound(to: Float.self) else {
             return kAudioUnitErr_InvalidParameter
@@ -936,6 +914,7 @@ class MetronomeEngine: ObservableObject {
         
         var beatTriggeredInThisCycle = false
         var newBeatNumber = currentBeat
+        var beatTriggerFrame: Int = 0
         
         for frameIndex in 0..<frames {
             let currentSample = currentSamplePosition + Int64(frameIndex)
@@ -948,8 +927,8 @@ class MetronomeEngine: ObservableObject {
                 beatCounter += 1
                 
                 newBeatNumber = ((beatCounter - 1) % beatsPerBar) + 1
-                
                 beatTriggeredInThisCycle = true
+                beatTriggerFrame = frameIndex
                 clickPhase = 0.0
                 
                 // Start snap playback if snap sound is selected
@@ -963,54 +942,38 @@ class MetronomeEngine: ObservableObject {
             
             // Generate audio based on selected sound type
             if selectedSoundType == .snap {
-                // Use pre-generated snap waveform with sample rate conversion
                 if isPlayingSnap && snapPlaybackPosition < Double(snapWaveform.count) {
-                    // Calculate the correct index with sample rate conversion and optional pitch shift
                     let baseSampleRateRatio = snapOriginalSampleRate / sampleRate
-                    
-                    // Apply pitch shift for accent (higher pitch = faster playback)
                     let pitchShiftRatio: Double = (accentFirstBeat && newBeatNumber == 1) ? 1.15 : 1.0
                     let adjustedRatio = baseSampleRateRatio * pitchShiftRatio
-                    
                     let adjustedPosition = snapPlaybackPosition * adjustedRatio
                     let index = Int(adjustedPosition)
                     
                     if index < snapWaveform.count {
                         let baseAmplitude: Float = 0.8
-                        // Slight volume boost for accented beats too
                         let accentMultiplier: Float = (accentFirstBeat && newBeatNumber == 1) ? 1.1 : 1.0
                         sample = snapWaveform[index] * baseAmplitude * accentMultiplier
                     }
                     
-                    // Advance playback position at the engine's sample rate
                     snapPlaybackPosition += 1.0
                     
-                    // Check if we've reached the end (accounting for sample rate conversion and pitch shift)
                     if adjustedPosition >= Double(snapWaveform.count - 1) {
                         isPlayingSnap = false
                     }
                 }
             } else {
-                // Use synthetic sound generation for other sounds
                 if samplesSinceLastBeat >= 0 && samplesSinceLastBeat < clickDurationSamples {
                     let clickProgress = Float(samplesSinceLastBeat) / Float(clickDurationSamples)
-                    
-                    // Generate envelope based on sound type
                     let envelope = generateEnvelope(for: selectedSoundType, progress: clickProgress)
-                    
-                    // Generate frequency based on sound type and accent
                     let frequency = generateFrequency(for: selectedSoundType,
                                                       isAccent: accentFirstBeat && newBeatNumber == 1,
                                                       progress: clickProgress)
-                    
-                    // Generate the sample
                     sample = generateSample(for: selectedSoundType,
                                             frequency: frequency,
                                             envelope: envelope,
                                             progress: clickProgress)
                     
                     clickPhase += 2.0 * Float.pi * frequency / Float(sampleRate)
-                    
                     if clickPhase >= 2.0 * Float.pi {
                         clickPhase -= 2.0 * Float.pi
                     }
@@ -1022,32 +985,63 @@ class MetronomeEngine: ObservableObject {
         
         currentSamplePosition += Int64(frames)
         
-        // Handle beat triggering and visual effects
+        // Schedule precise visual update if beat was triggered
         if beatTriggeredInThisCycle {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.currentBeat = newBeatNumber
-                self.beatIndicator.toggle()
-                
-                // Trigger flash on first beat if enabled
-                if newBeatNumber == 1 && self.fullScreenFlashOnFirstBeat {
-                    self.triggerFlash()
-                }
-            }
+            scheduleVisualUpdate(beatNumber: newBeatNumber, frameOffset: beatTriggerFrame, totalFrames: frames)
         }
         
         return noErr
     }
-
+    
+    // MARK: - Precise Visual Synchronization
+    
+    private func scheduleVisualUpdate(beatNumber: Int, frameOffset: Int, totalFrames: Int) {
+        beatStateQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            if !self.beatUpdateScheduled {
+                self.beatUpdateScheduled = true
+                
+                // Calculate precise delay based on frame position in the buffer
+                let frameDelay = Double(frameOffset) / self.sampleRate
+                let audioLatency = self.getCurrentAudioLatency()
+                let totalDelay = frameDelay - audioLatency
+                let clampedDelay = max(0, totalDelay)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + clampedDelay) { [weak self] in
+                    guard let self = self else { return }
+                    
+                    // Apply visual updates
+                    self.currentBeat = beatNumber
+                    self.beatIndicator.toggle()
+                    
+                    // Trigger flash on first beat if enabled
+                    if beatNumber == 1 && self.fullScreenFlashOnFirstBeat {
+                        self.triggerFlash()
+                    }
+                    
+                    // Reset scheduling flag
+                    self.beatStateQueue.async {
+                        self.beatUpdateScheduled = false
+                    }
+                }
+            }
+        }
+    }
+    
+    private func getCurrentAudioLatency() -> TimeInterval {
+        let audioSession = AVAudioSession.sharedInstance()
+        return audioSession.outputLatency + audioSession.ioBufferDuration
+    }
+    
     // MARK: - Flash Trigger Method
+    
     func triggerFlash() {
         guard fullScreenFlashOnFirstBeat else { return }
         isFlashing = true
         
-        // Calculate the duration of one beat in seconds
         let beatDurationInSeconds = 60.0 / Double(bpm)
         
-        // Flash duration should last the entire beat
         DispatchQueue.main.asyncAfter(deadline: .now() + beatDurationInSeconds) { [weak self] in
             self?.isFlashing = false
         }
@@ -1055,7 +1049,6 @@ class MetronomeEngine: ObservableObject {
     
     private func updateScreenIdleTimer() {
         DispatchQueue.main.async {
-            // Keep screen awake when playing AND the setting is enabled
             UIApplication.shared.isIdleTimerDisabled = self.isPlaying && self.keepScreenAwake
             
             if self.debugMode {
@@ -1064,7 +1057,6 @@ class MetronomeEngine: ObservableObject {
             }
         }
     }
-
     
     // MARK: - Sound Generation Helpers
     
@@ -1076,15 +1068,13 @@ class MetronomeEngine: ObservableObject {
             return (1.0 - progress) * baseAmplitude
             
         case .snap:
-            // This won't be used since snap uses the waveform, but kept for completeness
             if progress < 0.02 {
                 return baseAmplitude * 1.8
             } else {
                 return exp(-progress * 15.0) * baseAmplitude * 1.8
             }
-               
+            
         case .blip:
-            // Sharp attack, quick decay
             return exp(-progress * 25.0) * (1.0 - progress) * baseAmplitude * 1.3
         }
     }
@@ -1097,7 +1087,6 @@ class MetronomeEngine: ObservableObject {
             return (isAccent ? accentFrequency : clickFrequency) * accentMultiplier
             
         case .snap:
-            // This won't be used since snap uses the waveform, but kept for completeness
             let primaryFreq: Float = 800.0
             let sweep = primaryFreq * (1.0 + (1.0 - progress) * 0.2)
             return sweep * accentMultiplier
@@ -1118,7 +1107,6 @@ class MetronomeEngine: ObservableObject {
             return fundamental
             
         case .snap:
-            // This won't be used since snap uses the waveform, but kept for completeness
             let primary = sin(clickPhase) * envelope
             let harmonic = sin(clickPhase * 2.5) * 0.4 * envelope
             let highHarmonic = sin(clickPhase * 6.0 + 0.01) * 0.2 * envelope
@@ -1131,6 +1119,7 @@ class MetronomeEngine: ObservableObject {
     }
     
     // MARK: - Tap Tempo
+    
     func tapTempo() {
         let now = Date()
         
@@ -1161,6 +1150,7 @@ class MetronomeEngine: ObservableObject {
     }
     
     // MARK: - Subdivision Helper
+    
     func subdivisionLabel() -> String {
         switch subdivision {
         case 1:
@@ -1177,19 +1167,19 @@ class MetronomeEngine: ObservableObject {
     }
     
     // MARK: - Debug Helper
+    
     func toggleDebugMode() {
         debugMode.toggle()
         print("🐛 Debug mode: \(debugMode ? "ON" : "OFF")")
     }
     
-    // MARK: - Safe Sound Preview Method
+    // MARK: - Sound Preview Methods
+    
     func playSoundPreview(_ soundType: SyntheticSound? = nil) {
         let previewSoundType = soundType ?? selectedSoundType
         
-        // Clean up any existing preview engine
         cleanupPreviewEngine()
         
-        // Use a simple haptic feedback instead of audio preview to avoid crashes
         DispatchQueue.main.async {
             if #available(iOS 10.0, *) {
                 let impact = UIImpactFeedbackGenerator(style: .light)
@@ -1253,14 +1243,14 @@ class MetronomeEngine: ObservableObject {
                 // Generate sound data based on type
                 if previewSoundType == .snap {
                     // Use snap waveform with proper sample rate handling
-                    let sampleRateRatio = snapOriginalSampleRate / format.sampleRate
+                    let sampleRateRatio = self.snapOriginalSampleRate / format.sampleRate
                     
                     for i in 0..<Int(frameCount) {
                         let adjustedPosition = Double(i) * sampleRateRatio
                         let index = Int(adjustedPosition)
                         
-                        if index < snapWaveform.count {
-                            channelData[i] = snapWaveform[index] * 0.8 // Higher volume for preview
+                        if index < self.snapWaveform.count {
+                            channelData[i] = self.snapWaveform[index] * 0.8 // Higher volume for preview
                         } else {
                             channelData[i] = 0.0
                         }
@@ -1407,17 +1397,14 @@ class MetronomeEngine: ObservableObject {
     
     // MARK: - Public Audio Session Status Methods
     
-    /// Returns true if headphones or bluetooth audio devices are connected
     var isUsingExternalAudio: Bool {
         return headphonesConnected
     }
     
-    /// Returns true if audio session is currently interrupted
     var isAudioInterrupted: Bool {
         return audioSessionInterrupted
     }
     
-    /// Manually resume playback after interruption (useful for UI controls)
     func resumeAfterInterruption() {
         guard audioSessionInterrupted == false else {
             if debugMode {
@@ -1434,6 +1421,30 @@ class MetronomeEngine: ObservableObject {
             }
         } catch {
             print("❌ Failed to resume after interruption: \(error)")
+        }
+    }
+    
+    // MARK: - Synchronization Debug Methods
+    
+    func forceSyncCheck() {
+        if isPlaying {
+            beatStateQueue.async { [weak self] in
+                guard let self = self else { return }
+                
+                if self._pendingBeatTrigger {
+                    let beatNumber = self._pendingBeatNumber
+                    self._pendingBeatTrigger = false
+                    
+                    DispatchQueue.main.async {
+                        self.currentBeat = beatNumber
+                        self.beatIndicator.toggle()
+                        
+                        if beatNumber == 1 && self.fullScreenFlashOnFirstBeat {
+                            self.triggerFlash()
+                        }
+                    }
+                }
+            }
         }
     }
 }
