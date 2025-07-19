@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import AudioToolbox
 
 // MARK: - Synthetic Sound Types
 enum SyntheticSound: String, CaseIterable {
@@ -22,6 +23,24 @@ enum SyntheticSound: String, CaseIterable {
     }
 }
 
+// MARK: - Enhanced Vibration Types
+enum VibrationType: String, CaseIterable {
+    case none = "None"
+    case haptic = "Haptic"
+    case phoneVibration = "Phone Vibration"
+    
+    var description: String {
+        switch self {
+        case .none:
+            return "No vibration feedback"
+        case .haptic:
+            return "Gentle haptic feedback using the Taptic Engine"
+        case .phoneVibration:
+            return "Strong phone vibration that can be felt in your pocket"
+        }
+    }
+}
+
 // MARK: - UserDefaults Keys
 private enum UserDefaultsKeys {
     static let bpm = "metronome_bpm"
@@ -38,11 +57,11 @@ private enum UserDefaultsKeys {
     static let pauseOnRouteChange = "metronome_pauseOnRouteChange"
     static let keepScreenAwake = "metronome_keepScreenAwake"
     static let dialTickEnabled = "metronome_dialTickEnabled"
-    static let vibrationEnabled = "metronome_vibrationEnabled"  // NEW
-    static let vibrationIntensity = "metronome_vibrationIntensity"  // NEW
+    static let vibrationType = "metronome_vibrationType"
+    static let vibrationIntensity = "metronome_vibrationIntensity"
 }
 
-// MARK: - Metronome Engine with Enhanced Audio-Visual Synchronization
+// MARK: - Metronome Engine with Enhanced Audio-Visual-Haptic Synchronization
 
 class MetronomeEngine: ObservableObject {
     
@@ -86,18 +105,18 @@ class MetronomeEngine: ObservableObject {
         didSet { saveSettings() }
     }
     
-    // MARK: - NEW: Vibration Settings
-    @AppStorage("metronome_vibrationEnabled") var vibrationEnabled: Bool = false {
+    // MARK: - Enhanced Vibration Settings
+    @AppStorage("metronome_vibrationType") var vibrationType: VibrationType = .none {
         didSet {
             saveSettings()
-            updateHapticGenerator()
+            updateVibrationGenerator()
         }
     }
     
     @AppStorage("metronome_vibrationIntensity") var vibrationIntensity: Double = 0.5 {
         didSet {
             saveSettings()
-            updateHapticGenerator()
+            updateVibrationGenerator()
         }
     }
     
@@ -193,9 +212,9 @@ class MetronomeEngine: ObservableObject {
     private var sourceNode: AVAudioSourceNode?
     private let mixerNode = AVAudioMixerNode()
     
-    // MARK: - NEW: Haptic Feedback Properties
+    // MARK: - Enhanced Vibration Feedback Properties
     private var hapticGenerator: UIImpactFeedbackGenerator?
-    private let hapticQueue = DispatchQueue(label: "com.metronome.haptic", qos: .userInteractive)
+    private let vibrationQueue = DispatchQueue(label: "com.metronome.vibration", qos: .userInteractive)
     
     // MARK: - Improved Preview System
     private var previewQueue = DispatchQueue(label: "com.metronome.preview", qos: .userInitiated)
@@ -288,7 +307,7 @@ class MetronomeEngine: ObservableObject {
         updateTiming()
         checkHeadphonesConnected()
         updateScreenIdleTimer()
-        updateHapticGenerator()  // NEW: Initialize haptic generator
+        updateVibrationGenerator()
         
         // Initialize dial tick tracking
         lastDialBPM = bpm
@@ -303,13 +322,13 @@ class MetronomeEngine: ObservableObject {
         UIApplication.shared.isIdleTimerDisabled = false
     }
     
-    // MARK: - NEW: Haptic Generator Setup
-    private func updateHapticGenerator() {
-        hapticQueue.async { [weak self] in
+    // MARK: - Enhanced Vibration Generator Setup
+    private func updateVibrationGenerator() {
+        vibrationQueue.async { [weak self] in
             guard let self = self else { return }
             
-            if self.vibrationEnabled {
-                // Create generator with appropriate style based on intensity
+            if self.vibrationType == .haptic {
+                // Create haptic generator with appropriate style based on intensity
                 let style: UIImpactFeedbackGenerator.FeedbackStyle
                 if self.vibrationIntensity < 0.33 {
                     style = .light
@@ -327,24 +346,73 @@ class MetronomeEngine: ObservableObject {
         }
     }
     
-    // MARK: - NEW: Trigger Haptic Feedback
-    private func triggerHapticFeedback() {
-        guard vibrationEnabled else { return }
+    // MARK: - Enhanced Trigger Vibration Method
+    private func triggerVibrationFeedback() {
+        guard vibrationType != .none else { return }
         
-        hapticQueue.async { [weak self] in
+        vibrationQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Ensure generator is ready
-            if self.hapticGenerator == nil {
-                self.updateHapticGenerator()
+            switch self.vibrationType {
+            case .none:
+                break
+                
+            case .haptic:
+                // Ensure generator is ready
+                if self.hapticGenerator == nil {
+                    self.updateVibrationGenerator()
+                }
+                
+                // Trigger haptic feedback
+                self.hapticGenerator?.impactOccurred(intensity: CGFloat(self.vibrationIntensity))
+                self.hapticGenerator?.prepare()
+                
+            case .phoneVibration:
+                // Trigger strong phone vibration
+                self.triggerPhoneVibration()
+            }
+        }
+    }
+    
+    // MARK: - Strong Phone Vibration Method
+    private func triggerPhoneVibration() {
+        // Use AudioServices for strong vibration
+        let vibrationIntensityInt = Int(vibrationIntensity * 3) // Convert to 0-3 range
+        
+        switch vibrationIntensityInt {
+        case 0:
+            // Light vibration - single short pulse
+            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            
+        case 1:
+            // Medium vibration - slightly longer
+            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
             }
             
-            // Trigger very short, precise haptic feedback
-            self.hapticGenerator?.impactOccurred(intensity: CGFloat(self.vibrationIntensity))
+        case 2:
+            // Heavy vibration - double pulse
+            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            }
             
-            // Prepare for next feedback (ensures responsiveness)
-            self.hapticGenerator?.prepare()
+        default:
+            // Maximum intensity - triple pulse
+            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            }
         }
+    }
+    
+    // MARK: - Test Vibration Method (for settings preview)
+    func testVibration() {
+        triggerVibrationFeedback()
     }
     
     // MARK: - Enhanced Audio Session Setup
@@ -695,9 +763,10 @@ class MetronomeEngine: ObservableObject {
             dialTickEnabled = defaults.bool(forKey: UserDefaultsKeys.dialTickEnabled)
         }
         
-        // NEW: Load vibration settings
-        if defaults.object(forKey: UserDefaultsKeys.vibrationEnabled) != nil {
-            vibrationEnabled = defaults.bool(forKey: UserDefaultsKeys.vibrationEnabled)
+        // Load vibration settings
+        if let savedVibrationType = defaults.string(forKey: UserDefaultsKeys.vibrationType),
+           let vibrationType = VibrationType(rawValue: savedVibrationType) {
+            self.vibrationType = vibrationType
         }
         
         if defaults.object(forKey: UserDefaultsKeys.vibrationIntensity) != nil {
@@ -718,8 +787,8 @@ class MetronomeEngine: ObservableObject {
         defaults.set(selectedSoundType.rawValue, forKey: UserDefaultsKeys.selectedSoundType)
         defaults.set(Double(subdivision), forKey: UserDefaultsKeys.subdivisionMultiplier)
         defaults.set(clickVolume, forKey: UserDefaultsKeys.clickVolume)
-        defaults.set(vibrationEnabled, forKey: UserDefaultsKeys.vibrationEnabled)  // NEW
-        defaults.set(vibrationIntensity, forKey: UserDefaultsKeys.vibrationIntensity)  // NEW
+        defaults.set(vibrationType.rawValue, forKey: UserDefaultsKeys.vibrationType)
+        defaults.set(vibrationIntensity, forKey: UserDefaultsKeys.vibrationIntensity)
         
         if debugMode {
             print("💾 Settings saved to UserDefaults")
@@ -1076,7 +1145,7 @@ class MetronomeEngine: ObservableObject {
         return noErr
     }
     
-    // MARK: - Precise Visual Synchronization (UPDATED with haptic feedback)
+    // MARK: - Precise Visual Synchronization with Enhanced Vibration
     
     private func scheduleVisualUpdate(beatNumber: Int, frameOffset: Int, totalFrames: Int) {
         beatStateQueue.async { [weak self] in
@@ -1098,8 +1167,8 @@ class MetronomeEngine: ObservableObject {
                     self.currentBeat = beatNumber
                     self.beatIndicator.toggle()
                     
-                    // NEW: Trigger haptic feedback at exact same time as visual/audio
-                    self.triggerHapticFeedback()
+                    // Trigger vibration feedback at exact same time as visual/audio
+                    self.triggerVibrationFeedback()
                     
                     // Trigger flash on first beat if enabled
                     if beatNumber == 1 && self.fullScreenFlashOnFirstBeat {

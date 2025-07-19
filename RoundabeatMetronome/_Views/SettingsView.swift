@@ -6,7 +6,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var currentColorScheme
     @State private var showingInfoPopup: InfoType? = nil
     
-    // Updated InfoType enum to include vibration options
+    // Updated InfoType enum to include enhanced vibration options
     enum InfoType: String, CaseIterable {
         case accentFirstBeat = "accent_first_beat"
         case emphasizeFirstBeat = "emphasize_first_beat"
@@ -15,8 +15,8 @@ struct SettingsView: View {
         case pauseOnInterruption = "pause_on_interruption"
         case stayAwake = "stay_awake"
         case dialTick = "dial_tick"
-        case vibration = "vibration"  // NEW
-        case vibrationIntensity = "vibration_intensity"  // NEW
+        case vibrationType = "vibration_type"
+        case vibrationIntensity = "vibration_intensity"
         
         var title: String {
             switch self {
@@ -27,8 +27,8 @@ struct SettingsView: View {
             case .pauseOnInterruption: return "Pause on Interruption"
             case .stayAwake: return "Stay Awake"
             case .dialTick: return "Dial Tick Sound"
-            case .vibration: return "Vibration"  // NEW
-            case .vibrationIntensity: return "Vibration Intensity"  // NEW
+            case .vibrationType: return "Vibration Type"
+            case .vibrationIntensity: return "Vibration Intensity"
             }
         }
         
@@ -48,15 +48,14 @@ struct SettingsView: View {
                 return "Prevents screen from sleeping while playing"
             case .dialTick:
                 return "Plays a subtle tick sound when adjusting the BPM dial"
-            case .vibration:  // NEW
-                return "Provides haptic feedback with each beat for tactile timing"
-            case .vibrationIntensity:  // NEW
-                return "Controls how strong the vibration feels. Light, medium, or heavy intensity."
+            case .vibrationType:
+                return "Choose between gentle haptic feedback or strong phone vibration. Phone vibration is much more noticeable when the device is in your pocket."
+            case .vibrationIntensity:
+                return "Controls how strong the vibration feels. For haptic feedback: light, medium, or heavy. For phone vibration: single, double, or triple pulse."
             }
         }
     }
 
-    // Updated body to include vibration controls
     var body: some View {
         NavigationView {
             Form {
@@ -77,20 +76,30 @@ struct SettingsView: View {
                     )
                 }
                 
-                // NEW: Haptic Settings Section
-                Section("Haptic Feedback") {
+                // UPDATED: Restructured Vibration Options Section
+                Section("Vibration Options") {
+                    // Main vibration toggle
                     SettingsToggleRow(
                         title: "Vibration",
-                        isOn: $metronome.vibrationEnabled,
-                        infoType: .vibration,
+                        isOn: .constant(metronome.vibrationType != .none),
+                        infoType: .vibrationType,
                         showingInfoPopup: $showingInfoPopup
-                    )
+                    ) { isEnabled in
+                        metronome.vibrationType = isEnabled ? .haptic : .none
+                    }
                     
-                    // Show intensity slider only when vibration is enabled
-                    if metronome.vibrationEnabled {
+                    // Show additional options only when vibration is enabled
+                    if metronome.vibrationType != .none {
+                        VibrationModeSelector(
+                            vibrationType: $metronome.vibrationType,
+                            showingInfoPopup: $showingInfoPopup
+                        )
+                        
                         VibrationIntensitySlider(
                             intensity: $metronome.vibrationIntensity,
-                            showingInfoPopup: $showingInfoPopup
+                            vibrationType: metronome.vibrationType,
+                            showingInfoPopup: $showingInfoPopup,
+                            testAction: { metronome.testVibration() }
                         )
                     }
                 }
@@ -104,11 +113,11 @@ struct SettingsView: View {
                         showingInfoPopup: $showingInfoPopup
                     )
                     SettingsToggleRow(
-                    title: "Outline Offbeats",
-                    isOn: $metronome.emphasizeFirstBeatOnly,
-                    infoType: .emphasizeFirstBeat,
-                    showingInfoPopup: $showingInfoPopup
-                )
+                        title: "Outline Offbeats",
+                        isOn: $metronome.emphasizeFirstBeatOnly,
+                        infoType: .emphasizeFirstBeat,
+                        showingInfoPopup: $showingInfoPopup
+                    )
                 }
                 
                 // App Settings Section
@@ -193,10 +202,47 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - NEW: Custom Vibration Intensity Slider Component
+// MARK: - NEW: Simplified Vibration Mode Selector
+struct VibrationModeSelector: View {
+    @Binding var vibrationType: VibrationType
+    @Binding var showingInfoPopup: SettingsView.InfoType?
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Text("Vibration Type")
+                .font(.body)
+                .foregroundColor(.primary)
+            
+            Button(action: {
+                showingInfoPopup = .vibrationType
+            }) {
+                Image(systemName: "info.circle")
+                    .foregroundColor(.secondary)
+                    .font(.system(size: 14))
+            }
+            .buttonStyle(PlainButtonStyle())
+            .frame(width: 20, height: 20)
+            
+            Spacer()
+            
+            // Segmented control for haptic vs phone vibration
+            Picker("Vibration Type", selection: $vibrationType) {
+                Text("Haptic").tag(VibrationType.haptic)
+                Text("Phone").tag(VibrationType.phoneVibration)
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .frame(maxWidth: 120)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - UPDATED: Enhanced Vibration Intensity Slider
 struct VibrationIntensitySlider: View {
     @Binding var intensity: Double
+    let vibrationType: VibrationType
     @Binding var showingInfoPopup: SettingsView.InfoType?
+    let testAction: () -> Void
     @State private var isSliding: Bool = false
     
     var body: some View {
@@ -219,16 +265,18 @@ struct VibrationIntensitySlider: View {
                 
                 Spacer()
                 
-                // Current intensity indicator
-                Text(intensityLabel)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(minWidth: 50, alignment: .trailing)
+                // Test button
+                Button("Test") {
+                    testAction()
+                }
+                .font(.caption)
+                .buttonStyle(.bordered)
+                .controlSize(.mini)
             }
             
             // Custom slider with haptic feedback
             HStack(spacing: 12) {
-                Text("Light")
+                Text(leftLabel)
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 
@@ -299,19 +347,19 @@ struct VibrationIntensitySlider: View {
                                 let newCategory = intensityCategory(for: intensity)
                                 
                                 if prevCategory != newCategory {
-                                    triggerTestVibration()
+                                    testAction()
                                 }
                             }
                             .onEnded { _ in
                                 isSliding = false
                                 // Final test vibration
-                                triggerTestVibration()
+                                testAction()
                             }
                     )
                 }
                 .frame(height: 20)
                 
-                Text("Heavy")
+                Text(rightLabel)
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
@@ -321,38 +369,44 @@ struct VibrationIntensitySlider: View {
     }
     
     private var intensityLabel: String {
-        if intensity < 0.33 {
-            return "Light"
-        } else if intensity < 0.67 {
-            return "Medium"
-        } else {
-            return "Heavy"
+        switch vibrationType {
+        case .none:
+            return "Off"
+        case .haptic:
+            if intensity < 0.33 {
+                return "Light"
+            } else if intensity < 0.67 {
+                return "Medium"
+            } else {
+                return "Heavy"
+            }
+        case .phoneVibration:
+            if intensity < 0.25 {
+                return "Single"
+            } else if intensity < 0.75 {
+                return "Double"
+            } else {
+                return "Triple"
+            }
         }
+    }
+    
+    private var leftLabel: String {
+        return "Low"
+    }
+    
+    private var rightLabel: String {
+        return "High"
     }
     
     private func intensityCategory(for value: Double) -> Int {
         if value < 0.33 {
-            return 0  // Light
+            return 0
         } else if value < 0.67 {
-            return 1  // Medium
+            return 1
         } else {
-            return 2  // Heavy
+            return 2
         }
-    }
-    
-    private func triggerTestVibration() {
-        let style: UIImpactFeedbackGenerator.FeedbackStyle
-        if intensity < 0.33 {
-            style = .light
-        } else if intensity < 0.67 {
-            style = .medium
-        } else {
-            style = .heavy
-        }
-        
-        let generator = UIImpactFeedbackGenerator(style: style)
-        generator.prepare()
-        generator.impactOccurred(intensity: CGFloat(intensity))
     }
 }
 
@@ -362,12 +416,25 @@ struct AlertItem: Identifiable {
     let infoType: SettingsView.InfoType
 }
 
-// MARK: - Settings Toggle Row with Info Button
+// MARK: - Settings Toggle Row with Info Button and Custom Action
 struct SettingsToggleRow: View {
     let title: String
     @Binding var isOn: Bool
     let infoType: SettingsView.InfoType?
     @Binding var showingInfoPopup: SettingsView.InfoType?
+    var customAction: ((Bool) -> Void)? = nil
+    
+    init(title: String,
+         isOn: Binding<Bool>,
+         infoType: SettingsView.InfoType? = nil,
+         showingInfoPopup: Binding<SettingsView.InfoType?>,
+         customAction: ((Bool) -> Void)? = nil) {
+        self.title = title
+        self._isOn = isOn
+        self.infoType = infoType
+        self._showingInfoPopup = showingInfoPopup
+        self.customAction = customAction
+    }
     
     var body: some View {
         HStack(spacing: 8) {
@@ -390,9 +457,18 @@ struct SettingsToggleRow: View {
             
             Spacer(minLength: 20)
             
-            Toggle("", isOn: $isOn)
-                .frame(width: 51) // Standard toggle width
-                .toggleStyle(CustomToggleStyle())
+            Toggle("", isOn: Binding(
+                get: { isOn },
+                set: { newValue in
+                    if let customAction = customAction {
+                        customAction(newValue)
+                    } else {
+                        isOn = newValue
+                    }
+                }
+            ))
+            .frame(width: 51) // Standard toggle width
+            .toggleStyle(CustomToggleStyle())
         }
         .padding(.vertical, 4)
     }
